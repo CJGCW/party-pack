@@ -30,7 +30,7 @@ click a game on the host screen. Press **Esc** on the host screen to abandon a g
 
 | Game | Players | How it plays |
 | --- | --- | --- |
-| **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Points go by finishing order, plus a bonus for solving in under 6 guesses. Three rounds. |
+| **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Points go by finishing order, plus a bonus for solving in under 6 guesses. Three rounds. **Normal** uses words with a dictionary definition (shown at the reveal); **Hard** uses obscure words with none. |
 
 ### Testing with bots
 
@@ -42,7 +42,7 @@ npm run bot -- ABCD 3 --start
 ```
 
 This adds 3 bots to room `ABCD`. `--start` makes a bot start the game, which only works
-if the bots joined an empty room so one of them is the VIP.
+if the bots joined an empty room so one of them is the VIP. Add `--hard` for hard mode.
 
 ### Word Rush word list
 
@@ -53,8 +53,9 @@ secret answer. Offensive words are filtered out of the answers using two maintai
 `ALLOWED`.
 
 When a word is revealed, its definition is shown from WordNet (`wordnet-db`), an offline
-dictionary, so no internet is needed. WordNet covers about half the 5-letter words; very
-obscure ones show "No definition found".
+dictionary, so no internet is needed. WordNet defines about half the 5-letter words
+(names like PARIS don't count). Normal mode only picks words it can define; Hard mode only
+picks the ones it can't.
 
 ## Project layout
 
@@ -77,8 +78,9 @@ TV and a separate **player view** to each phone.
 
 ## Adding a mini game
 
-1. **Shared types**: add `shared/games/<game>.ts` with a `GameInfo` plus host view, player
-   view and input types.
+1. **Shared types**: add `shared/games/<game>.ts` with a `GameInfo` (including at least one
+   entry in `modes`; the lobby shows a start button per mode) plus host view, player view and
+   input types.
 2. **Server logic**: add `server/games/<game>.ts` implementing `MiniGame` (see
    `server/games/MiniGame.ts`), then register it in `server/games/index.ts`.
 3. **Host scene**: add a Phaser scene in `client/host/scenes/`, then register it in

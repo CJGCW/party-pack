@@ -5,6 +5,7 @@ import {
   type WordleGuess,
   type WordleHostView,
   type WordleInput,
+  type WordleModeId,
   type WordlePhase,
   type WordlePlayerView,
 } from '../../shared/games/wordleRace';
@@ -35,13 +36,18 @@ interface Progress {
 class WordleRace implements MiniGame {
   private phase: WordlePhase = 'countdown';
   private round = 0;
-  private answers = pickAnswers(TOTAL_ROUNDS);
+  private answers: string[];
   private progress = new Map<string, Progress>();
   private finishers = 0;
   private phaseEndsAt = 0;
   private timer: NodeJS.Timeout | null = null;
 
-  constructor(private readonly ctx: GameContext) {}
+  constructor(
+    private readonly ctx: GameContext,
+    private readonly mode: WordleModeId,
+  ) {
+    this.answers = pickAnswers(TOTAL_ROUNDS, mode);
+  }
 
   private get answer() {
     return this.answers[this.round - 1];
@@ -128,6 +134,7 @@ class WordleRace implements MiniGame {
     const players = this.ctx.players();
     const view: WordleHostView = {
       phase: this.phase,
+      mode: this.mode,
       round: this.round,
       totalRounds: TOTAL_ROUNDS,
       msLeft: this.msLeft(),
@@ -158,6 +165,7 @@ class WordleRace implements MiniGame {
     if (!prog || !player) return;
     const view: WordlePlayerView = {
       phase: this.phase,
+      mode: this.mode,
       round: this.round,
       totalRounds: TOTAL_ROUNDS,
       msLeft: this.msLeft(),
@@ -186,5 +194,5 @@ class WordleRace implements MiniGame {
 
 export const wordleRace: MiniGameDefinition = {
   info: WORDLE_RACE,
-  create: (ctx) => new WordleRace(ctx),
+  create: (ctx, modeId) => new WordleRace(ctx, modeId as WordleModeId),
 };

@@ -6,7 +6,13 @@ export const WORDLE_RACE: GameInfo = {
   description: 'Everyone gets the same secret word. First to crack it wins the most points!',
   minPlayers: 1,
   maxPlayers: 8,
+  modes: [
+    { id: 'normal', name: 'Normal', description: 'Words you can look up. Learn the meaning at each reveal.' },
+    { id: 'hard', name: 'Hard', description: "Obscure words even the dictionary doesn't know." },
+  ],
 };
+
+export type WordleModeId = 'normal' | 'hard';
 
 export const WORD_LENGTH = 5;
 
@@ -35,6 +41,7 @@ export interface WordleHostPlayer {
 
 export interface WordleHostView {
   phase: WordlePhase;
+  mode: WordleModeId;
   round: number;
   totalRounds: number;
   /** Milliseconds until the current phase ends (relative, so clock skew doesn't matter). */
@@ -52,6 +59,7 @@ export interface WordleGuess {
 
 export interface WordlePlayerView {
   phase: WordlePhase;
+  mode: WordleModeId;
   round: number;
   totalRounds: number;
   msLeft: number;
@@ -94,8 +102,8 @@ export function scoreGuess(guess: string, answer: string): LetterResult[] {
 const MAX_DEFINITION_LENGTH = 160;
 
 /** One-line definition shown at the round reveal, e.g. "form of PONY · noun: a small horse". */
-export function describeDefinition(def: WordDefinition | null): string {
-  if (!def) return "(No definition found. That's a rare one!)";
+export function describeDefinition(def: WordDefinition | null, mode: WordleModeId): string {
+  if (!def) return mode === 'hard' ? 'Hard mode: too obscure for the dictionary!' : '(No definition found.)';
   const body = def.text.length > MAX_DEFINITION_LENGTH ? `${def.text.slice(0, MAX_DEFINITION_LENGTH - 1)}…` : def.text;
   const base = def.baseWord ? `form of ${def.baseWord} · ` : '';
   return `${base}${def.partOfSpeech}: ${body}`;

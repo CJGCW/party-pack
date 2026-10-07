@@ -84,7 +84,7 @@ export class WordleRaceScene extends Phaser.Scene {
   private applyView(view: WordleHostView) {
     this.view = view;
     this.phaseEndsAt = performance.now() + view.msLeft;
-    this.roundText.setText(`Round ${view.round} of ${view.totalRounds}`);
+    this.roundText.setText(`Round ${view.round} of ${view.totalRounds}${view.mode === 'hard' ? '  ·  HARD MODE' : ''}`);
 
     // Rebuild boards whenever a new round starts or the player list changes.
     const layoutKey = `${view.round}|${view.players.map((p) => p.id).join(',')}`;
@@ -256,7 +256,7 @@ export class WordleRaceScene extends Phaser.Scene {
 
   /** Definition line under the revealed word; fades in after the letters flip. */
   private showDefinition(view: WordleHostView, y: number, size: number) {
-    const t = text(this, WIDTH / 2, y, describeDefinition(view.definition), size, COLORS.muted, {
+    const t = text(this, WIDTH / 2, y, describeDefinition(view.definition, view.mode), size, COLORS.muted, {
       fontStyle: '400',
       align: 'center',
       wordWrap: { width: 1500 },

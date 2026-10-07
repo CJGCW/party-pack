@@ -23,5 +23,6 @@ export interface MiniGame {
 
 export interface MiniGameDefinition {
   info: GameInfo;
-  create(ctx: GameContext): MiniGame;
+  /** `modeId` is always one of `info.modes`. */
+  create(ctx: GameContext, modeId: string): MiniGame;
 }

@@ -1,10 +1,11 @@
 // Test bots for playing Word Rush without enough people.
 //
-//   npm run bot -- <ROOM CODE> [number of bots] [--start]
+//   npm run bot -- <ROOM CODE> [number of bots] [--start] [--hard]
 //
 // Each bot solves the word by narrowing down candidates from its guess colours,
 // waiting a random 1-4 seconds between guesses. --start makes the first bot start
-// the game once all bots have joined (it must be VIP, so use an empty room).
+// the game once all bots have joined (it must be VIP, so use an empty room),
+// in hard mode with --hard.
 import { io, type Socket } from 'socket.io-client';
 import words from 'an-array-of-english-words';
 import { WORDLE_RACE, scoreGuess, type WordlePlayerView } from '../shared/games/wordleRace';
@@ -14,8 +15,9 @@ const args = process.argv.slice(2);
 const code = args.find((a) => /^[a-z]{4}$/i.test(a))?.toUpperCase();
 const count = Number(args.find((a) => /^\d+$/.test(a)) ?? 1);
 const start = args.includes('--start');
+const modeId = args.includes('--hard') ? 'hard' : 'normal';
 if (!code) {
-  console.error('Usage: npm run bot -- <ROOM CODE> [count] [--start]');
+  console.error('Usage: npm run bot -- <ROOM CODE> [count] [--start] [--hard]');
   process.exit(1);
 }
 
@@ -59,7 +61,7 @@ function runBot(name: string, isStarter: boolean) {
     console.log(`${name} joined ${code}`);
     if (isStarter) {
       setTimeout(
-        () => socket.emit('room:startGame', { gameId: WORDLE_RACE.id }, (r) => console.log('start:', r)),
+        () => socket.emit('room:startGame', { gameId: WORDLE_RACE.id, modeId }, (r) => console.log('start:', r)),
         500 + count * 200,
       );
     }

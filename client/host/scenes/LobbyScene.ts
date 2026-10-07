@@ -118,30 +118,49 @@ export class LobbyScene extends Phaser.Scene {
 
   private renderGames(games: GameInfo[], playerCount: number) {
     for (const c of this.gameCards) c.destroy();
-    const cardW = 520;
-    const cardH = 120;
+    const buttonW = 220;
+    const buttonH = 58;
+    const buttonGap = 20;
+    const cardH = 150;
     const gap = 40;
-    const startX = WIDTH / 2 - ((games.length - 1) * (cardW + gap)) / 2;
+    const cardWidths = games.map((g) => Math.max(520, g.modes.length * (buttonW + buttonGap) + 40));
+    const totalW = cardWidths.reduce((a, b) => a + b, 0) + gap * (games.length - 1);
+    let x = WIDTH / 2 - totalW / 2;
 
     this.gameCards = games.map((info, i) => {
+      const cardW = cardWidths[i];
       const ready = playerCount >= info.minPlayers && playerCount <= info.maxPlayers;
-      const card = this.add.container(startX + i * (cardW + gap), 980);
+      const card = this.add.container(x + cardW / 2, 985);
+      x += cardW + gap;
+
       const bg = this.add.graphics();
-      bg.fillStyle(ready ? 0xff5d73 : COLORS.panelLight, 1);
+      bg.fillStyle(COLORS.panelLight, 1);
       bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 24);
       card.add(bg);
-      card.add(text(this, 0, -22, info.name, 46, COLORS.text, { fontStyle: '700' }));
-      card.add(
-        text(this, 0, 28, ready ? `${info.minPlayers}-${info.maxPlayers} players` : `Needs ${info.minPlayers}+ players`, 24, COLORS.text),
-      );
+      card.add(text(this, 0, -40, info.name, 44, COLORS.text, { fontStyle: '700' }));
 
-      card.setSize(cardW, cardH).setInteractive({ useHandCursor: true });
-      card.on('pointerover', () => this.tweens.add({ targets: card, scale: 1.06, duration: 120 }));
-      card.on('pointerout', () => this.tweens.add({ targets: card, scale: 1, duration: 120 }));
-      card.on('pointerdown', () => {
-        socket.emit('room:startGame', { gameId: info.id }, (res) => {
-          if (!res.ok) toast(this, res.error);
+      if (!ready) {
+        card.add(text(this, 0, 30, `Needs ${info.minPlayers}-${info.maxPlayers} players`, 26, COLORS.muted));
+        return card;
+      }
+
+      // One button per mode (e.g. Normal / Hard); clicking starts the game in that mode.
+      const rowW = info.modes.length * buttonW + (info.modes.length - 1) * buttonGap;
+      info.modes.forEach((mode, m) => {
+        const button = this.add.container(-rowW / 2 + m * (buttonW + buttonGap) + buttonW / 2, 30);
+        const fill = this.add.graphics();
+        fill.fillStyle(m === 0 ? 0xff5d73 : 0x8b2fc9, 1);
+        fill.fillRoundedRect(-buttonW / 2, -buttonH / 2, buttonW, buttonH, 16);
+        button.add([fill, text(this, 0, 0, mode.name, 30, COLORS.text, { fontStyle: '700' })]);
+        button.setSize(buttonW, buttonH).setInteractive({ useHandCursor: true });
+        button.on('pointerover', () => this.tweens.add({ targets: button, scale: 1.08, duration: 120 }));
+        button.on('pointerout', () => this.tweens.add({ targets: button, scale: 1, duration: 120 }));
+        button.on('pointerdown', () => {
+          socket.emit('room:startGame', { gameId: info.id, modeId: mode.id }, (res) => {
+            if (!res.ok) toast(this, res.error);
+          });
         });
+        card.add(button);
       });
       return card;
     });

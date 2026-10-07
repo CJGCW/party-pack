@@ -151,10 +151,12 @@ export class Room {
     return !!player?.isVip;
   }
 
-  startGame(gameId: string): string | null {
+  startGame(gameId: string, modeId?: string): string | null {
     if (this.game) return 'A game is already running.';
     const def = findGame(gameId);
     if (!def) return 'Unknown game.';
+    const mode = modeId ? def.info.modes.find((m) => m.id === modeId) : def.info.modes[0];
+    if (!mode) return 'Unknown game mode.';
     const count = [...this.players.values()].filter((p) => p.connected).length;
     if (count < def.info.minPlayers) return `Need at least ${def.info.minPlayers} player(s).`;
     if (count > def.info.maxPlayers) return `${def.info.name} allows at most ${def.info.maxPlayers} players.`;
@@ -176,7 +178,7 @@ export class Room {
         // Only end the game that is still current, in case it already ended.
         if (this.game === game) this.endGame();
       },
-    });
+    }, mode.id);
     this.game = game;
     this.broadcastState();
     game.start();

@@ -61,10 +61,10 @@ io.on('connection', (socket) => {
     ack({ ok: true, playerId: result.id });
   });
 
-  socket.on('room:startGame', ({ gameId }, ack) => {
+  socket.on('room:startGame', ({ gameId, modeId }, ack) => {
     const room = roomOf();
     if (!room || !room.canControl(socket)) return ack({ ok: false, error: 'Only the host or VIP can start games.' });
-    const error = room.startGame(gameId);
+    const error = room.startGame(gameId, modeId);
     ack(error ? { ok: false, error } : { ok: true });
   });
 

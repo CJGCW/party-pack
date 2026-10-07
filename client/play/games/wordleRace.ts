@@ -182,7 +182,7 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
       overlay.replaceChildren(
         h('p', {}, 'The word was'),
         h('div', { class: 'wr-answer' }, ...[...answer].map((l) => h('div', { class: 'wr-tile correct' }, l))),
-        h('p', { class: 'wr-definition' }, describeDefinition(view.definition)),
+        h('p', { class: 'wr-definition' }, describeDefinition(view.definition, view.mode)),
         h('h2', {}, view.solved ? `You placed ${ORDINAL[(view.finishRank ?? 1) - 1]}! +${view.roundPoints}` : 'No points this round'),
         h('div', { class: 'big' }, String(view.score)),
         h('p', {}, view.phase === 'gameEnd' ? 'Final score. Look at the TV!' : 'Next round coming up…'),
@@ -216,7 +216,7 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
       }
       view = next;
       phaseEndsAt = performance.now() + next.msLeft;
-      roundEl.textContent = `Round ${next.round}/${next.totalRounds}`;
+      roundEl.textContent = `Round ${next.round}/${next.totalRounds}${next.mode === 'hard' ? ' · HARD' : ''}`;
       scoreEl.textContent = `${next.score} pts`;
 
       if (replyArrived) {

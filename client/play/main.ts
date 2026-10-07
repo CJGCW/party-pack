@@ -187,18 +187,22 @@ function renderLobby() {
     const errorEl = h('div', { class: 'error' });
     children.push(h('p', {}, "You're the VIP. Pick a game when everyone's here:"));
     for (const game of room!.games) {
-      children.push(
+      const modeButtons = game.modes.map((mode, i) =>
         h(
           'button',
           {
+            class: `mode-button${i > 0 ? ' alt' : ''}`,
             onclick: () =>
-              socket.emit('room:startGame', { gameId: game.id }, (res) => {
+              socket.emit('room:startGame', { gameId: game.id, modeId: mode.id }, (res) => {
                 if (!res.ok) errorEl.textContent = res.error;
               }),
           },
-          game.name,
+          h('span', {}, mode.name),
+          h('small', {}, mode.description),
         ),
-        h('div', { class: 'muted' }, game.description),
+      );
+      children.push(
+        h('div', { class: 'game-card' }, h('h2', {}, game.name), h('div', { class: 'muted' }, game.description), ...modeButtons),
       );
     }
     children.push(errorEl);

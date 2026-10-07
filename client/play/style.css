@@ -169,3 +169,18 @@ button.secondary { background: var(--panel-light); }
 }
 
 .wr-definition { max-width: 340px; font-weight: 400; font-style: italic; line-height: 1.35; }
+
+/* ---------- VIP game picker ---------- */
+
+.game-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--panel);
+}
+.mode-button { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.mode-button.alt { background: #8b2fc9; }
+.mode-button small { font-size: 14px; font-weight: 400; opacity: 0.9; }

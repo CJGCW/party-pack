@@ -1,7 +1,8 @@
 import allWords from 'an-array-of-english-words';
 import naughtyWords from 'naughty-words';
 import { RegExpMatcher, englishDataset, englishRecommendedTransformers } from 'obscenity';
-import { WORD_LENGTH } from '../../shared/games/wordleRace';
+import { WORD_LENGTH, type WordleModeId } from '../../shared/games/wordleRace';
+import { hasDefinition } from './definitions';
 
 /** Every 5-letter English word (~12,600), used to validate guesses. */
 const DICTIONARY = allWords.filter((w) => w.length === WORD_LENGTH && /^[a-z]+$/.test(w));
@@ -34,15 +35,25 @@ function isOffensive(word: string): boolean {
 }
 
 /** Every 5-letter word that is safe to reveal as a secret answer. */
-const ANSWERS = DICTIONARY.filter((w) => !isOffensive(w)).map((w) => w.toUpperCase());
+const SAFE_ANSWERS = DICTIONARY.filter((w) => !isOffensive(w)).map((w) => w.toUpperCase());
+
+/**
+ * Answer pools by mode. Normal uses words the dictionary can define (recognisable,
+ * and the reveal teaches the meaning); hard uses the obscure ones it can't.
+ */
+const ANSWERS: Record<WordleModeId, string[]> = {
+  normal: SAFE_ANSWERS.filter((w) => hasDefinition(w)),
+  hard: SAFE_ANSWERS.filter((w) => !hasDefinition(w)),
+};
 
 export function isValidGuess(word: string): boolean {
   return WORD_SET.has(word);
 }
 
-/** Picks `count` distinct random answers. */
-export function pickAnswers(count: number): string[] {
+/** Picks `count` distinct random answers for the given mode. */
+export function pickAnswers(count: number, mode: WordleModeId): string[] {
+  const pool = ANSWERS[mode];
   const picked = new Set<string>();
-  while (picked.size < count) picked.add(ANSWERS[Math.floor(Math.random() * ANSWERS.length)]);
+  while (picked.size < count) picked.add(pool[Math.floor(Math.random() * pool.length)]);
   return [...picked];
 }

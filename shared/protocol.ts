@@ -8,12 +8,20 @@ export const PLAYER_COLORS = [
   '#5ec8f2', '#8b7cf6', '#f472d0', '#c4c4c4',
 ];
 
+export interface GameMode {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export interface GameInfo {
   id: string;
   name: string;
   description: string;
   minPlayers: number;
   maxPlayers: number;
+  /** Ways to play, e.g. difficulty. The first one is the default. */
+  modes: GameMode[];
 }
 
 export interface PlayerInfo {
@@ -45,7 +53,7 @@ export interface ClientToServerEvents {
     ack: Ack<{ playerId: string }>,
   ) => void;
   /** Host screen or VIP phone asks to start a mini game. */
-  'room:startGame': (req: { gameId: string }, ack: Ack) => void;
+  'room:startGame': (req: { gameId: string; modeId?: string }, ack: Ack) => void;
   /** Host screen or VIP phone asks to abandon the current game. */
   'room:backToLobby': () => void;
   /** Mini-game specific input from a phone. */
