@@ -1,7 +1,9 @@
 import { io, type Socket } from 'socket.io-client';
 import { MAX_NAME_LENGTH, type ClientToServerEvents, type RoomState, type ServerToClientEvents } from '../../shared/protocol';
+import { TOSS_UP } from '../../shared/games/tossUp';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { h } from './dom';
+import { createTossUp } from './games/tossUp';
 import { createWordleRace } from './games/wordleRace';
 
 /** A mini game's phone UI. */
@@ -14,6 +16,7 @@ type ControllerFactory = (root: HTMLElement, send: (input: unknown) => void) => 
 /** Phone UI for each mini game, keyed by game id. Add new games here. */
 const CONTROLLERS: Record<string, ControllerFactory> = {
   [WORDLE_RACE.id]: createWordleRace,
+  [TOSS_UP.id]: createTossUp,
 };
 
 const SESSION_KEY = 'party-pack-session';

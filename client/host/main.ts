@@ -1,14 +1,17 @@
 import Phaser from 'phaser';
 import type { RoomState } from '../../shared/protocol';
+import { TOSS_UP } from '../../shared/games/tossUp';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { net, socket } from './net';
 import { LobbyScene } from './scenes/LobbyScene';
+import { TossUpScene } from './scenes/TossUpScene';
 import { WordleRaceScene } from './scenes/WordleRaceScene';
 import { HEIGHT, WIDTH } from './theme';
 
 /** Host scene for each mini game, keyed by game id. Add new games here. */
 const GAME_SCENES: Record<string, string> = {
   [WORDLE_RACE.id]: WordleRaceScene.KEY,
+  [TOSS_UP.id]: TossUpScene.KEY,
 };
 
 await document.fonts.load('600 32px Fredoka').catch(() => undefined);
@@ -25,6 +28,7 @@ const game = new Phaser.Game({
 // Scenes don't auto-start: the room state decides which one is showing.
 game.scene.add(LobbyScene.KEY, LobbyScene, false);
 game.scene.add(WordleRaceScene.KEY, WordleRaceScene, false);
+game.scene.add(TossUpScene.KEY, TossUpScene, false);
 game.events.once(Phaser.Core.Events.READY, () => {
   if (net.room) showSceneFor(net.room);
   else game.scene.start(LobbyScene.KEY);
