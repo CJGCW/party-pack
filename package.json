@@ -1,0 +1,30 @@
+{
+  "name": "party-pack",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A Jackbox-style party game collection played over the local network.",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false server/index.ts",
+    "build": "vite build",
+    "start": "vite build && cross-env NODE_ENV=production tsx server/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "an-array-of-english-words": "^2.0.0",
+    "express": "^4.21.2",
+    "phaser": "^3.90.0",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.15.0",
+    "@types/qrcode": "^1.5.5",
+    "cross-env": "^7.0.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}
