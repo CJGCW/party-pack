@@ -123,6 +123,8 @@ button.secondary { background: var(--panel-light); }
 .wr-tile.correct, .wr-key.correct { background: var(--correct); border-color: var(--correct); }
 .wr-tile.present, .wr-key.present { background: var(--present); border-color: var(--present); }
 .wr-tile.absent, .wr-key.absent { background: var(--absent); border-color: var(--absent); }
+/* Eliminated keys fade back so the letters still in play stand out. */
+.wr-key.absent { background: #1e1844; border-color: #1e1844; color: rgba(255, 255, 255, 0.35); }
 .wr-tile.reveal { animation: flip 0.45s both; }
 
 .wr-keys { margin-top: auto; display: flex; flex-direction: column; gap: 7px; padding-bottom: 8px; }
