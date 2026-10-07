@@ -1,5 +1,4 @@
 import {
-  MAX_GUESSES,
   WORD_LENGTH,
   type LetterResult,
   type WordleInput,
@@ -10,6 +9,8 @@ import type { Controller } from '../main';
 
 const KEY_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', '⏎ZXCVBNM⌫'];
 const RANK: Record<LetterResult, number> = { absent: 1, present: 2, correct: 3 };
+/** Rows shown before the board starts growing (and scrolling). */
+const MIN_ROWS = 6;
 const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
 
 export function createWordleRace(root: HTMLElement, send: (input: unknown) => void): Controller {
@@ -26,10 +27,19 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
   const msgEl = h('div', { class: 'wr-msg' });
   const overlay = h('div', { class: 'wr-overlay', hidden: true });
 
-  const rows = Array.from({ length: MAX_GUESSES }, () => {
-    const tiles = Array.from({ length: WORD_LENGTH }, () => h('div', { class: 'wr-tile' }));
-    return { el: h('div', { class: 'wr-row' }, ...tiles), tiles };
-  });
+  const boardEl = h('div', { class: 'wr-board' });
+  const rows: { el: HTMLDivElement; tiles: HTMLDivElement[] }[] = [];
+
+  /** Guesses are unlimited, so rows are added as needed. */
+  function ensureRows(count: number) {
+    while (rows.length < count) {
+      const tiles = Array.from({ length: WORD_LENGTH }, () => h('div', { class: 'wr-tile' }));
+      const el = h('div', { class: 'wr-row' }, ...tiles);
+      rows.push({ el, tiles });
+      boardEl.append(el);
+    }
+    while (rows.length > count) rows.pop()!.el.remove();
+  }
 
   const keyEls = new Map<string, HTMLButtonElement>();
   const keyboard = h(
@@ -60,14 +70,14 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
       { class: 'wr' },
       h('div', { class: 'wr-top' }, roundEl, timerEl, scoreEl),
       msgEl,
-      h('div', { class: 'wr-board' }, ...rows.map((r) => r.el)),
+      boardEl,
       keyboard,
     ),
     overlay,
   );
 
   function canType() {
-    return !!view && view.phase === 'playing' && !view.solved && !view.failed && !awaitingReply;
+    return !!view && view.phase === 'playing' && !view.solved && !awaitingReply;
   }
 
   function press(key: string) {
@@ -111,6 +121,9 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
 
   function drawBoard() {
     if (!view) return;
+    // One row per guess, plus the row being typed, never fewer than MIN_ROWS.
+    const activeRow = view.solved ? 0 : 1;
+    ensureRows(Math.max(MIN_ROWS, view.guesses.length + activeRow));
     rows.forEach((row, r) => {
       const guess = view!.guesses[r];
       row.tiles.forEach((tile, c) => {
@@ -130,7 +143,12 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
         }
       });
     });
+    const grew = view.guesses.length > revealedRows;
     revealedRows = view.guesses.length;
+    // Keep the row being typed (or the newest guess) in view as the board grows.
+    if (grew || view.guesses.length >= MIN_ROWS) {
+      rows[Math.min(view.guesses.length, rows.length - 1)].el.scrollIntoView({ block: 'nearest' });
+    }
 
     // Keyboard colours: the best result seen for each letter.
     const best = new Map<string, LetterResult>();
@@ -208,9 +226,7 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
         }
       }
 
-      if (next.solved) showMessage(`Solved! ${ORDINAL[(next.finishRank ?? 1) - 1]} place, +${next.roundPoints}`, 'good');
-      else if (next.failed) showMessage('Out of guesses. Wait for the round to end.', 'error');
-      else if (next.phase === 'playing' && guessAccepted) showMessage('');
+      if (next.solved) showMessage(`Solved! ${ORDINAL[(next.finishRank ?? 1) - 1]} place, +${next.roundPoints}`, 'good');      else if (next.phase === 'playing' && guessAccepted) showMessage('');
 
       drawBoard();
       drawOverlay();

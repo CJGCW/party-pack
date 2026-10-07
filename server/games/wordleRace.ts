@@ -1,5 +1,4 @@
 import {
-  MAX_GUESSES,
   WORDLE_RACE,
   WORD_LENGTH,
   scoreGuess,
@@ -20,13 +19,13 @@ const GAME_END_MS = 15_000;
 
 /** Points by finishing position; anyone after 5th gets the last value. */
 const RANK_POINTS = [1000, 750, 600, 500, 400];
-/** Bonus for each unused guess, rewarding efficient solvers as well as fast ones. */
-const SPARE_GUESS_BONUS = 50;
+/** Guesses are unlimited, but solving in under PAR_GUESSES earns a bonus per guess saved. */
+const PAR_GUESSES = 6;
+const UNDER_PAR_BONUS = 50;
 
 interface Progress {
   guesses: WordleGuess[];
   solved: boolean;
-  failed: boolean;
   finishRank: number | null;
   roundPoints: number;
   error: string | null;
@@ -64,7 +63,7 @@ class WordleRace implements MiniGame {
     this.finishers = 0;
     this.progress.clear();
     for (const p of this.ctx.players()) {
-      this.progress.set(p.id, { guesses: [], solved: false, failed: false, finishRank: null, roundPoints: 0, error: null });
+      this.progress.set(p.id, { guesses: [], solved: false, finishRank: null, roundPoints: 0, error: null });
     }
     this.setPhase('countdown', COUNTDOWN_MS, () => this.setPhase('playing', ROUND_MS, () => this.endRound()));
   }
@@ -81,7 +80,7 @@ class WordleRace implements MiniGame {
     const input = raw as WordleInput;
     if (this.phase !== 'playing' || input?.type !== 'guess' || typeof input.word !== 'string') return;
     const prog = this.progress.get(playerId);
-    if (!prog || prog.solved || prog.failed) return;
+    if (!prog || prog.solved) return;
 
     const word = input.word.trim().toUpperCase();
     if (word.length !== WORD_LENGTH || !/^[A-Z]+$/.test(word)) {
@@ -97,10 +96,8 @@ class WordleRace implements MiniGame {
         prog.solved = true;
         prog.finishRank = ++this.finishers;
         const rankPoints = RANK_POINTS[Math.min(prog.finishRank, RANK_POINTS.length) - 1];
-        prog.roundPoints = rankPoints + (MAX_GUESSES - prog.guesses.length) * SPARE_GUESS_BONUS;
+        prog.roundPoints = rankPoints + Math.max(0, PAR_GUESSES - prog.guesses.length) * UNDER_PAR_BONUS;
         this.ctx.addScore(playerId, prog.roundPoints);
-      } else if (prog.guesses.length >= MAX_GUESSES) {
-        prog.failed = true;
       }
     }
 
@@ -108,7 +105,7 @@ class WordleRace implements MiniGame {
     this.syncHost();
     // End early once every connected player is done, so nobody waits on someone who left.
     const connected = new Set(this.ctx.players().filter((p) => p.connected).map((p) => p.id));
-    const allDone = [...this.progress].every(([id, p]) => p.solved || p.failed || !connected.has(id));
+    const allDone = [...this.progress].every(([id, p]) => p.solved || !connected.has(id));
     if (allDone) this.endRound();
   }
 
@@ -139,7 +136,6 @@ class WordleRace implements MiniGame {
             color: p.color,
             rows: prog.guesses.map((g) => g.result),
             solved: prog.solved,
-            failed: prog.failed,
             finishRank: prog.finishRank,
             roundPoints: prog.roundPoints,
             score: p.score,
@@ -160,7 +156,6 @@ class WordleRace implements MiniGame {
       msLeft: this.msLeft(),
       guesses: prog.guesses,
       solved: prog.solved,
-      failed: prog.failed,
       finishRank: prog.finishRank,
       roundPoints: prog.roundPoints,
       score: player.score,

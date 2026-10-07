@@ -9,7 +9,6 @@ export const WORDLE_RACE: GameInfo = {
 };
 
 export const WORD_LENGTH = 5;
-export const MAX_GUESSES = 6;
 
 export type LetterResult = 'correct' | 'present' | 'absent';
 
@@ -19,10 +18,9 @@ export interface WordleHostPlayer {
   id: string;
   name: string;
   color: string;
-  /** Only colours are shown on the big screen, never letters. */
+  /** Only colours are shown on the big screen, never letters. One row per guess, oldest first. */
   rows: LetterResult[][];
   solved: boolean;
-  failed: boolean;
   finishRank: number | null;
   roundPoints: number;
   score: number;
@@ -50,7 +48,6 @@ export interface WordlePlayerView {
   msLeft: number;
   guesses: WordleGuess[];
   solved: boolean;
-  failed: boolean;
   finishRank: number | null;
   roundPoints: number;
   score: number;

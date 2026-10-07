@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import {
-  MAX_GUESSES,
   WORD_LENGTH,
   type LetterResult,
   type WordleHostPlayer,
@@ -15,6 +14,8 @@ const RESULT_COLOR: Record<LetterResult, number> = {
   absent: COLORS.absent,
 };
 
+/** Rows shown per board; with unlimited guesses, older rows scroll off the top. */
+const VISIBLE_ROWS = 6;
 const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
 
 interface Board {
@@ -107,10 +108,10 @@ export class WordleRaceScene extends Phaser.Scene {
     const rows = Math.ceil(players.length / cols);
     const cellW = (WIDTH - 120) / cols;
     const cellH = (HEIGHT - 160) / rows;
-    const tile = Math.min((cellW - 80) / WORD_LENGTH, (cellH - 130) / MAX_GUESSES, 100);
+    const tile = Math.min((cellW - 80) / WORD_LENGTH, (cellH - 130) / VISIBLE_ROWS, 100);
     const gap = tile * 0.12;
     const gridW = WORD_LENGTH * tile + (WORD_LENGTH - 1) * gap;
-    const gridH = MAX_GUESSES * tile + (MAX_GUESSES - 1) * gap;
+    const gridH = VISIBLE_ROWS * tile + (VISIBLE_ROWS - 1) * gap;
 
     players.forEach((p, i) => {
       const cx = 60 + (i % cols) * cellW + cellW / 2;
@@ -128,7 +129,7 @@ export class WordleRaceScene extends Phaser.Scene {
       container.add(text(this, 0, -bgH / 2 + 30, p.name, 34, p.color, { fontStyle: '700' }));
 
       const tiles: Phaser.GameObjects.Rectangle[][] = [];
-      for (let r = 0; r < MAX_GUESSES; r++) {
+      for (let r = 0; r < VISIBLE_ROWS; r++) {
         const row: Phaser.GameObjects.Rectangle[] = [];
         for (let c = 0; c < WORD_LENGTH; c++) {
           const x = -gridW / 2 + c * (tile + gap) + tile / 2;
@@ -153,39 +154,47 @@ export class WordleRaceScene extends Phaser.Scene {
     const board = this.boards.get(p.id);
     if (!board) return;
 
-    // Flip in any rows we haven't shown yet.
-    for (let r = board.rowsShown; r < p.rows.length; r++) {
-      p.rows[r].forEach((res, c) => {
-        const tile = board.tiles[r][c];
-        this.tweens.add({
-          targets: tile,
-          scaleY: 0,
-          duration: 120,
-          delay: c * 110,
-          yoyo: true,
-          onYoyo: () => tile.setFillStyle(RESULT_COLOR[res]).setStrokeStyle(0),
+    if (p.rows.length !== board.rowsShown) {
+      // Guesses are unlimited, so the board shows a window of the most recent rows.
+      // Older rows are repainted instantly; rows we haven't shown yet flip in.
+      const offset = Math.max(0, p.rows.length - VISIBLE_ROWS);
+      for (let r = 0; r < VISIBLE_ROWS; r++) {
+        const row = p.rows[offset + r];
+        const isNew = offset + r >= board.rowsShown;
+        board.tiles[r].forEach((tile, c) => {
+          this.tweens.killTweensOf(tile);
+          tile.setScale(1);
+          if (!row) {
+            tile.setFillStyle(COLORS.empty).setStrokeStyle(2, COLORS.panelLight);
+          } else if (!isNew) {
+            tile.setFillStyle(RESULT_COLOR[row[c]]).setStrokeStyle(0);
+          } else {
+            this.tweens.add({
+              targets: tile,
+              scaleY: 0,
+              duration: 120,
+              delay: c * 110,
+              yoyo: true,
+              onYoyo: () => tile.setFillStyle(RESULT_COLOR[row[c]]).setStrokeStyle(0),
+            });
+          }
         });
-      });
+      }
+      board.rowsShown = p.rows.length;
     }
-    board.rowsShown = p.rows.length;
 
     if (p.solved) {
       board.status.setText(`${ORDINAL[(p.finishRank ?? 1) - 1]}!  +${p.roundPoints}`).setColor(COLORS.accent);
-    } else if (p.failed) {
-      board.status.setText('Out of guesses').setColor(COLORS.danger);
     } else {
-      board.status.setText(`${p.rows.length}/${MAX_GUESSES} guesses`).setColor(COLORS.muted);
+      const n = p.rows.length;
+      board.status.setText(`${n} ${n === 1 ? 'guess' : 'guesses'}`).setColor(COLORS.muted);
     }
 
-    if ((p.solved || p.failed) && !board.finished) {
+    if (p.solved && !board.finished) {
       board.finished = true;
-      if (p.solved) {
-        this.tweens.add({ targets: board.container, scale: 1.08, duration: 180, yoyo: true, delay: 600 });
-        if (p.finishRank === 1) {
-          this.time.delayedCall(600, () => burstConfetti(this, board.container.x, board.container.y, 50));
-        }
-      } else {
-        this.tweens.add({ targets: board.container, alpha: 0.55, duration: 500, delay: 600 });
+      this.tweens.add({ targets: board.container, scale: 1.08, duration: 180, yoyo: true, delay: 600 });
+      if (p.finishRank === 1) {
+        this.time.delayedCall(600, () => burstConfetti(this, board.container.x, board.container.y, 50));
       }
     }
   }

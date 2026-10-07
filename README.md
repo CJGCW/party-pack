@@ -30,7 +30,7 @@ click a game on the host screen. Press **Esc** on the host screen to abandon a g
 
 | Game | Players | How it plays |
 | --- | --- | --- |
-| **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word. Points go by finishing order, with a bonus for each unused guess. Three rounds. |
+| **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Points go by finishing order, plus a bonus for solving in under 6 guesses. Three rounds. |
 
 ## Project layout
 

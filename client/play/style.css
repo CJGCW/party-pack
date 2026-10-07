@@ -84,7 +84,7 @@ button.secondary { background: var(--panel-light); }
 
 /* ---------- Word Rush ---------- */
 
-.wr { flex: 1; display: flex; flex-direction: column; gap: 10px; user-select: none; }
+.wr { height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 10px; user-select: none; }
 .wr-top { display: flex; justify-content: space-between; align-items: center; font-size: 18px; color: var(--muted); }
 .wr-timer { font-size: 26px; color: var(--text); }
 .wr-timer.low { color: var(--danger); }
@@ -92,7 +92,20 @@ button.secondary { background: var(--panel-light); }
 .wr-msg.error { color: var(--danger); }
 .wr-msg.good { color: var(--accent); }
 
-.wr-board { display: grid; grid-template-rows: repeat(6, 1fr); gap: 6px; margin: 0 auto; width: min(100%, 330px); }
+/* Guesses are unlimited, so the board scrolls while the keyboard stays put. */
+.wr-board {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 auto;
+  width: min(100%, 330px);
+  padding: 2px;
+  scrollbar-width: none;
+}
+.wr-board > .wr-row { flex: none; }
 .wr-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .wr-row.shake { animation: shake 0.4s; }
 .wr-tile {
