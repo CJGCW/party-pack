@@ -7,8 +7,8 @@ export const WORDLE_RACE: GameInfo = {
   minPlayers: 1,
   maxPlayers: 8,
   modes: [
-    { id: 'normal', name: 'Normal', description: 'Words you can look up. Learn the meaning at each reveal.' },
-    { id: 'hard', name: 'Hard', description: "Obscure words even the dictionary doesn't know." },
+    { id: 'normal', name: 'Normal', description: 'Words you can look up. Learn the meaning at each reveal. 2.5 minutes per round.' },
+    { id: 'hard', name: 'Hard', description: "Obscure words even the dictionary doesn't know. 4 minutes per round." },
   ],
 };
 

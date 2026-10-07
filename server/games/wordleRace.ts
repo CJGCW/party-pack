@@ -15,7 +15,8 @@ import { isValidGuess, pickAnswers } from './words';
 
 const TOTAL_ROUNDS = 3;
 const COUNTDOWN_MS = 4_000;
-const ROUND_MS = 150_000;
+/** Round length per mode. Hard words are obscure, so players get longer. */
+const ROUND_MS: Record<WordleModeId, number> = { normal: 150_000, hard: 240_000 };
 const ROUND_END_MS = 9_000;
 const GAME_END_MS = 15_000;
 
@@ -72,7 +73,7 @@ class WordleRace implements MiniGame {
     for (const p of this.ctx.players()) {
       this.progress.set(p.id, { guesses: [], solved: false, finishRank: null, roundPoints: 0, error: null });
     }
-    this.setPhase('countdown', COUNTDOWN_MS, () => this.setPhase('playing', ROUND_MS, () => this.endRound()));
+    this.setPhase('countdown', COUNTDOWN_MS, () => this.setPhase('playing', ROUND_MS[this.mode], () => this.endRound()));
   }
 
   private endRound() {

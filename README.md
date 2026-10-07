@@ -30,7 +30,7 @@ click a game on the host screen. Press **Esc** on the host screen to abandon a g
 
 | Game | Players | How it plays |
 | --- | --- | --- |
-| **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Points go by finishing order, plus a bonus for solving in under 6 guesses. Three rounds. **Normal** uses words with a dictionary definition (shown at the reveal); **Hard** uses obscure words with none. |
+| **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Points go by finishing order, plus a bonus for solving in under 6 guesses. Three rounds. **Normal** (2½-minute rounds) uses words with a dictionary definition, shown at the reveal; **Hard** (4-minute rounds) uses obscure words with none. |
 
 ### Testing with bots
 
