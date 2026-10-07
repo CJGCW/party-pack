@@ -184,3 +184,4 @@ button.secondary { background: var(--panel-light); }
 .mode-button { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .mode-button.alt { background: #8b2fc9; }
 .mode-button small { font-size: 14px; font-weight: 400; opacity: 0.9; }
+.wr-scoring { color: var(--accent); }

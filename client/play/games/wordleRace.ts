@@ -1,6 +1,8 @@
 import {
   WORD_LENGTH,
   describeDefinition,
+  describeScoring,
+  describeSolve,
   type LetterResult,
   type WordleInput,
   type WordlePlayerView,
@@ -12,7 +14,6 @@ const KEY_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', '⏎ZXCVBNM⌫'];
 const RANK: Record<LetterResult, number> = { absent: 1, present: 2, correct: 3 };
 /** Rows shown before the board starts growing (and scrolling). */
 const MIN_ROWS = 6;
-const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
 
 export function createWordleRace(root: HTMLElement, send: (input: unknown) => void): Controller {
   let view: WordlePlayerView | null = null;
@@ -174,7 +175,8 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
       overlay.replaceChildren(
         h('h2', {}, `Round ${view.round} of ${view.totalRounds}`),
         h('div', { class: 'big' }, 'Get ready!'),
-        h('p', {}, 'Guess the 5-letter word before everyone else.'),
+        h('p', {}, 'Guess the 5-letter word. Be quick, and make every guess count!'),
+        h('p', { class: 'wr-scoring' }, describeScoring(view.guessCostSeconds)),
       );
       overlay.hidden = false;
     } else if (view.phase === 'roundEnd' || view.phase === 'gameEnd') {
@@ -183,7 +185,8 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
         h('p', {}, 'The word was'),
         h('div', { class: 'wr-answer' }, ...[...answer].map((l) => h('div', { class: 'wr-tile correct' }, l))),
         h('p', { class: 'wr-definition' }, describeDefinition(view.definition, view.mode)),
-        h('h2', {}, view.solved ? `You placed ${ORDINAL[(view.finishRank ?? 1) - 1]}! +${view.roundPoints}` : 'No points this round'),
+        h('h2', {}, view.solved ? `You scored +${view.roundPoints}` : 'No points this round'),
+        ...(view.solved ? [h('p', {}, describeSolve(view.guesses.length, view.solvedMsLeft))] : []),
         h('div', { class: 'big' }, String(view.score)),
         h('p', {}, view.phase === 'gameEnd' ? 'Final score. Look at the TV!' : 'Next round coming up…'),
       );
@@ -228,7 +231,8 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
         }
       }
 
-      if (next.solved) showMessage(`Solved! ${ORDINAL[(next.finishRank ?? 1) - 1]} place, +${next.roundPoints}`, 'good');      else if (next.phase === 'playing' && guessAccepted) showMessage('');
+      if (next.solved) showMessage(`Solved! +${next.roundPoints}`, 'good');
+      else if (next.phase === 'playing' && guessAccepted) showMessage('');
 
       drawBoard();
       drawOverlay();

@@ -35,6 +35,8 @@ export interface WordleHostPlayer {
   rows: LetterResult[][];
   solved: boolean;
   finishRank: number | null;
+  /** Milliseconds left on the clock when they solved it. */
+  solvedMsLeft: number | null;
   roundPoints: number;
   score: number;
 }
@@ -42,6 +44,8 @@ export interface WordleHostPlayer {
 export interface WordleHostView {
   phase: WordlePhase;
   mode: WordleModeId;
+  /** Seconds of points each guess costs (a sixth of the round). */
+  guessCostSeconds: number;
   round: number;
   totalRounds: number;
   /** Milliseconds until the current phase ends (relative, so clock skew doesn't matter). */
@@ -60,12 +64,14 @@ export interface WordleGuess {
 export interface WordlePlayerView {
   phase: WordlePhase;
   mode: WordleModeId;
+  guessCostSeconds: number;
   round: number;
   totalRounds: number;
   msLeft: number;
   guesses: WordleGuess[];
   solved: boolean;
   finishRank: number | null;
+  solvedMsLeft: number | null;
   roundPoints: number;
   score: number;
   answer: string | null;
@@ -107,4 +113,20 @@ export function describeDefinition(def: WordDefinition | null, mode: WordleModeI
   const body = def.text.length > MAX_DEFINITION_LENGTH ? `${def.text.slice(0, MAX_DEFINITION_LENGTH - 1)}…` : def.text;
   const base = def.baseWord ? `form of ${def.baseWord} · ` : '';
   return `${base}${def.partOfSpeech}: ${body}`;
+}
+
+/** "1:05" style clock. */
+export function formatClock(ms: number): string {
+  const secs = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+}
+
+/** How a solve was scored, e.g. "3 guesses · 1:40 left". */
+export function describeSolve(guesses: number, solvedMsLeft: number | null): string {
+  return `${guesses} ${guesses === 1 ? 'guess' : 'guesses'} · ${formatClock(solvedMsLeft ?? 0)} left`;
+}
+
+/** The scoring rule in one line, shown before each round. */
+export function describeScoring(guessCostSeconds: number): string {
+  return `Points: seconds left, minus ${guessCostSeconds}s for every guess`;
 }

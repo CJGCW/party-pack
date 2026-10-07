@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import {
   WORD_LENGTH,
   describeDefinition,
+  describeScoring,
+  describeSolve,
   type LetterResult,
   type WordleHostPlayer,
   type WordleHostView,
@@ -201,7 +203,7 @@ export class WordleRaceScene extends Phaser.Scene {
     }
 
     if (p.solved) {
-      board.status.setText(`${ORDINAL[(p.finishRank ?? 1) - 1]}!  +${p.roundPoints}`).setColor(COLORS.accent);
+      board.status.setText(`Solved!  +${p.roundPoints}`).setColor(COLORS.accent);
     } else {
       const n = p.rows.length;
       board.status.setText(`${n} ${n === 1 ? 'guess' : 'guesses'}`).setColor(COLORS.muted);
@@ -223,8 +225,9 @@ export class WordleRaceScene extends Phaser.Scene {
     if (view.phase === 'countdown') {
       this.dim(0.6);
       this.overlay.add(text(this, WIDTH / 2, HEIGHT / 2 - 160, `Round ${view.round}`, 72, COLORS.accent, { fontStyle: '700' }));
-      this.overlay.add(text(this, WIDTH / 2, HEIGHT / 2 - 80, 'Find the word on your phone. Fastest wins!', 40, COLORS.muted));
-      this.countdownText = text(this, WIDTH / 2, HEIGHT / 2 + 80, '', 200, COLORS.text, { fontStyle: '700' });
+      this.overlay.add(text(this, WIDTH / 2, HEIGHT / 2 - 80, 'Find the word on your phone!', 40, COLORS.muted));
+      this.overlay.add(text(this, WIDTH / 2, HEIGHT / 2 - 25, describeScoring(view.guessCostSeconds), 34, COLORS.accent));
+      this.countdownText = text(this, WIDTH / 2, HEIGHT / 2 + 140, '', 200, COLORS.text, { fontStyle: '700' });
       this.overlay.add(this.countdownText);
     } else if (view.phase === 'roundEnd' || view.phase === 'gameEnd') {
       // Let the last guesses flip before covering the boards.
@@ -270,11 +273,10 @@ export class WordleRaceScene extends Phaser.Scene {
     this.revealWord(view.answer ?? '?????', 320);
     this.showDefinition(view, 450, 36);
 
-    const finishers = view.players
-      .filter((p) => p.solved)
-      .sort((a, b) => (a.finishRank ?? 99) - (b.finishRank ?? 99));
+    // Highest round score first, with how it was earned.
+    const finishers = view.players.filter((p) => p.solved).sort((a, b) => b.roundPoints - a.roundPoints);
     const lines = finishers.length
-      ? finishers.map((p) => `${ORDINAL[(p.finishRank ?? 1) - 1]}  ${p.name}  +${p.roundPoints}`)
+      ? finishers.map((p) => `${p.name}  +${p.roundPoints}   (${describeSolve(p.rows.length, p.solvedMsLeft)})`)
       : ['Nobody got it!'];
     lines.forEach((line, i) => {
       const t = text(this, WIDTH / 2, 570 + i * 62, line, 44, i === 0 && finishers.length ? COLORS.accent : COLORS.text).setAlpha(0);

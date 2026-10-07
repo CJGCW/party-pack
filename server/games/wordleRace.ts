@@ -20,16 +20,24 @@ const ROUND_MS: Record<WordleModeId, number> = { normal: 150_000, hard: 240_000 
 const ROUND_END_MS = 9_000;
 const GAME_END_MS = 15_000;
 
-/** Points by finishing position; anyone after 5th gets the last value. */
-const RANK_POINTS = [1000, 750, 600, 500, 400];
-/** Guesses are unlimited, but solving in under PAR_GUESSES earns a bonus per guess saved. */
-const PAR_GUESSES = 6;
-const UNDER_PAR_BONUS = 50;
+// Scoring: points = (seconds left - guess cost x guesses) x POINTS_PER_SECOND.
+// Each guess costs a sixth of the round (15s in Normal, 40s in Hard), so solving
+// quickly and in few guesses both matter. Anyone who solves gets at least MIN_POINTS.
+const GUESS_COST_FRACTION = 1 / 6;
+const POINTS_PER_SECOND = 10;
+const MIN_POINTS = 100;
+
+export function roundPoints(msLeft: number, guesses: number, roundMs: number): number {
+  const guessCostMs = roundMs * GUESS_COST_FRACTION;
+  const seconds = (msLeft - guesses * guessCostMs) / 1000;
+  return Math.max(MIN_POINTS, Math.round(seconds * POINTS_PER_SECOND));
+}
 
 interface Progress {
   guesses: WordleGuess[];
   solved: boolean;
   finishRank: number | null;
+  solvedMsLeft: number | null;
   roundPoints: number;
   error: string | null;
 }
@@ -71,7 +79,7 @@ class WordleRace implements MiniGame {
     this.finishers = 0;
     this.progress.clear();
     for (const p of this.ctx.players()) {
-      this.progress.set(p.id, { guesses: [], solved: false, finishRank: null, roundPoints: 0, error: null });
+      this.progress.set(p.id, { guesses: [], solved: false, finishRank: null, solvedMsLeft: null, roundPoints: 0, error: null });
     }
     this.setPhase('countdown', COUNTDOWN_MS, () => this.setPhase('playing', ROUND_MS[this.mode], () => this.endRound()));
   }
@@ -103,8 +111,8 @@ class WordleRace implements MiniGame {
       if (word === this.answer) {
         prog.solved = true;
         prog.finishRank = ++this.finishers;
-        const rankPoints = RANK_POINTS[Math.min(prog.finishRank, RANK_POINTS.length) - 1];
-        prog.roundPoints = rankPoints + Math.max(0, PAR_GUESSES - prog.guesses.length) * UNDER_PAR_BONUS;
+        prog.solvedMsLeft = this.msLeft();
+        prog.roundPoints = roundPoints(prog.solvedMsLeft, prog.guesses.length, ROUND_MS[this.mode]);
         this.ctx.addScore(playerId, prog.roundPoints);
       }
     }
@@ -115,6 +123,10 @@ class WordleRace implements MiniGame {
     const connected = new Set(this.ctx.players().filter((p) => p.connected).map((p) => p.id));
     const allDone = [...this.progress].every(([id, p]) => p.solved || !connected.has(id));
     if (allDone) this.endRound();
+  }
+
+  private guessCostSeconds() {
+    return Math.round((ROUND_MS[this.mode] * GUESS_COST_FRACTION) / 1000);
   }
 
   private msLeft() {
@@ -136,6 +148,7 @@ class WordleRace implements MiniGame {
     const view: WordleHostView = {
       phase: this.phase,
       mode: this.mode,
+      guessCostSeconds: this.guessCostSeconds(),
       round: this.round,
       totalRounds: TOTAL_ROUNDS,
       msLeft: this.msLeft(),
@@ -152,6 +165,7 @@ class WordleRace implements MiniGame {
             rows: prog.guesses.map((g) => g.result),
             solved: prog.solved,
             finishRank: prog.finishRank,
+            solvedMsLeft: prog.solvedMsLeft,
             roundPoints: prog.roundPoints,
             score: p.score,
           };
@@ -167,12 +181,14 @@ class WordleRace implements MiniGame {
     const view: WordlePlayerView = {
       phase: this.phase,
       mode: this.mode,
+      guessCostSeconds: this.guessCostSeconds(),
       round: this.round,
       totalRounds: TOTAL_ROUNDS,
       msLeft: this.msLeft(),
       guesses: prog.guesses,
       solved: prog.solved,
       finishRank: prog.finishRank,
+      solvedMsLeft: prog.solvedMsLeft,
       roundPoints: prog.roundPoints,
       score: player.score,
       answer: this.revealedAnswer(),
