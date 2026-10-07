@@ -9,6 +9,7 @@ import {
   type WordlePlayerView,
 } from '../../shared/games/wordleRace';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
+import { define } from './definitions';
 import { isValidGuess, pickAnswers } from './words';
 
 const TOTAL_ROUNDS = 3;
@@ -118,6 +119,11 @@ class WordleRace implements MiniGame {
     return this.phase === 'roundEnd' || this.phase === 'gameEnd' ? this.answer : null;
   }
 
+  private revealedDefinition() {
+    const answer = this.revealedAnswer();
+    return answer ? define(answer) : null;
+  }
+
   syncHost() {
     const players = this.ctx.players();
     const view: WordleHostView = {
@@ -126,6 +132,7 @@ class WordleRace implements MiniGame {
       totalRounds: TOTAL_ROUNDS,
       msLeft: this.msLeft(),
       answer: this.revealedAnswer(),
+      definition: this.revealedDefinition(),
       players: players
         .filter((p) => this.progress.has(p.id))
         .map((p) => {
@@ -160,6 +167,7 @@ class WordleRace implements MiniGame {
       roundPoints: prog.roundPoints,
       score: player.score,
       answer: this.revealedAnswer(),
+      definition: this.revealedDefinition(),
       error: prog.error,
     };
     this.ctx.sendPlayer(playerId, view);

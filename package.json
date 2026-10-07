@@ -8,6 +8,7 @@
     "dev": "tsx watch --clear-screen=false server/index.ts",
     "build": "vite build",
     "start": "vite build && cross-env NODE_ENV=production tsx server/index.ts",
+    "bot": "tsx scripts/bot.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -18,7 +19,8 @@
     "phaser": "^3.90.0",
     "qrcode": "^1.5.4",
     "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "wordnet-db": "^3.1.14"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

@@ -32,6 +32,18 @@ click a game on the host screen. Press **Esc** on the host screen to abandon a g
 | --- | --- | --- |
 | **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Points go by finishing order, plus a bonus for solving in under 6 guesses. Three rounds. |
 
+### Testing with bots
+
+To test without enough people, add bot players that really play (they solve the word
+using their guess colours):
+
+```bash
+npm run bot -- ABCD 3 --start
+```
+
+This adds 3 bots to room `ABCD`. `--start` makes a bot start the game, which only works
+if the bots joined an empty room so one of them is the VIP.
+
 ### Word Rush word list
 
 Any 5-letter English word (from `an-array-of-english-words`) is accepted as a guess and can be a
@@ -39,6 +51,10 @@ secret answer. Offensive words are filtered out of the answers using two maintai
 (`obscenity` and `naughty-words`). If an inappropriate word slips through, add it to
 `EXTRA_BLOCKED` in `server/games/words.ts`. If an innocent word is wrongly blocked, add it to
 `ALLOWED`.
+
+When a word is revealed, its definition is shown from WordNet (`wordnet-db`), an offline
+dictionary, so no internet is needed. WordNet covers about half the 5-letter words; very
+obscure ones show "No definition found".
 
 ## Project layout
 

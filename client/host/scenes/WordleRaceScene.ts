@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import {
   WORD_LENGTH,
+  describeDefinition,
   type LetterResult,
   type WordleHostPlayer,
   type WordleHostView,
@@ -253,9 +254,21 @@ export class WordleRaceScene extends Phaser.Scene {
     });
   }
 
+  /** Definition line under the revealed word; fades in after the letters flip. */
+  private showDefinition(view: WordleHostView, y: number, size: number) {
+    const t = text(this, WIDTH / 2, y, describeDefinition(view.definition), size, COLORS.muted, {
+      fontStyle: '400',
+      align: 'center',
+      wordWrap: { width: 1500 },
+    }).setAlpha(0);
+    this.overlay.add(t);
+    this.tweens.add({ targets: t, alpha: 1, duration: 400, delay: 800 });
+  }
+
   private showRoundEnd(view: WordleHostView) {
-    this.overlay.add(text(this, WIDTH / 2, 230, 'The word was', 48, COLORS.muted));
-    this.revealWord(view.answer ?? '?????', 360);
+    this.overlay.add(text(this, WIDTH / 2, 200, 'The word was', 48, COLORS.muted));
+    this.revealWord(view.answer ?? '?????', 320);
+    this.showDefinition(view, 450, 36);
 
     const finishers = view.players
       .filter((p) => p.solved)
@@ -264,7 +277,7 @@ export class WordleRaceScene extends Phaser.Scene {
       ? finishers.map((p) => `${ORDINAL[(p.finishRank ?? 1) - 1]}  ${p.name}  +${p.roundPoints}`)
       : ['Nobody got it!'];
     lines.forEach((line, i) => {
-      const t = text(this, WIDTH / 2, 520 + i * 62, line, 44, i === 0 && finishers.length ? COLORS.accent : COLORS.text).setAlpha(0);
+      const t = text(this, WIDTH / 2, 570 + i * 62, line, 44, i === 0 && finishers.length ? COLORS.accent : COLORS.text).setAlpha(0);
       this.overlay.add(t);
       this.tweens.add({ targets: t, alpha: 1, x: { from: WIDTH / 2 - 60, to: WIDTH / 2 }, duration: 300, delay: 900 + i * 200 });
     });
@@ -273,11 +286,12 @@ export class WordleRaceScene extends Phaser.Scene {
   private showGameEnd(view: WordleHostView) {
     this.overlay.add(text(this, WIDTH / 2, 150, 'The last word was', 40, COLORS.muted));
     this.revealWord(view.answer ?? '?????', 250);
+    this.showDefinition(view, 350, 32);
 
     const standings = [...view.players].sort((a, b) => b.score - a.score);
     const winner = standings[0];
     if (winner) {
-      const crown = text(this, WIDTH / 2, 430, `${winner.name} WINS!`, 96, winner.color, {
+      const crown = text(this, WIDTH / 2, 445, `${winner.name} WINS!`, 96, winner.color, {
         fontStyle: '700',
         stroke: '#140f2e',
         strokeThickness: 10,

@@ -167,3 +167,5 @@ button.secondary { background: var(--panel-light); }
   50% { transform: rotateX(90deg); }
   100% { transform: rotateX(0); }
 }
+
+.wr-definition { max-width: 340px; font-weight: 400; font-style: italic; line-height: 1.35; }

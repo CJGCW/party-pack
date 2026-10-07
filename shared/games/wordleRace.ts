@@ -14,6 +14,13 @@ export type LetterResult = 'correct' | 'present' | 'absent';
 
 export type WordlePhase = 'countdown' | 'playing' | 'roundEnd' | 'gameEnd';
 
+export interface WordDefinition {
+  partOfSpeech: string;
+  text: string;
+  /** Set when the answer is an inflected form, e.g. PONIES is defined via PONY. */
+  baseWord: string | null;
+}
+
 export interface WordleHostPlayer {
   id: string;
   name: string;
@@ -34,6 +41,8 @@ export interface WordleHostView {
   msLeft: number;
   players: WordleHostPlayer[];
   answer: string | null;
+  /** Revealed with the answer; null if the word isn't in the dictionary. */
+  definition: WordDefinition | null;
 }
 
 export interface WordleGuess {
@@ -52,6 +61,7 @@ export interface WordlePlayerView {
   roundPoints: number;
   score: number;
   answer: string | null;
+  definition: WordDefinition | null;
   /** Set when the last guess was rejected (e.g. not a word). */
   error: string | null;
 }
@@ -79,4 +89,14 @@ export function scoreGuess(guess: string, answer: string): LetterResult[] {
     }
   }
   return result;
+}
+
+const MAX_DEFINITION_LENGTH = 160;
+
+/** One-line definition shown at the round reveal, e.g. "form of PONY · noun: a small horse". */
+export function describeDefinition(def: WordDefinition | null): string {
+  if (!def) return "(No definition found. That's a rare one!)";
+  const body = def.text.length > MAX_DEFINITION_LENGTH ? `${def.text.slice(0, MAX_DEFINITION_LENGTH - 1)}…` : def.text;
+  const base = def.baseWord ? `form of ${def.baseWord} · ` : '';
+  return `${base}${def.partOfSpeech}: ${body}`;
 }
