@@ -32,6 +32,14 @@ click a game on the host screen. Press **Esc** on the host screen to abandon a g
 | --- | --- | --- |
 | **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Points go by finishing order, plus a bonus for solving in under 6 guesses. Three rounds. |
 
+### Word Rush word list
+
+Any 5-letter English word (from `an-array-of-english-words`) is accepted as a guess and can be a
+secret answer. Offensive words are filtered out of the answers using two maintained lists
+(`obscenity` and `naughty-words`). If an inappropriate word slips through, add it to
+`EXTRA_BLOCKED` in `server/games/words.ts`. If an innocent word is wrongly blocked, add it to
+`ALLOWED`.
+
 ## Project layout
 
 ```
