@@ -106,20 +106,36 @@ export class WordleRaceScene extends Phaser.Scene {
 
     const cols = Math.min(4, Math.max(1, players.length));
     const rows = Math.ceil(players.length / cols);
+    const top = 110;
     const cellW = (WIDTH - 120) / cols;
-    const cellH = (HEIGHT - 160) / rows;
-    const tile = Math.min((cellW - 80) / WORD_LENGTH, (cellH - 130) / VISIBLE_ROWS, 100);
-    const gap = tile * 0.12;
+    const cellH = (HEIGHT - top - 20) / rows;
+
+    // Size tiles so the whole board (tiles + gaps + padding + name/status) fits its cell
+    // with a margin. A board is (n tiles + (n-1) gaps) plus fixed padding in each direction.
+    const GAP_RATIO = 0.12;
+    const PAD_X = 60;
+    const PAD_Y = 120;
+    const MARGIN = 24;
+    const tile = Math.min(
+      (cellW - PAD_X - MARGIN) / (WORD_LENGTH + (WORD_LENGTH - 1) * GAP_RATIO),
+      (cellH - PAD_Y - MARGIN) / (VISIBLE_ROWS + (VISIBLE_ROWS - 1) * GAP_RATIO),
+      100,
+    );
+    const gap = tile * GAP_RATIO;
     const gridW = WORD_LENGTH * tile + (WORD_LENGTH - 1) * gap;
     const gridH = VISIBLE_ROWS * tile + (VISIBLE_ROWS - 1) * gap;
 
     players.forEach((p, i) => {
-      const cx = 60 + (i % cols) * cellW + cellW / 2;
-      const cy = 130 + Math.floor(i / cols) * cellH + cellH / 2;
+      const row = Math.floor(i / cols);
+      // Center a partially filled last row instead of leaving it left-aligned.
+      const inThisRow = Math.min(cols, players.length - row * cols);
+      const rowOffset = ((cols - inThisRow) * cellW) / 2;
+      const cx = 60 + rowOffset + (i % cols) * cellW + cellW / 2;
+      const cy = top + row * cellH + cellH / 2;
       const container = this.add.container(cx, cy);
 
-      const bgW = gridW + 60;
-      const bgH = gridH + 120;
+      const bgW = gridW + PAD_X;
+      const bgH = gridH + PAD_Y;
       const bg = this.add.graphics();
       bg.fillStyle(COLORS.panel, 0.85);
       bg.fillRoundedRect(-bgW / 2, -bgH / 2, bgW, bgH, 20);
