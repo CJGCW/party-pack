@@ -20,16 +20,16 @@ const ROUND_MS: Record<WordleModeId, number> = { normal: 150_000, hard: 240_000 
 const ROUND_END_MS = 9_000;
 const GAME_END_MS = 15_000;
 
-// Scoring: points = (seconds left - guess cost x guesses) x POINTS_PER_SECOND.
-// Each guess costs a sixth of the round (15s in Normal, 40s in Hard), so solving
-// quickly and in few guesses both matter. Anyone who solves gets at least MIN_POINTS.
-const GUESS_COST_FRACTION = 1 / 6;
+// Scoring: points = (seconds left - GUESS_COST_MS x guesses) x POINTS_PER_SECOND.
+// Each guess is worth 8 seconds of points in both modes (the clock itself isn't
+// affected), so solving quickly and in few guesses both matter. Anyone who solves
+// gets at least MIN_POINTS.
+const GUESS_COST_MS = 8_000;
 const POINTS_PER_SECOND = 10;
 const MIN_POINTS = 100;
 
-export function roundPoints(msLeft: number, guesses: number, roundMs: number): number {
-  const guessCostMs = roundMs * GUESS_COST_FRACTION;
-  const seconds = (msLeft - guesses * guessCostMs) / 1000;
+export function roundPoints(msLeft: number, guesses: number): number {
+  const seconds = (msLeft - guesses * GUESS_COST_MS) / 1000;
   return Math.max(MIN_POINTS, Math.round(seconds * POINTS_PER_SECOND));
 }
 
@@ -112,7 +112,7 @@ class WordleRace implements MiniGame {
         prog.solved = true;
         prog.finishRank = ++this.finishers;
         prog.solvedMsLeft = this.msLeft();
-        prog.roundPoints = roundPoints(prog.solvedMsLeft, prog.guesses.length, ROUND_MS[this.mode]);
+        prog.roundPoints = roundPoints(prog.solvedMsLeft, prog.guesses.length);
         this.ctx.addScore(playerId, prog.roundPoints);
       }
     }
@@ -126,7 +126,7 @@ class WordleRace implements MiniGame {
   }
 
   private guessCostSeconds() {
-    return Math.round((ROUND_MS[this.mode] * GUESS_COST_FRACTION) / 1000);
+    return GUESS_COST_MS / 1000;
   }
 
   private msLeft() {

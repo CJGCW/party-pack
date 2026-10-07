@@ -44,7 +44,7 @@ export interface WordleHostPlayer {
 export interface WordleHostView {
   phase: WordlePhase;
   mode: WordleModeId;
-  /** Seconds of points each guess costs (a sixth of the round). */
+  /** Seconds of points each guess costs. */
   guessCostSeconds: number;
   round: number;
   totalRounds: number;
