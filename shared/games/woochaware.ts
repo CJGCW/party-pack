@@ -23,9 +23,9 @@ export interface MicrogameInfo {
 }
 
 export const MICROGAMES = [
-  { id: 'swat', name: 'Bug Off', command: 'SWAT!', hint: 'Tap the fly.', durationMs: 4000 },
+  { id: 'swat', name: 'Bug Off', command: 'SWAT!', hint: 'Tap every fly.', durationMs: 5000 },
   { id: 'pump', name: 'Big Bang Balloon', command: 'PUMP!', hint: 'Tap fast until the balloon pops.', durationMs: 4500 },
-  { id: 'pour', name: "Fill 'Er Up", command: 'POUR!', hint: 'Hold to pour, let go inside the line.', durationMs: 5000 },
+  { id: 'pour', name: "Fill 'Er Up", command: 'POUR!', hint: 'It pours by itself. Tap to stop it between the lines.', durationMs: 5000 },
   { id: 'pull', name: 'Carrot Top', command: 'PULL!', hint: 'Drag the carrot up out of the ground.', durationMs: 5000 },
   { id: 'slice', name: 'Fruit Salad', command: 'SLICE!', hint: 'Swipe through every fruit.', durationMs: 5000 },
   { id: 'trace', name: 'Steady Hand', command: 'TRACE!', hint: 'Drag along the path without leaving it.', durationMs: 6000 },

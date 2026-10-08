@@ -19,32 +19,40 @@ import {
   type Pointer,
 } from './engine';
 
-/** Tap the fly as it zips around. */
+/** Swat every fly as they zip around. */
 export const swat: MicrogameImpl = {
   create(ctx) {
-    const speed = byLevel(ctx, [130, 190, 250]);
-    let x = rand(ctx.rng, 60, W - 60);
-    let y = rand(ctx.rng, 140, H - 100);
-    let angle = ctx.rng() * Math.PI * 2;
-    let turnIn = 0;
+    const count = byLevel(ctx, [3, 4, 5]);
+    const speed = byLevel(ctx, [120, 170, 220]);
+    const flies = Array.from({ length: count }, () => ({
+      x: rand(ctx.rng, 60, W - 60),
+      y: rand(ctx.rng, 140, H - 100),
+      angle: ctx.rng() * Math.PI * 2,
+      turnIn: 0,
+      splat: -1,
+    }));
     let swatAt: Pointer | null = null;
     let swatT = 0;
-    let splat = false;
     return {
       update(dt) {
         swatT = Math.max(0, swatT - dt);
-        if (splat) return;
-        turnIn -= dt;
-        if (turnIn <= 0) {
-          angle += rand(ctx.rng, -1.8, 1.8);
-          turnIn = rand(ctx.rng, 0.2, 0.6);
+        for (const f of flies) {
+          if (f.splat >= 0) {
+            f.splat += dt;
+            continue;
+          }
+          f.turnIn -= dt;
+          if (f.turnIn <= 0) {
+            f.angle += rand(ctx.rng, -1.8, 1.8);
+            f.turnIn = rand(ctx.rng, 0.2, 0.6);
+          }
+          f.x += Math.cos(f.angle) * speed * dt;
+          f.y += Math.sin(f.angle) * speed * dt;
+          if (f.x < 30 || f.x > W - 30) f.angle = Math.PI - f.angle;
+          if (f.y < 70 || f.y > H - 30) f.angle = -f.angle;
+          f.x = clamp(f.x, 30, W - 30);
+          f.y = clamp(f.y, 70, H - 30);
         }
-        x += Math.cos(angle) * speed * dt;
-        y += Math.sin(angle) * speed * dt;
-        if (x < 30 || x > W - 30) angle = Math.PI - angle;
-        if (y < 70 || y > H - 30) angle = -angle;
-        x = clamp(x, 30, W - 30);
-        y = clamp(y, 70, H - 30);
       },
       draw(g, t) {
         fillBg(g, '#ffe9b8', '#f4c77a');
@@ -53,21 +61,55 @@ export const swat: MicrogameImpl = {
         g.lineWidth = 2;
         for (let i = 0; i <= W; i += 45) g.strokeRect(i, 0, 45, H);
         for (let j = 0; j <= H; j += 45) g.strokeRect(0, j, W, 45);
-        if (splat) emoji(g, '💥', x, y, 80);
-        else emoji(g, '🪰', x, y + Math.sin(t * 40) * 3, 46, { rot: angle + Math.PI / 2 });
+        flies.forEach((f, i) => {
+          if (f.splat >= 0) {
+            if (f.splat < 0.3) emoji(g, '💥', f.x, f.y, 70);
+            else circle(g, f.x, f.y, 9, 'rgba(40,30,20,0.5)');
+          }
+          else drawFly(g, f.x, f.y + Math.sin(t * 40 + i) * 3, f.angle, t * 60 + i);
+        });
         if (swatT > 0 && swatAt) emoji(g, '🖐️', swatAt.x, swatAt.y, 90, { alpha: swatT / 0.25 });
+        label(g, `${flies.filter((f) => f.splat >= 0).length}/${count}`, W / 2, 40, 28, PALETTE.bg);
       },
       down(p) {
         swatAt = p;
         swatT = 0.25;
-        if (dist(p.x, p.y, x, y) < 42) {
-          splat = true;
-          ctx.win();
+        // One swat can get flies that are bunched together.
+        let hit = false;
+        for (const f of flies) {
+          if (f.splat < 0 && dist(p.x, p.y, f.x, f.y) < 42) {
+            f.splat = 0;
+            hit = true;
+          }
         }
+        if (hit && flies.every((f) => f.splat >= 0)) ctx.win();
       },
     };
   },
 };
+
+/** A fly facing `angle`, drawn by hand (the fly emoji is missing on some phones). */
+function drawFly(g: CanvasRenderingContext2D, x: number, y: number, angle: number, flap: number) {
+  g.save();
+  g.translate(x, y);
+  g.rotate(angle);
+  // Buzzing wings.
+  const spread = 0.5 + Math.sin(flap) * 0.35;
+  g.fillStyle = 'rgba(200,230,255,0.75)';
+  for (const side of [-1, 1]) {
+    g.beginPath();
+    g.ellipse(-4, side * 11, 13, 7, side * spread, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.fillStyle = '#2a2a2a';
+  g.beginPath();
+  g.ellipse(-3, 0, 13, 9, 0, 0, Math.PI * 2);
+  g.fill();
+  circle(g, 11, 0, 7, '#2a2a2a');
+  circle(g, 14, -4, 3.5, '#c0392b');
+  circle(g, 14, 4, 3.5, '#c0392b');
+  g.restore();
+}
 
 /** Tap as fast as you can to blow the balloon up until it pops. */
 export const pump: MicrogameImpl = {
@@ -124,28 +166,34 @@ export const pump: MicrogameImpl = {
   },
 };
 
-/** Hold to pour; let go with the drink between the lines. Overfill and it spills. */
+/** It pours on its own, a little faster or slower as it goes; tap to stop it between the lines. */
 export const pour: MicrogameImpl = {
   create(ctx) {
-    const rate = byLevel(ctx, [0.42, 0.55, 0.7]);
+    const rate = byLevel(ctx, [0.36, 0.48, 0.6]);
+    const wobble = byLevel(ctx, [0.2, 0.28, 0.35]);
     const half = byLevel(ctx, [0.075, 0.058, 0.045]);
     const mid = rand(ctx.rng, 0.55, 0.8);
     const lo = mid - half;
     const hi = mid + half;
+    // Two slow waves with random phases, so the flow speeds up and eases off unpredictably.
+    const p1 = ctx.rng() * Math.PI * 2;
+    const p2 = ctx.rng() * Math.PI * 2;
+    const flow = (t: number) => rate * (1 + wobble * (0.6 * Math.sin(t * 2.3 + p1) + 0.4 * Math.sin(t * 5.1 + p2)));
     let level = 0;
-    let pouring = false;
-    let spilled = false;
-    const glass = { x: 110, y: 170, w: 140, h: 320 };
+    let pouring = true;
+    let verdict: 'spilled' | 'short' | 'perfect' | null = null;
     return {
-      update(dt) {
+      update(dt, t) {
         if (!pouring || ctx.over) return;
-        level += rate * dt;
+        level += flow(t) * dt;
         if (level > hi) {
-          spilled = true;
+          pouring = false;
+          verdict = 'spilled';
           ctx.lose();
         }
       },
       draw(g) {
+        const glass = { x: 110, y: 170, w: 140, h: 320 };
         fillBg(g, '#3b3185', '#1c1545');
         // Tap.
         roundRect(g, 150, 40, 120, 34, 10, '#9aa');
@@ -172,15 +220,21 @@ export const pour: MicrogameImpl = {
           g.stroke();
         }
         g.setLineDash([]);
-        if (spilled) label(g, 'SPILLED!', 180, 530, 34, PALETTE.danger);
-        else if (!ctx.over) label(g, pouring ? 'Let go in the lines!' : 'Hold to pour', 180, 530, 24, PALETTE.muted);
+        if (verdict === 'spilled') label(g, 'SPILLED!', 180, 530, 34, PALETTE.danger);
+        else if (verdict === 'short') label(g, 'NOT ENOUGH!', 180, 530, 34, PALETTE.danger);
+        else if (verdict === 'perfect') label(g, 'PERFECT!', 180, 530, 34, PALETTE.accent);
+        else if (!ctx.over) label(g, 'Tap to stop in the lines!', 180, 530, 24, PALETTE.muted);
       },
       down() {
-        pouring = true;
-      },
-      up() {
+        if (!pouring) return;
         pouring = false;
-        if (level >= lo && level <= hi) ctx.win();
+        if (level >= lo) {
+          verdict = 'perfect';
+          ctx.win();
+        } else {
+          verdict = 'short';
+          ctx.lose();
+        }
       },
     };
   },

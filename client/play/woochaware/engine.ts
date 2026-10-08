@@ -67,6 +67,8 @@ export class MicroRunner {
   private lastFrame = 0;
   private pressed = false;
   private raf = 0;
+  /** Bumped on every load, so a frame loop left over from the last microgame stops itself. */
+  private generation = 0;
 
   constructor(private readonly onResult: (won: boolean) => void) {
     this.canvas.className = 'ww-canvas';
@@ -111,6 +113,7 @@ export class MicroRunner {
 
   load(impl: MicrogameImpl, level: number, durationMs: number, seed: number) {
     this.stopLoop();
+    this.generation++;
     this.running = false;
     this.pressed = false;
     this.survive = !!impl.survive;
@@ -136,7 +139,9 @@ export class MicroRunner {
     this.running = true;
     this.startedAt = performance.now() - Math.max(0, this.ctx!.durationMs - playMs);
     this.lastFrame = performance.now();
+    const generation = this.generation;
     const frame = (now: number) => {
+      if (generation !== this.generation) return;
       const dt = Math.min(0.05, (now - this.lastFrame) / 1000);
       this.lastFrame = now;
       const t = this.elapsed();
@@ -181,6 +186,7 @@ export class MicroRunner {
 
   destroy() {
     this.stopLoop();
+    this.generation++;
     window.removeEventListener('resize', this.resize);
     this.micro = null;
   }
