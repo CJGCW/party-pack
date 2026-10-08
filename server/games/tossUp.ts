@@ -14,13 +14,10 @@ import {
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 
 /**
- * Points for puzzle `index` of `total`: the first third are worth 500, the middle
- * third 1,000 and the last third 1,500 (so 3 puzzles go 500, 1,000, 1,500). That keeps
- * a strong game around 2,000-3,000 points, in line with Normal Word Rush.
+ * Every puzzle is worth the same: there's no way to tell how hard a puzzle is, so
+ * none should count for more. 3 puzzles make 3,000, in line with Normal Word Rush.
  */
-function puzzleValue(index: number, total: number): number {
-  return 500 * (1 + Math.floor((index * 3) / total));
-}
+const PUZZLE_VALUE = 1000;
 
 const INTRO_MS = 4_000;
 /** Time between letters appearing. */
@@ -100,7 +97,7 @@ class TossUp implements MiniGame {
   }
 
   private get value() {
-    return puzzleValue(this.puzzleIndex, this.totalPuzzles);
+    return PUZZLE_VALUE;
   }
 
   private schedule(ms: number, next: () => void) {

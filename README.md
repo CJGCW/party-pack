@@ -43,7 +43,7 @@ a click on the host screen) starts one chosen game. Turn it on with either:
 | Game | Players | How it plays |
 | --- | --- | --- |
 | **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Each solve scores (seconds left − 8s per guess) × 10, minimum 100. Guesses don't take time off the clock; they only lower your score. One word per puzzle. **Normal** (2½-minute rounds) uses words with a dictionary definition, shown at the reveal; **Hard** (4-minute rounds) uses obscure words with none. |
-| **Letter Drop** | 1–8 | A puzzle board fills in one letter at a time. Buzz in on your phone and type the answer: right scores the puzzle's points (500 for the first third of the puzzles, 1,000 for the middle third, 1,500 for the last); wrong locks you out of that puzzle. |
+| **Letter Drop** | 1–8 | A puzzle board fills in one letter at a time. Buzz in on your phone and type the answer: right scores 1,000 points; wrong locks you out of that puzzle. |
 
 ### Testing with bots
 
@@ -63,7 +63,7 @@ to Word Rush only (the one game bots can play) for a single round. Add `--hard` 
 Puzzles live in `server/games/puzzles.txt`, one per line as `CATEGORY | PUZZLE`. Add your own;
 each must fit a 4 × 14 board. Puzzles are dealt from a shuffled deck, so none repeat until all have
 been used. Answers are checked on letters only (spacing, punctuation and `&`/`AND` don't matter).
-Point values and timings are at the top of `server/games/tossUp.ts`.
+The point value and timings are at the top of `server/games/tossUp.ts`.
 
 ### Word Rush word list
 
