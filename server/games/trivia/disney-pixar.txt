@@ -2236,3 +2236,218 @@ A: Bob Hoskins
 W: Danny DeVito
 W: Dustin Hoffman
 W: Christopher Lloyd
+
+# ===== Across the films =====
+# Questions that compare characters, actors and stories between films.
+
+FILM: Across the Films
+
+Q: Who has the most siblings?
+A: Hans (Frozen)
+W: Ariel (The Little Mermaid)
+W: Pepa Madrigal (Encanto)
+W: Merida (Brave)
+
+Q: Which heroine has six older sisters?
+A: Ariel
+W: Anna
+W: Merida
+W: Mirabel
+
+Q: Which of these princesses has a sister?
+A: Anna
+W: Jasmine
+W: Belle
+W: Aurora
+
+Q: Which villain practices voodoo?
+A: Dr. Facilier
+W: Jafar
+W: Ursula
+W: Mother Gothel
+
+Q: Dr. Facilier is the villain of which film?
+A: The Princess and the Frog
+W: Coco
+W: Encanto
+W: The Hunchback of Notre Dame
+
+Q: Which villain turns into a dragon?
+A: Maleficent
+W: Jafar
+W: Ursula
+W: Yzma
+
+Q: Which villain turns into a giant snake?
+A: Jafar
+W: Maleficent
+W: Yzma
+W: Ursula
+
+Q: Which villain is accidentally turned into a kitten?
+A: Yzma
+W: Ursula
+W: Jafar
+W: Mother Gothel
+
+Q: Which villain is a tiger?
+A: Shere Khan
+W: Scar
+W: Sabor
+W: Prince John
+
+Q: Which villain sings "Be Prepared"?
+A: Scar
+W: Jafar
+W: Ursula
+W: Gaston
+
+Q: Which villain sings "Mother Knows Best"?
+A: Mother Gothel
+W: Ursula
+W: Lady Tremaine
+W: Yzma
+
+Q: Which of these sidekicks never speaks?
+A: Pascal
+W: Mushu
+W: Sebastian
+W: Timon
+
+Q: Which hero has a pet raccoon?
+A: Pocahontas
+W: Rapunzel
+W: Moana
+W: Mulan
+
+Q: Which actor voiced Heihei, the Duke of Weselton and King Candy?
+A: Alan Tudyk
+W: Josh Gad
+W: Jack McBrayer
+W: Patrick Warburton
+
+Q: Which actor voiced Baloo in The Jungle Book, Little John in Robin Hood and O'Malley in The Aristocats?
+A: Phil Harris
+W: Sebastian Cabot
+W: Louis Prima
+W: Peter Ustinov
+
+Q: Which actor voiced both Sulley in Monsters, Inc. and Pacha in The Emperor's New Groove?
+A: John Goodman
+W: Billy Crystal
+W: Patrick Warburton
+W: Jim Varney
+
+Q: Patrick Warburton voiced Kronk. Which Zootopia 2 character did he voice?
+A: Mayor Brian Winddancer
+W: Gary De'Snake
+W: Pawbert Lynxley
+W: Chief Bogo
+
+Q: Jodi Benson voiced Ariel and which Toy Story character?
+A: Barbie
+W: Jessie
+W: Bo Peep
+W: Mrs. Potato Head
+
+Q: Eva Gabor voiced Bianca in The Rescuers. Which other Disney character did she voice?
+A: Duchess in The Aristocats
+W: Lady in Lady and the Tramp
+W: Perdita in One Hundred and One Dalmatians
+W: Georgette in Oliver & Company
+
+Q: Which sidekick was voiced by Eddie Murphy?
+A: Mushu
+W: The Genie
+W: Timon
+W: Olaf
+
+Q: Who wrote the music for The Little Mermaid, Beauty and the Beast and Aladdin?
+A: Alan Menken
+W: Elton John
+W: Phil Collins
+W: Randy Newman
+
+Q: Who wrote "You've Got a Friend in Me"?
+A: Randy Newman
+W: Alan Menken
+W: Elton John
+W: Phil Collins
+
+Q: Which film is loosely based on Hans Christian Andersen's The Snow Queen?
+A: Frozen
+W: Brave
+W: Tangled
+W: The Little Mermaid
+
+Q: Which film is based on a Victor Hugo novel?
+A: The Hunchback of Notre Dame
+W: Oliver & Company
+W: Treasure Planet
+W: The Jungle Book
+
+Q: Which film is based on a Rudyard Kipling book?
+A: The Jungle Book
+W: Robin Hood
+W: The Sword in the Stone
+W: Peter Pan
+
+Q: Which of these is NOT a Pixar film?
+A: Bolt
+W: Up
+W: Coco
+W: Luca
+
+Q: Which of these is NOT a Walt Disney Animation Studios film?
+A: Finding Nemo
+W: Tangled
+W: Zootopia
+W: Encanto
+
+Q: Which of these films is NOT set in France?
+A: Tangled
+W: Ratatouille
+W: The Aristocats
+W: The Hunchback of Notre Dame
+
+Q: Which of these came out first?
+A: The Little Mermaid
+W: Beauty and the Beast
+W: Aladdin
+W: The Lion King
+
+Q: Which of these Pixar films came out first?
+A: A Bug's Life
+W: Monsters, Inc.
+W: Finding Nemo
+W: The Incredibles
+
+Q: Which hero is raised by gorillas?
+A: Tarzan
+W: Mowgli
+W: Aladar
+W: Kenai
+
+Q: Which of these films features a dragon voiced by a comedian?
+A: Mulan
+W: Sleeping Beauty
+W: Frozen II
+W: Brave
+
+Q: Which villain keeps a pair of eels as henchmen?
+A: Ursula
+W: Jafar
+W: Hades
+W: Dr. Facilier
+
+Q: Which two sidekicks are named Pain and Panic?
+A: Hades's minions in Hercules
+W: Ursula's eels in The Little Mermaid
+W: Cruella's henchmen in One Hundred and One Dalmatians
+W: Shere Khan's vultures in The Jungle Book
+
+Q: Which of these characters is a fox?
+A: Nick Wilde
+W: Judy Hopps
+W: Flash
+W: Chief Bogo

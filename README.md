@@ -86,7 +86,8 @@ W: Jeremy Irons
 `A` is the right answer and the three `W`s are wrong ones; answer order is shuffled each time. The
 Disney & Pixar bank covers the theatrical Disney and Pixar animated features except direct-to-video
 or streaming sequels, live action, Song of the South, Toy Story 4 and Lightyear, plus Hook (1991) as a
-house exception; its facts were checked against Wikipedia.
+house exception; its facts were checked against Wikipedia. It also has "Across the Films" questions that compare
+characters, villains, voice actors and stories between films.
 To add a new bank, add a `.txt` file and a matching mode in `shared/games/trivia.ts`.
 
 ### Word Rush word list
