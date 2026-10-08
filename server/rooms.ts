@@ -51,7 +51,8 @@ const WHEEL_ENTRIES: WheelEntry[] = GAMES.flatMap((g) =>
     id: `${g.info.id}:${m.id}`,
     gameId: g.info.id,
     modeId: m.id,
-    label: g.info.modes.length > 1 ? `${g.info.name} · ${m.name}` : g.info.name,
+    // Name the mode unless it's the generic one (e.g. "Trivia · Disney & Pixar", but just "Letter Drop").
+    label: m.id === 'standard' ? g.info.name : `${g.info.name} · ${m.name}`,
   })),
 );
 

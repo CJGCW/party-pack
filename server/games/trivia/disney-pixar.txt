@@ -1,0 +1,2225 @@
+# Disney & Pixar trivia: characters, stories and voice actors from the theatrical
+# animated films. One question per block:
+#
+#   FILM: <title (year)>     applies to every question after it
+#   Q: <question>
+#   A: <the right answer>
+#   W: <wrong answer>        exactly three of these
+#
+# Wrong answers should be plausible but clearly wrong. Avoid answers that are
+# partly right (e.g. a character's separate singing voice). Lines starting with #
+# are ignored.
+
+# ===== Walt Disney Animation Studios =====
+
+FILM: Snow White and the Seven Dwarfs (1937)
+
+Q: Which of the Seven Dwarfs never speaks?
+A: Dopey
+W: Bashful
+W: Sneezy
+W: Happy
+
+Q: Which of these is NOT one of the Seven Dwarfs?
+A: Jumpy
+W: Doc
+W: Bashful
+W: Sneezy
+
+Q: What does the Evil Queen use to poison Snow White?
+A: An apple
+W: A comb
+W: A pear
+W: A cup of tea
+
+FILM: Pinocchio (1940)
+
+Q: What is the name of Geppetto's cat?
+A: Figaro
+W: Lucifer
+W: Cleo
+W: Toby
+
+Q: What is the name of Geppetto's goldfish?
+A: Cleo
+W: Figaro
+W: Flounder
+W: Wanda
+
+Q: What swallows Geppetto at sea?
+A: Monstro the whale
+W: A giant shark
+W: A sea serpent
+W: A giant octopus
+
+Q: Which song from Pinocchio became Disney's signature tune?
+A: When You Wish Upon a Star
+W: Give a Little Whistle
+W: I've Got No Strings
+W: Hi-Diddle-Dee-Dee
+
+FILM: Dumbo (1941)
+
+Q: What does Dumbo hold to believe he can fly?
+A: A "magic" feather
+W: A peanut
+W: A golden bell
+W: A circus ticket
+
+Q: What is the name of Dumbo's mouse friend?
+A: Timothy Q. Mouse
+W: Jaq
+W: Bernard
+W: Roquefort
+
+Q: What is the name of Dumbo's mother?
+A: Mrs. Jumbo
+W: Mrs. Trunk
+W: Mrs. Ivory
+W: Mrs. Tusk
+
+FILM: Bambi (1942)
+
+Q: What is the name of Bambi's rabbit friend?
+A: Thumper
+W: Hopper
+W: Clover
+W: Flower
+
+Q: What is the name of the skunk Bambi befriends?
+A: Flower
+W: Blossom
+W: Daisy
+W: Petal
+
+Q: Who becomes Bambi's mate?
+A: Faline
+W: Flora
+W: Fawna
+W: Felicia
+
+FILM: Cinderella (1950)
+
+Q: What is the name of Lady Tremaine's cat?
+A: Lucifer
+W: Figaro
+W: Duchess
+W: Berlioz
+
+Q: What are the names of Cinderella's stepsisters?
+A: Anastasia and Drizella
+W: Anastasia and Cordelia
+W: Drizella and Griselda
+W: Prudence and Charity
+
+Q: Which of Cinderella's mouse friends is the chubby one?
+A: Gus
+W: Jaq
+W: Timothy
+W: Bernard
+
+Q: What does the Fairy Godmother turn into Cinderella's coach?
+A: A pumpkin
+W: A watermelon
+W: A carriage wheel
+W: A teacup
+
+FILM: Alice in Wonderland (1951)
+
+Q: Who keeps saying "I'm late! I'm late!"?
+A: The White Rabbit
+W: The March Hare
+W: The Mad Hatter
+W: The Dormouse
+
+Q: What game does the Queen of Hearts play using flamingos?
+A: Croquet
+W: Golf
+W: Cricket
+W: Polo
+
+FILM: Peter Pan (1953)
+
+Q: What is inside the crocodile that follows Captain Hook?
+A: A ticking clock
+W: Hook's sword
+W: A ship's bell
+W: A compass
+
+Q: Which of these is one of the Darling children?
+A: Michael
+W: Peter
+W: Tootles
+W: Smee
+
+Q: What is the name of Captain Hook's bumbling first mate?
+A: Mr. Smee
+W: Mr. Gibbs
+W: Mr. Bones
+W: Mr. Plank
+
+FILM: Lady and the Tramp (1955)
+
+Q: What do Lady and the Tramp share in their famous dinner scene?
+A: A plate of spaghetti
+W: A pizza
+W: A bowl of soup
+W: A steak
+
+Q: What are the names of Aunt Sarah's Siamese cats?
+A: Si and Am
+W: Ping and Pong
+W: Lo and Mein
+W: Tai and Chi
+
+Q: What breed of dog is Lady?
+A: Cocker Spaniel
+W: Beagle
+W: Poodle
+W: Collie
+
+FILM: Sleeping Beauty (1959)
+
+Q: What does Aurora prick her finger on?
+A: The spindle of a spinning wheel
+W: A rose thorn
+W: A sewing needle
+W: A crown pin
+
+Q: What are the names of the three good fairies?
+A: Flora, Fauna and Merryweather
+W: Lily, Rose and Violet
+W: Faith, Hope and Charity
+W: Fauna, Fern and Willow
+
+Q: What name does Aurora grow up with in the woods?
+A: Briar Rose
+W: Wild Rose
+W: Little Bramble
+W: Dawn
+
+Q: What is the name of Aurora's prince?
+A: Phillip
+W: Eric
+W: Edward
+W: Frederick
+
+FILM: One Hundred and One Dalmatians (1961)
+
+Q: What does Cruella De Vil want the puppies for?
+A: A fur coat
+W: A dog show
+W: Guard dogs
+W: A circus act
+
+Q: What is the name of Pongo's mate?
+A: Perdita
+W: Bella
+W: Duchess
+W: Ginger
+
+Q: What is the name of Pongo's owner?
+A: Roger Radcliffe
+W: Jasper Badun
+W: Horace Badun
+W: George Darling
+
+FILM: The Jungle Book (1967)
+
+Q: Which song does Baloo sing to Mowgli?
+A: The Bare Necessities
+W: I Wan'na Be Like You
+W: Trust in Me
+W: That's What Friends Are For
+
+Q: What is the name of the tiger who hunts Mowgli?
+A: Shere Khan
+W: Rajah
+W: Bagheera
+W: Kaa
+
+Q: Who voiced Baloo?
+A: Phil Harris
+W: Louis Prima
+W: Sebastian Cabot
+W: George Sanders
+
+FILM: The Little Mermaid (1989)
+
+Q: Who voiced Ariel?
+A: Jodi Benson
+W: Paige O'Hara
+W: Linda Larkin
+W: Irene Bedard
+
+Q: What is the name of Ariel's fish friend?
+A: Flounder
+W: Scuttle
+W: Sebastian
+W: Max
+
+Q: What does Ariel call a fork?
+A: A dinglehopper
+W: A snarfblatt
+W: A thingamabob
+W: A whozit
+
+Q: What are the names of Ursula's eels?
+A: Flotsam and Jetsam
+W: Ripple and Wave
+W: Bubble and Squeak
+W: Salt and Pepper
+
+Q: Who voiced Ursula?
+A: Pat Carroll
+W: Angela Lansbury
+W: Eartha Kitt
+W: Bette Midler
+
+FILM: Beauty and the Beast (1991)
+
+Q: Who voiced Belle?
+A: Paige O'Hara
+W: Jodi Benson
+W: Linda Larkin
+W: Mandy Moore
+
+Q: Who voiced Mrs. Potts?
+A: Angela Lansbury
+W: Julie Andrews
+W: Bette Midler
+W: Maggie Smith
+
+Q: What household object is Cogsworth?
+A: A clock
+W: A candelabra
+W: A teapot
+W: A wardrobe
+
+Q: What is the name of Belle's father?
+A: Maurice
+W: Henri
+W: Philippe
+W: Jacques
+
+Q: What is the name of Gaston's sidekick?
+A: LeFou
+W: LeBlanc
+W: Pierre
+W: Marcel
+
+Q: Who voiced the Beast?
+A: Robby Benson
+W: Jerry Orbach
+W: Tim Curry
+W: Chris Sarandon
+
+FILM: Aladdin (1992)
+
+Q: Who voiced the Genie?
+A: Robin Williams
+W: Billy Crystal
+W: Gilbert Gottfried
+W: Will Smith
+
+Q: What is the name of Aladdin's monkey?
+A: Abu
+W: Rajah
+W: Iago
+W: Apu
+
+Q: What is the name of Jafar's parrot?
+A: Iago
+W: Abu
+W: Zazu
+W: Rajah
+
+Q: In which city does Aladdin take place?
+A: Agrabah
+W: Arendelle
+W: Corona
+W: Atlantica
+
+Q: What kind of animal is Jasmine's pet, Rajah?
+A: A tiger
+W: A lion
+W: A panther
+W: An elephant
+
+FILM: The Lion King (1994)
+
+Q: Who voiced adult Simba?
+A: Matthew Broderick
+W: Jonathan Taylor Thomas
+W: Nathan Lane
+W: Jeremy Irons
+
+Q: Who voiced Mufasa?
+A: James Earl Jones
+W: Morgan Freeman
+W: Samuel L. Jackson
+W: Laurence Fishburne
+
+Q: What kind of animal is Timon?
+A: A meerkat
+W: A mongoose
+W: A warthog
+W: A lemur
+
+Q: Mufasa's majordomo Zazu is what kind of bird?
+A: A hornbill
+W: A toucan
+W: A parrot
+W: A pelican
+
+Q: Who is Simba's childhood friend and future queen?
+A: Nala
+W: Sarabi
+W: Kiara
+W: Shenzi
+
+Q: Who voiced Scar?
+A: Jeremy Irons
+W: Tim Curry
+W: James Earl Jones
+W: Christopher Lee
+
+FILM: Pocahontas (1995)
+
+Q: What kind of animal is Meeko?
+A: A raccoon
+W: A badger
+W: A fox
+W: A skunk
+
+Q: Who voiced John Smith?
+A: Mel Gibson
+W: Christian Bale
+W: Kevin Costner
+W: Tom Hanks
+
+Q: What is Grandmother Willow?
+A: A talking tree
+W: Pocahontas's grandmother
+W: A wise owl
+W: A river spirit
+
+Q: What is the name of Governor Ratcliffe's pampered pug?
+A: Percy
+W: Pongo
+W: Pierre
+W: Prince
+
+FILM: The Hunchback of Notre Dame (1996)
+
+Q: Who voiced Quasimodo?
+A: Tom Hulce
+W: Tom Hanks
+W: Kevin Kline
+W: Jason Alexander
+
+Q: Which of these is one of Quasimodo's gargoyle friends?
+A: Laverne
+W: Gertrude
+W: Djali
+W: Clopin
+
+Q: Who is Quasimodo's cruel guardian?
+A: Judge Claude Frollo
+W: Clopin
+W: Captain Phoebus
+W: The Archdeacon
+
+Q: What kind of animal is Esmeralda's companion, Djali?
+A: A goat
+W: A dog
+W: A monkey
+W: A donkey
+
+FILM: Hercules (1997)
+
+Q: Who voiced Hades?
+A: James Woods
+W: Danny DeVito
+W: Rip Torn
+W: Tim Curry
+
+Q: What kind of creature is Hercules's trainer, Phil?
+A: A satyr
+W: A centaur
+W: A minotaur
+W: A cyclops
+
+Q: What are the names of Hades's two bumbling minions?
+A: Pain and Panic
+W: Fear and Loathing
+W: Grief and Gloom
+W: Doom and Dread
+
+Q: What is the name of Hercules's winged horse?
+A: Pegasus
+W: Phoenix
+W: Zephyr
+W: Apollo
+
+FILM: Mulan (1998)
+
+Q: Who voiced Mushu?
+A: Eddie Murphy
+W: Chris Rock
+W: Martin Lawrence
+W: Jamie Foxx
+
+Q: What name does Mulan use while disguised as a soldier?
+A: Ping
+W: Ling
+W: Yao
+W: Chien-Po
+
+Q: What is the name of Mulan's "lucky" cricket?
+A: Cri-Kee
+W: Jiminy
+W: Chirp
+W: Lucky
+
+Q: Who is the villain leading the Hun invasion?
+A: Shan Yu
+W: Li Shang
+W: Chi Fu
+W: Fa Zhou
+
+FILM: Tarzan (1999)
+
+Q: Which singer wrote and performed the songs in Tarzan?
+A: Phil Collins
+W: Elton John
+W: Sting
+W: Peter Gabriel
+
+Q: What is the name of the gorilla who raises Tarzan?
+A: Kala
+W: Terk
+W: Kerchak
+W: Tantor
+
+Q: Who voiced Tarzan's gorilla friend Terk?
+A: Rosie O'Donnell
+W: Whoopi Goldberg
+W: Ellen DeGeneres
+W: Glenn Close
+
+Q: Who is the hunter who betrays Tarzan?
+A: Clayton
+W: Gaston
+W: Archimedes Porter
+W: Ratcliffe
+
+FILM: The Emperor's New Groove (2000)
+
+Q: What is Emperor Kuzco turned into?
+A: A llama
+W: A frog
+W: An alpaca
+W: A goat
+
+Q: Who voiced Yzma?
+A: Eartha Kitt
+W: Whoopi Goldberg
+W: Joan Rivers
+W: Bette Midler
+
+Q: Who voiced Kronk?
+A: Patrick Warburton
+W: John Goodman
+W: David Spade
+W: Jack Black
+
+Q: Who voiced Kuzco?
+A: David Spade
+W: Adam Sandler
+W: Jim Carrey
+W: Patrick Warburton
+
+FILM: Lilo & Stitch (2002)
+
+Q: What is Stitch's experiment number?
+A: 626
+W: 624
+W: 525
+W: 707
+
+Q: What is the name of Lilo's older sister?
+A: Nani
+W: Leilani
+W: Mahina
+W: Moana
+
+Q: Which Hawaiian island is Lilo & Stitch set on?
+A: Kauaʻi
+W: Maui
+W: Oʻahu
+W: Molokaʻi
+
+Q: Which singer is Lilo's favorite?
+A: Elvis Presley
+W: Frank Sinatra
+W: Buddy Holly
+W: Ritchie Valens
+
+FILM: Bolt (2008)
+
+Q: Who voiced Bolt?
+A: John Travolta
+W: Owen Wilson
+W: Ben Stiller
+W: Matthew McConaughey
+
+Q: What kind of animal is Bolt's superfan, Rhino?
+A: A hamster
+W: A guinea pig
+W: A ferret
+W: A gerbil
+
+FILM: The Princess and the Frog (2009)
+
+Q: In which city is The Princess and the Frog set?
+A: New Orleans
+W: Atlanta
+W: Memphis
+W: Savannah
+
+Q: What is Tiana's dream?
+A: To open her own restaurant
+W: To become a jazz singer
+W: To marry a prince
+W: To travel the world
+
+Q: What is the name of the trumpet-playing alligator?
+A: Louis
+W: Ray
+W: Lawrence
+W: Mama Odie
+
+Q: What is the name of the voodoo villain?
+A: Dr. Facilier
+W: Dr. Calico
+W: Baron Samedi
+W: Dr. Sinistre
+
+FILM: Tangled (2010)
+
+Q: Who voiced Rapunzel?
+A: Mandy Moore
+W: Kristen Bell
+W: Idina Menzel
+W: Anna Kendrick
+
+Q: What is Flynn Rider's real name?
+A: Eugene Fitzherbert
+W: Eugene Flynnigan
+W: Frederick Rider
+W: Eric Fitzwilliam
+
+Q: What kind of animal is Rapunzel's friend Pascal?
+A: A chameleon
+W: A frog
+W: A gecko
+W: An iguana
+
+Q: What is the name of the royal guard horse that chases Flynn?
+A: Maximus
+W: Samson
+W: Philippe
+W: Khan
+
+FILM: Wreck-It Ralph (2012)
+
+Q: Who voiced Ralph?
+A: John C. Reilly
+W: Will Ferrell
+W: Jack Black
+W: Seth Rogen
+
+Q: What is the name of Vanellope's racing game?
+A: Sugar Rush
+W: Candy Kart
+W: Sweet Speed
+W: Hero's Duty
+
+Q: Who voiced Vanellope von Schweetz?
+A: Sarah Silverman
+W: Kristen Wiig
+W: Tina Fey
+W: Amy Poehler
+
+FILM: Frozen (2013)
+
+Q: Who voiced Olaf?
+A: Josh Gad
+W: Jonathan Groff
+W: Alan Tudyk
+W: Jack McBrayer
+
+Q: What is the name of the kingdom Elsa and Anna come from?
+A: Arendelle
+W: Corona
+W: Agrabah
+W: Atlantica
+
+Q: How many older brothers does Prince Hans say he has?
+A: Twelve
+W: Three
+W: Seven
+W: Ten
+
+Q: What is the name of Kristoff's reindeer?
+A: Sven
+W: Olaf
+W: Bjorn
+W: Lars
+
+Q: Who voiced Anna?
+A: Kristen Bell
+W: Idina Menzel
+W: Mandy Moore
+W: Amy Adams
+
+FILM: Frozen II (2019)
+
+Q: What kind of creature is Bruni, the fire spirit?
+A: A salamander
+W: A fox
+W: A phoenix
+W: A lizard-dragon
+
+Q: What is the name of the water spirit horse Elsa tames?
+A: The Nokk
+W: Gale
+W: Bruni
+W: Kelpie
+
+FILM: Big Hero 6 (2014)
+
+Q: In which city does Big Hero 6 take place?
+A: San Fransokyo
+W: Tokyopolis
+W: New Tokyo
+W: Silicon Bay
+
+Q: What is the name of Hiro's older brother?
+A: Tadashi
+W: Kenji
+W: Takeshi
+W: Fred
+
+Q: Who voiced Baymax?
+A: Scott Adsit
+W: Alan Tudyk
+W: T.J. Miller
+W: Jack McBrayer
+
+FILM: Zootopia (2016)
+
+Q: What kind of animal is Nick Wilde?
+A: A fox
+W: A wolf
+W: A coyote
+W: A raccoon
+
+Q: Which pop star voices the singer Gazelle?
+A: Shakira
+W: Beyoncé
+W: Rihanna
+W: Lady Gaga
+
+Q: What is the name of Judy Hopps's hometown?
+A: Bunnyburrow
+W: Carrotville
+W: Little Rodentia
+W: Tundratown
+
+Q: Who voiced Judy Hopps?
+A: Ginnifer Goodwin
+W: Kristen Bell
+W: Emma Stone
+W: Anna Faris
+
+Q: What kind of animal is Flash, who works at the DMV?
+A: A sloth
+W: A tortoise
+W: A koala
+W: A snail
+
+FILM: Moana (2016)
+
+Q: Who voiced Maui?
+A: Dwayne Johnson
+W: Jason Momoa
+W: Vin Diesel
+W: Jemaine Clement
+
+Q: What is the name of Moana's rooster?
+A: Heihei
+W: Pua
+W: Tamatoa
+W: Kakamora
+
+Q: What magical object, a gift from the gods, does Maui need in order to shape-shift?
+A: His giant fish hook
+W: An oar
+W: A conch shell
+W: A necklace
+
+Q: What is the name of the giant treasure-hoarding crab?
+A: Tamatoa
+W: Te Kā
+W: Kakamora
+W: Pua
+
+Q: Which song does Maui sing to Moana?
+A: You're Welcome
+W: How Far I'll Go
+W: Shiny
+W: We Know the Way
+
+FILM: Encanto (2021)
+
+Q: What is the family's last name?
+A: Madrigal
+W: Martínez
+W: Rivera
+W: Morales
+
+Q: What is Luisa Madrigal's gift?
+A: Super strength
+W: Super hearing
+W: Making flowers bloom
+W: Shapeshifting
+
+Q: What is Bruno's gift?
+A: Seeing the future
+W: Controlling the weather
+W: Talking to animals
+W: Healing with food
+
+Q: Who voiced Mirabel?
+A: Stephanie Beatriz
+W: Diane Guerrero
+W: Jessica Darrow
+W: Auliʻi Cravalho
+
+Q: In which country is Encanto set?
+A: Colombia
+W: Mexico
+W: Peru
+W: Venezuela
+
+FILM: Raya and the Last Dragon (2021)
+
+Q: Who voiced the dragon Sisu?
+A: Awkwafina
+W: Sandra Oh
+W: Ali Wong
+W: Kelly Marie Tran
+
+Q: What is the name of Raya's giant pill-bug companion?
+A: Tuk Tuk
+W: Boun
+W: Chai
+W: Noi
+
+FILM: Wish (2023)
+
+Q: Who voiced King Magnifico?
+A: Chris Pine
+W: Chris Pratt
+W: Alan Tudyk
+W: Pedro Pascal
+
+Q: What kind of animal is Valentino, Asha's pet?
+A: A goat
+W: A llama
+W: A sheep
+W: A pig
+
+# ===== Pixar Animation Studios =====
+
+FILM: Toy Story (1995)
+
+Q: Who voiced Woody?
+A: Tom Hanks
+W: Tim Allen
+W: Billy Crystal
+W: Tom Hulce
+
+Q: Who voiced Buzz Lightyear?
+A: Tim Allen
+W: Tom Hanks
+W: Owen Wilson
+W: Kelsey Grammer
+
+Q: What is the name of the boy next door who destroys toys for fun?
+A: Sid
+W: Andy
+W: Al
+W: Lenny
+
+Q: What is the name of the space-themed restaurant where Buzz and Woody end up?
+A: Pizza Planet
+W: Galaxy Grill
+W: Rocket Burger
+W: Star Diner
+
+Q: What kind of toy is Hamm?
+A: A piggy bank
+W: A wind-up toy
+W: A stuffed pig
+W: A pig puppet
+
+Q: Who voiced Mr. Potato Head?
+A: Don Rickles
+W: John Ratzenberger
+W: Wallace Shawn
+W: Jim Varney
+
+FILM: Toy Story 2 (1999)
+
+Q: Who voiced Jessie?
+A: Joan Cusack
+W: Annie Potts
+W: Laurie Metcalf
+W: Kristen Schaal
+
+Q: What is the name of Woody's horse?
+A: Bullseye
+W: Buttercup
+W: Trigger
+W: Stinky Pete
+
+Q: What is the name of the toy-store owner who steals Woody?
+A: Al
+W: Sid
+W: Lenny
+W: Gary
+
+Q: Who is Buzz Lightyear's evil arch-nemesis?
+A: Emperor Zurg
+W: Lord Lotso
+W: Stinky Pete
+W: Syndrome
+
+FILM: Toy Story 3 (2010)
+
+Q: What is the name of the daycare the toys end up in?
+A: Sunnyside
+W: Happy Days
+W: Little Sprouts
+W: Rainbow Ridge
+
+Q: What kind of toy is Lotso?
+A: A strawberry-scented teddy bear
+W: A sock monkey
+W: A plush rabbit
+W: A rag doll
+
+Q: Who does Andy give his toys to at the end?
+A: Bonnie
+W: Molly
+W: Sid
+W: Daisy
+
+Q: Who voiced Ken?
+A: Michael Keaton
+W: Ben Stiller
+W: Ryan Gosling
+W: Jeff Garlin
+
+FILM: A Bug's Life (1998)
+
+Q: What kind of bug is the hero, Flik?
+A: An ant
+W: A grasshopper
+W: A ladybug
+W: A beetle
+
+Q: What kind of bugs bully the ant colony?
+A: Grasshoppers
+W: Wasps
+W: Spiders
+W: Beetles
+
+Q: Who does Flik mistake for warrior bugs?
+A: Circus bugs
+W: Soldier ants
+W: Bounty-hunting beetles
+W: A team of bees
+
+FILM: Monsters, Inc. (2001)
+
+Q: Who voiced Sulley?
+A: John Goodman
+W: Billy Crystal
+W: Steve Buscemi
+W: Bill Murray
+
+Q: Who voiced Mike Wazowski?
+A: Billy Crystal
+W: John Goodman
+W: Danny DeVito
+W: Robin Williams
+
+Q: What does the little girl call Sulley?
+A: Kitty
+W: Teddy
+W: Fluffy
+W: Big Blue
+
+Q: What powers the city of Monstropolis at the start of the film?
+A: Children's screams
+W: Children's laughter
+W: Lightning
+W: Nightmares
+
+Q: Who voiced the villainous Randall?
+A: Steve Buscemi
+W: James Coburn
+W: John Turturro
+W: Tim Curry
+
+FILM: Finding Nemo (2003)
+
+Q: Who voiced Dory?
+A: Ellen DeGeneres
+W: Rosie O'Donnell
+W: Amy Poehler
+W: Lisa Kudrow
+
+Q: What is the dentist's address, where Nemo is taken?
+A: 42 Wallaby Way, Sydney
+W: 12 Kangaroo Court, Sydney
+W: 42 Koala Lane, Melbourne
+W: 7 Harbour Street, Sydney
+
+Q: What kind of animal is Crush?
+A: A sea turtle
+W: A shark
+W: A stingray
+W: An octopus
+
+Q: What is the sharks' motto in Finding Nemo?
+A: Fish are friends, not food
+W: Just keep swimming
+W: Eat or be eaten
+W: Fins up, teeth down
+
+Q: Who voiced Marlin?
+A: Albert Brooks
+W: Billy Crystal
+W: Steve Martin
+W: Willem Dafoe
+
+FILM: Finding Dory (2016)
+
+Q: How many arms does Hank the "septopus" have?
+A: Seven
+W: Six
+W: Eight
+W: Five
+
+Q: What is the name of the California aquarium Dory searches through for her family?
+A: The Marine Life Institute
+W: The Sydney Aquarium
+W: Monterey Bay Aquarium
+W: The Great Barrier Reef
+
+FILM: The Incredibles (2004)
+
+Q: Who designs the supers' costumes and insists on "No capes"?
+A: Edna Mode
+W: Mirage
+W: Evelyn Deavor
+W: Rick Dicker
+
+Q: Who voiced Frozone?
+A: Samuel L. Jackson
+W: Jamie Foxx
+W: Laurence Fishburne
+W: Don Cheadle
+
+Q: What is Dash's superpower?
+A: Super speed
+W: Invisibility
+W: Super strength
+W: Stretching
+
+Q: What was Syndrome's name when he was Mr. Incredible's would-be sidekick?
+A: IncrediBoy
+W: Buddy Boy
+W: Kid Incredible
+W: Mr. Incredible Jr.
+
+Q: Who voiced Mr. Incredible?
+A: Craig T. Nelson
+W: Tim Allen
+W: John Goodman
+W: Kelsey Grammer
+
+FILM: Cars (2006)
+
+Q: Who voiced Lightning McQueen?
+A: Owen Wilson
+W: Luke Wilson
+W: Matthew McConaughey
+W: Ben Stiller
+
+Q: What is Lightning McQueen's racing number?
+A: 95
+W: 43
+W: 86
+W: 51
+
+Q: In which forgotten Route 66 town does McQueen get stranded?
+A: Radiator Springs
+W: Carburetor County
+W: Tailpipe Town
+W: Rusty Ridge
+
+Q: Who voiced Doc Hudson?
+A: Paul Newman
+W: Robert Redford
+W: Clint Eastwood
+W: Gene Hackman
+
+FILM: Ratatouille (2007)
+
+Q: In which city does Ratatouille take place?
+A: Paris
+W: Lyon
+W: Marseille
+W: Rome
+
+Q: What is the late chef Gusteau's motto?
+A: Anyone can cook
+W: Cook with love
+W: Taste everything
+W: Fear no flavor
+
+Q: Who voiced the food critic Anton Ego?
+A: Peter O'Toole
+W: Ian McKellen
+W: Christopher Plummer
+W: Patrick Stewart
+
+Q: Who voiced Remy?
+A: Patton Oswalt
+W: Lou Romano
+W: Brad Garrett
+W: Ian Holm
+
+FILM: WALL-E (2008)
+
+Q: What is the name of the robot WALL-E falls for?
+A: EVE
+W: AUTO
+W: M-O
+W: AVA
+
+Q: What is WALL-E's pet?
+A: A cockroach
+W: A rat
+W: A beetle
+W: A spider
+
+Q: Which old movie musical does WALL-E love to watch?
+A: Hello, Dolly!
+W: Singin' in the Rain
+W: The Sound of Music
+W: Mary Poppins
+
+Q: What is the name of the giant spaceship where humans live?
+A: The Axiom
+W: The Odyssey
+W: The Horizon
+W: The Endeavour
+
+FILM: Up (2009)
+
+Q: Who voiced Carl Fredricksen?
+A: Ed Asner
+W: Christopher Plummer
+W: Christopher Lloyd
+W: Jack Nicholson
+
+Q: What is the name of the talking dog?
+A: Dug
+W: Doug
+W: Dash
+W: Duke
+
+Q: What is the name of the giant bird Russell befriends?
+A: Kevin
+W: Kevin Jr.
+W: Kiki
+W: Polly
+
+Q: Where did Carl and Ellie always dream of going?
+A: Paradise Falls
+W: Angel Falls
+W: Victoria Falls
+W: Paradise Island
+
+FILM: Brave (2012)
+
+Q: In which country is Brave set?
+A: Scotland
+W: Ireland
+W: Wales
+W: Norway
+
+Q: What does Merida's mother turn into?
+A: A bear
+W: A wolf
+W: A stag
+W: A horse
+
+Q: Who voiced Merida?
+A: Kelly Macdonald
+W: Emma Thompson
+W: Karen Gillan
+W: Saoirse Ronan
+
+FILM: Inside Out (2015)
+
+Q: Who voiced Joy?
+A: Amy Poehler
+W: Tina Fey
+W: Mindy Kaling
+W: Kristen Wiig
+
+Q: What is the name of Riley's imaginary friend?
+A: Bing Bong
+W: Ping Pong
+W: Ding Dong
+W: Bling Blong
+
+Q: Which emotion did Lewis Black voice?
+A: Anger
+W: Fear
+W: Disgust
+W: Joy
+
+Q: Where does Riley's family move at the start of the film?
+A: San Francisco
+W: Los Angeles
+W: Seattle
+W: Chicago
+
+FILM: Inside Out 2 (2024)
+
+Q: Which new emotion takes over Riley's mind in Inside Out 2?
+A: Anxiety
+W: Jealousy
+W: Pride
+W: Guilt
+
+Q: Which sport is Riley focused on in Inside Out 2?
+A: Ice hockey
+W: Soccer
+W: Basketball
+W: Volleyball
+
+FILM: Coco (2017)
+
+Q: What holiday is at the heart of Coco?
+A: Día de los Muertos
+W: Cinco de Mayo
+W: Las Posadas
+W: Día de los Reyes
+
+Q: What is the name of the stray dog who follows Miguel everywhere?
+A: Dante
+W: Pepita
+W: Chicharrón
+W: Diego
+
+Q: Who voiced Héctor?
+A: Gael García Bernal
+W: Benjamin Bratt
+W: Diego Luna
+W: Oscar Isaac
+
+Q: What is the name of the famous singer Miguel idolizes?
+A: Ernesto de la Cruz
+W: Héctor Rivera
+W: Pedro Infante
+W: Julio Fuentes
+
+FILM: Soul (2020)
+
+Q: Who voiced Joe Gardner?
+A: Jamie Foxx
+W: Daveed Diggs
+W: Sterling K. Brown
+W: Leslie Odom Jr.
+
+Q: What does Joe Gardner dream of doing?
+A: Playing jazz piano professionally
+W: Opening a music school
+W: Singing on Broadway
+W: Becoming a famous drummer
+
+Q: Who voiced 22?
+A: Tina Fey
+W: Amy Poehler
+W: Maya Rudolph
+W: Kristen Wiig
+
+FILM: Luca (2021)
+
+Q: What are Luca and Alberto secretly?
+A: Sea monsters
+W: Mermaids
+W: Talking fish
+W: Ghosts
+
+Q: What vehicle do Luca and Alberto dream of owning?
+A: A Vespa
+W: A sailboat
+W: A bicycle
+W: A convertible
+
+FILM: Turning Red (2022)
+
+Q: What does Mei Lee turn into when she gets emotional?
+A: A giant red panda
+W: A red fox
+W: A tiger
+W: A dragon
+
+Q: In which city is Turning Red set?
+A: Toronto
+W: Vancouver
+W: San Francisco
+W: Seattle
+
+Q: What is the name of the boy band Mei and her friends love?
+A: 4*Town
+W: Boyz 2 Town
+W: Five Star
+W: The Wavelengths
+
+FILM: Onward (2020)
+
+Q: What kind of creatures are Ian and Barley Lightfoot?
+A: Elves
+W: Dwarves
+W: Trolls
+W: Gnomes
+
+Q: Who voiced Ian Lightfoot?
+A: Tom Holland
+W: Chris Pratt
+W: Timothée Chalamet
+W: Andrew Garfield
+
+FILM: Elemental (2023)
+
+Q: Ember is made of fire. What is Wade made of?
+A: Water
+W: Air
+W: Earth
+W: Ice
+
+Q: What is the name of the city where the elements live?
+A: Element City
+W: Elementia
+W: Firetown
+W: Quadra City
+
+# ===== More Walt Disney Animation Studios =====
+
+FILM: Fantasia (1940)
+
+Q: Who stars in "The Sorcerer's Apprentice" segment?
+A: Mickey Mouse
+W: Donald Duck
+W: Goofy
+W: Pluto
+
+Q: What does Mickey enchant to carry buckets of water?
+A: A broom
+W: A mop
+W: A chair
+W: A bucket
+
+Q: What is the name of the giant demon in "Night on Bald Mountain"?
+A: Chernabog
+W: Balthazar
+W: Hades
+W: Maleficent
+
+Q: Who conducts the Philadelphia Orchestra in Fantasia?
+A: Leopold Stokowski
+W: Arturo Toscanini
+W: Leonard Bernstein
+W: Herbert von Karajan
+
+FILM: Fantasia 2000 (1999)
+
+Q: Which Fantasia 2000 segment features Donald Duck as Noah's assistant?
+A: Pomp and Circumstance
+W: Rhapsody in Blue
+W: The Firebird Suite
+W: Carnival of the Animals
+
+Q: What toy does the flamingo play with in "Carnival of the Animals"?
+A: A yo-yo
+W: A ball
+W: A kite
+W: A hula hoop
+
+Q: Which segment from the original Fantasia returns in Fantasia 2000?
+A: The Sorcerer's Apprentice
+W: Night on Bald Mountain
+W: The Nutcracker Suite
+W: Dance of the Hours
+
+FILM: Saludos Amigos (1942)
+
+Q: Which parrot character made his debut in Saludos Amigos?
+A: José Carioca
+W: Panchito Pistoles
+W: Iago
+W: Zazu
+
+Q: Which part of the world does Saludos Amigos tour?
+A: South America
+W: Africa
+W: Europe
+W: Asia
+
+FILM: The Three Caballeros (1944)
+
+Q: Who are the Three Caballeros?
+A: Donald Duck, José Carioca and Panchito Pistoles
+W: Mickey Mouse, Donald Duck and Goofy
+W: Donald Duck, Daisy Duck and José Carioca
+W: Donald Duck, Panchito Pistoles and Pete
+
+Q: What kind of animal is Panchito Pistoles?
+A: A rooster
+W: A parrot
+W: A duck
+W: A turkey
+
+FILM: Make Mine Music (1946)
+
+Q: What is the name of the whale who dreams of singing opera?
+A: Willie
+W: Monstro
+W: Moby
+W: Wally
+
+Q: Which Prokofiev musical tale is retold in Make Mine Music?
+A: Peter and the Wolf
+W: The Nutcracker
+W: Swan Lake
+W: The Firebird
+
+FILM: Fun and Fancy Free (1947)
+
+Q: Who joins Mickey in "Mickey and the Beanstalk"?
+A: Donald Duck and Goofy
+W: Minnie Mouse and Pluto
+W: Donald Duck and Daisy Duck
+W: Goofy and Pete
+
+Q: What is the name of the giant in "Mickey and the Beanstalk"?
+A: Willie
+W: Goliath
+W: Big Pete
+W: Mortimer
+
+Q: Who introduces the "Mickey and the Beanstalk" segment?
+A: Edgar Bergen
+W: Dinah Shore
+W: Walt Disney
+W: Sterling Holloway
+
+FILM: Melody Time (1948)
+
+Q: Which tall-tale cowboy stars in a Melody Time segment?
+A: Pecos Bill
+W: Paul Bunyan
+W: Davy Crockett
+W: Buffalo Bill
+
+Q: In Melody Time, what is Little Toot?
+A: A tugboat
+W: A train
+W: A fire engine
+W: A steam whistle
+
+FILM: The Adventures of Ichabod and Mr. Toad (1949)
+
+Q: Which classic novel is the Mr. Toad segment based on?
+A: The Wind in the Willows
+W: Alice in Wonderland
+W: The Jungle Book
+W: Winnie-the-Pooh
+
+Q: Who narrates the Ichabod Crane segment?
+A: Bing Crosby
+W: Basil Rathbone
+W: Sterling Holloway
+W: Walt Disney
+
+Q: What does the Headless Horseman throw at Ichabod?
+A: A jack-o'-lantern
+W: His sword
+W: A skull
+W: A burning torch
+
+Q: What is Mr. Toad obsessed with?
+A: Motorcars
+W: Gambling
+W: Hot-air balloons
+W: Horse racing
+
+FILM: The Sword in the Stone (1963)
+
+Q: What is young Arthur's nickname?
+A: Wart
+W: Sprout
+W: Squire
+W: Runt
+
+Q: What is the name of Merlin's talking owl?
+A: Archimedes
+W: Hootsie
+W: Horace
+W: Owl
+
+Q: Who does Merlin battle in the wizards' duel?
+A: Madam Mim
+W: Morgana
+W: Maleficent
+W: Yzma
+
+Q: Which of these does Merlin NOT turn Arthur into?
+A: A frog
+W: A fish
+W: A squirrel
+W: A bird
+
+FILM: The Aristocats (1970)
+
+Q: What is the name of the alley cat who helps Duchess?
+A: Thomas O'Malley
+W: Scat Cat
+W: Toulouse
+W: Lucifer
+
+Q: What are the names of Duchess's three kittens?
+A: Marie, Toulouse and Berlioz
+W: Marie, Toulouse and Debussy
+W: Lily, Toulouse and Berlioz
+W: Marie, Chopin and Berlioz
+
+Q: Who tries to get rid of the cats to get the inheritance?
+A: Edgar the butler
+W: Napoleon the hound
+W: Georges Hautecourt
+W: Roquefort the mouse
+
+Q: In which city does The Aristocats take place?
+A: Paris
+W: London
+W: Rome
+W: Vienna
+
+FILM: Robin Hood (1973)
+
+Q: What kind of animal is Robin Hood?
+A: A fox
+W: A wolf
+W: A bear
+W: A badger
+
+Q: What kind of animal is Prince John?
+A: A lion
+W: A snake
+W: A wolf
+W: A rhinoceros
+
+Q: What is the name of Prince John's snake advisor?
+A: Sir Hiss
+W: Kaa
+W: Sir Slither
+W: Nutsy
+
+Q: Who voiced Little John?
+A: Phil Harris
+W: Peter Ustinov
+W: Andy Devine
+W: Roger Miller
+
+FILM: The Many Adventures of Winnie the Pooh (1977)
+
+Q: Who voiced Winnie the Pooh in this film?
+A: Sterling Holloway
+W: Jim Cummings
+W: Paul Winchell
+W: John Fiedler
+
+Q: What kind of animal is Eeyore?
+A: A donkey
+W: A horse
+W: A mule
+W: A goat
+
+Q: Pooh has a nightmare about Heffalumps and what?
+A: Woozles
+W: Wombles
+W: Whiffles
+W: Jagulars
+
+FILM: Winnie the Pooh (2011)
+
+Q: Who does Owl think has captured Christopher Robin?
+A: The Backson
+W: A Heffalump
+W: A Woozle
+W: The Jagular
+
+Q: What has Eeyore lost at the start of the film?
+A: His tail
+W: His ears
+W: His house
+W: His bow
+
+FILM: The Rescuers (1977)
+
+Q: What organization do Bernard and Bianca work for?
+A: The Rescue Aid Society
+W: The Mouse Patrol
+W: The International Rodent Rescue
+W: The Mouse Guard
+
+Q: Who voiced Bianca?
+A: Eva Gabor
+W: Zsa Zsa Gabor
+W: Eartha Kitt
+W: Sophia Loren
+
+Q: What is the name of the orphan girl the mice rescue?
+A: Penny
+W: Jenny
+W: Wendy
+W: Molly
+
+Q: What kind of bird is Orville, the mice's airline?
+A: An albatross
+W: A pelican
+W: A seagull
+W: A stork
+
+FILM: The Rescuers Down Under (1990)
+
+Q: In which country is The Rescuers Down Under set?
+A: Australia
+W: New Zealand
+W: South Africa
+W: Brazil
+
+Q: What is the name of Cody's golden eagle friend?
+A: Marahute
+W: Wilbur
+W: Orville
+W: Zephyr
+
+Q: Who voiced Wilbur the albatross?
+A: John Candy
+W: John Goodman
+W: Chris Farley
+W: Dom DeLuise
+
+FILM: The Fox and the Hound (1981)
+
+Q: What is the name of the hound puppy?
+A: Copper
+W: Chief
+W: Tod
+W: Amos
+
+Q: Who adopts Tod as a cub?
+A: Widow Tweed
+W: Amos Slade
+W: Big Mama
+W: Vixey
+
+Q: Who voiced the adult Tod?
+A: Mickey Rooney
+W: Kurt Russell
+W: Corey Feldman
+W: Pearl Bailey
+
+FILM: The Black Cauldron (1985)
+
+Q: What is Taran's job at the start of the film?
+A: Assistant Pig-Keeper
+W: Stable Boy
+W: Blacksmith's Apprentice
+W: Royal Squire
+
+Q: Who is the skeletal villain of The Black Cauldron?
+A: The Horned King
+W: Chernabog
+W: The Lich Lord
+W: Dr. Facilier
+
+Q: What is the name of the furry creature who tags along with Taran?
+A: Gurgi
+W: Creeper
+W: Doli
+W: Fflewddur Fflam
+
+Q: What is special about Hen Wen the pig?
+A: She can show visions
+W: She can talk
+W: She can fly
+W: She can sniff out gold
+
+FILM: The Great Mouse Detective (1986)
+
+Q: Who voiced the villain, Professor Ratigan?
+A: Vincent Price
+W: Christopher Lee
+W: Peter Cushing
+W: Basil Rathbone
+
+Q: What is the name of the mouse detective?
+A: Basil of Baker Street
+W: Dawson of Fleet Street
+W: Hercule of Baker Street
+W: Sherlock Mouse
+
+Q: What is the name of Ratigan's pet cat?
+A: Felicia
+W: Lucifer
+W: Figaro
+W: Si
+
+Q: What kind of animal is Ratigan's henchman, Fidget?
+A: A bat
+W: A rat
+W: A weasel
+W: A lizard
+
+FILM: Oliver & Company (1988)
+
+Q: Which classic novel inspired Oliver & Company?
+A: Oliver Twist
+W: Great Expectations
+W: A Christmas Carol
+W: David Copperfield
+
+Q: In which city does Oliver & Company take place?
+A: New York City
+W: London
+W: Chicago
+W: Boston
+
+Q: Who voiced Dodger?
+A: Billy Joel
+W: Huey Lewis
+W: Cheech Marin
+W: Bruce Springsteen
+
+Q: Who voiced Georgette the poodle?
+A: Bette Midler
+W: Cher
+W: Barbra Streisand
+W: Joan Rivers
+
+FILM: Dinosaur (2000)
+
+Q: What kind of dinosaur is Aladar?
+A: An Iguanodon
+W: A Brachiosaurus
+W: A Triceratops
+W: A Parasaurolophus
+
+Q: Who raises Aladar after his egg lands on their island?
+A: A family of lemurs
+W: A herd of iguanodons
+W: A family of monkeys
+W: A flock of pterosaurs
+
+FILM: Atlantis: The Lost Empire (2001)
+
+Q: Who voiced Milo Thatch?
+A: Michael J. Fox
+W: Matthew Broderick
+W: James Garner
+W: Tom Hulce
+
+Q: What is the name of the book that leads the expedition to Atlantis?
+A: The Shepherd's Journal
+W: The Atlantean Codex
+W: The Explorer's Log
+W: The Heart of Atlantis
+
+Q: What is the name of the princess of Atlantis?
+A: Kida
+W: Helga
+W: Audrey
+W: Nalani
+
+Q: What is the name of the expedition's giant submarine?
+A: The Ulysses
+W: The Nautilus
+W: The Leviathan
+W: The Poseidon
+
+FILM: Treasure Planet (2002)
+
+Q: Which classic novel is Treasure Planet based on?
+A: Treasure Island
+W: Twenty Thousand Leagues Under the Sea
+W: Robinson Crusoe
+W: Peter Pan
+
+Q: Who voiced Jim Hawkins?
+A: Joseph Gordon-Levitt
+W: Elijah Wood
+W: Shia LaBeouf
+W: Tobey Maguire
+
+Q: What is the name of John Silver's shape-shifting pet?
+A: Morph
+W: B.E.N.
+W: Blob
+W: Pascal
+
+Q: Who voiced the robot B.E.N.?
+A: Martin Short
+W: Steve Martin
+W: David Hyde Pierce
+W: Robin Williams
+
+FILM: Brother Bear (2003)
+
+Q: Who voiced Kenai?
+A: Joaquin Phoenix
+W: Jake Gyllenhaal
+W: Jeremy Suarez
+W: Heath Ledger
+
+Q: What is the name of the talkative bear cub?
+A: Koda
+W: Kenai
+W: Sitka
+W: Tanana
+
+Q: What kind of animals are the comic duo Rutt and Tuke?
+A: Moose
+W: Elk
+W: Caribou
+W: Beavers
+
+Q: What totem is Kenai given?
+A: The bear of love
+W: The eagle of guidance
+W: The wolf of wisdom
+W: The salmon of courage
+
+FILM: Home on the Range (2004)
+
+Q: What kind of animals are the three heroes?
+A: Cows
+W: Horses
+W: Sheep
+W: Goats
+
+Q: How does the outlaw Alameda Slim steal cattle?
+A: By yodeling to hypnotize them
+W: By luring them with corn
+W: By disguising himself as a cow
+W: By building a fake barn
+
+Q: What is the name of the farm the cows save?
+A: Patch of Heaven
+W: Sunny Acres
+W: Little Prairie
+W: Happy Hollow
+
+FILM: Chicken Little (2005)
+
+Q: What does Chicken Little famously claim at the start?
+A: The sky is falling
+W: The wolf is coming
+W: The barn is on fire
+W: The aliens have landed
+
+Q: Who voiced Chicken Little?
+A: Zach Braff
+W: Steve Zahn
+W: Jim Carrey
+W: Jason Lee
+
+Q: What actually hit Chicken Little on the head?
+A: A piece of an alien spaceship
+W: An acorn
+W: A hailstone
+W: A meteorite
+
+FILM: Meet the Robinsons (2007)
+
+Q: What is the film's motto?
+A: Keep moving forward
+W: Never give up
+W: Follow your dreams
+W: Anything is possible
+
+Q: What is the name of the villain's robotic bowler hat?
+A: Doris
+W: Dolores
+W: Daisy
+W: Dot
+
+Q: What does Lewis invent hoping to find his birth mother?
+A: A memory scanner
+W: A time machine
+W: A robot butler
+W: A family tree finder
+
+FILM: Ralph Breaks the Internet (2018)
+
+Q: What website do Ralph and Vanellope go to for a new steering wheel?
+A: eBay
+W: Amazon
+W: Craigslist
+W: BuzzzTube
+
+Q: Who voiced Shank, the Slaughter Race driver?
+A: Gal Gadot
+W: Charlize Theron
+W: Margot Robbie
+W: Scarlett Johansson
+
+Q: What is the name of the dangerous online racing game Vanellope loves?
+A: Slaughter Race
+W: Sugar Rush
+W: Hero's Duty
+W: Turbo Time
+
+FILM: Strange World (2022)
+
+Q: What is the name of the energy-giving plant?
+A: Pando
+W: Avalonia
+W: Splat
+W: Glowroot
+
+Q: Who voiced Searcher Clade?
+A: Jake Gyllenhaal
+W: Dennis Quaid
+W: Chris Pratt
+W: Jake Johnson
+
+Q: What is the name of the blue blob creature who befriends Ethan?
+A: Splat
+W: Blob
+W: Goo
+W: Pando
+
+FILM: Moana 2 (2024)
+
+Q: What is the name of Moana's little sister?
+A: Simea
+W: Sina
+W: Tala
+W: Loto
+
+Q: Which lost island does Moana set out to raise?
+A: Motufetu
+W: Motunui
+W: Te Fiti
+W: Lalotai
+
+Q: Who is the storm god behind the island's disappearance?
+A: Nalo
+W: Matangi
+W: Tamatoa
+W: Te Kā
+
+Q: What is Moni, one of Moana's crew, a big fan of?
+A: Maui
+W: Heihei
+W: Tamatoa
+W: The Kakamora
+
+FILM: Zootopia 2 (2025)
+
+Q: What kind of animal is Gary De'Snake?
+A: A pit viper
+W: A python
+W: A rattlesnake
+W: A cobra
+
+Q: Who voiced Gary De'Snake?
+A: Ke Huy Quan
+W: Andy Samberg
+W: Danny Trejo
+W: John Cho
+
+Q: Which wealthy family frames Judy and Nick?
+A: The Lynxleys
+W: The Bellwethers
+W: The Big family
+W: The Winddancers
+
+# ===== More Pixar =====
+
+FILM: Cars 2 (2011)
+
+Q: In Cars 2, who do the British agents mistake for a fellow spy?
+A: Mater
+W: Lightning McQueen
+W: Luigi
+W: Guido
+
+Q: Who voiced British spy Finn McMissile?
+A: Michael Caine
+W: Patrick Stewart
+W: Ian McKellen
+W: Sean Connery
+
+FILM: Monsters University (2013)
+
+Q: Which fraternity do Mike and Sulley join?
+A: Oozma Kappa
+W: Roar Omega Roar
+W: Jaws Theta Chi
+W: Python Nu Kappa
+
+Q: Who voiced Dean Hardscrabble?
+A: Helen Mirren
+W: Judi Dench
+W: Maggie Smith
+W: Emma Thompson
+
+Q: What competition do the students enter to prove they're scary?
+A: The Scare Games
+W: The Scream Cup
+W: The Fright Olympics
+W: The Terror Trials
+
+FILM: The Good Dinosaur (2015)
+
+Q: In The Good Dinosaur's version of history, what happened to the dinosaur-killing asteroid?
+A: It missed Earth
+W: It hit the Moon
+W: It broke apart in the sky
+W: It landed in the ocean harmlessly
+
+Q: What is the name of the human boy Arlo befriends?
+A: Spot
+W: Buddy
+W: Rex
+W: Scout
+
+FILM: Cars 3 (2017)
+
+Q: Who is the young racing trainer who becomes a racer herself?
+A: Cruz Ramirez
+W: Sally Carrera
+W: Holley Shiftwell
+W: Natalie Certain
+
+Q: Who is the high-tech rookie who pushes McQueen toward retirement?
+A: Jackson Storm
+W: Chick Hicks
+W: Francesco Bernoulli
+W: Sterling
+
+FILM: Incredibles 2 (2018)
+
+Q: Who is chosen as the face of the campaign to make supers legal again?
+A: Elastigirl
+W: Mr. Incredible
+W: Frozone
+W: Violet
+
+Q: What is the name of the villain who hypnotizes people through screens?
+A: The Screenslaver
+W: The Underminer
+W: Syndrome
+W: The Hypnotist
+
+Q: What animal does baby Jack-Jack fight in the backyard?
+A: A raccoon
+W: A squirrel
+W: A skunk
+W: An opossum
+
+FILM: Toy Story 4 (2019)
+
+Q: What is Forky made from?
+A: A spork
+W: A plastic fork
+W: A pencil
+W: A popsicle stick
+
+Q: Who voiced Duke Caboom?
+A: Keanu Reeves
+W: Ryan Reynolds
+W: Will Arnett
+W: Tony Hale
+
+Q: Which doll lives in the antique store and wants Woody's voice box?
+A: Gabby Gabby
+W: Bo Peep
+W: Giggle McDimples
+W: Jessie
+
+FILM: Lightyear (2022)
+
+Q: Who voiced Buzz Lightyear in Lightyear?
+A: Chris Evans
+W: Tim Allen
+W: Chris Pratt
+W: Ryan Gosling
+
+Q: What is Sox?
+A: A robot cat
+W: A robot dog
+W: A space hamster
+W: A talking spaceship
+
+FILM: Elio (2025)
+
+Q: Where is Elio beamed up to?
+A: The Communiverse
+W: The Galactic Senate
+W: Star Command
+W: The Cosmic Council
+
+Q: Who voiced Elio's aunt Olga?
+A: Zoe Saldaña
+W: America Ferrera
+W: Eva Longoria
+W: Gina Rodriguez
+
+Q: Who is Glordon's warlord father?
+A: Lord Grigon
+W: Lord Zurg
+W: General Grievous
+W: Lord Gorgon
+
+# ===== Other theatrical Disney animation =====
+
+FILM: The Nightmare Before Christmas (1993)
+
+Q: What is the name of Jack Skellington's ghost dog?
+A: Zero
+W: Scraps
+W: Sparky
+W: Boney
+
+Q: Which holiday's town does Jack stumble into?
+A: Christmas Town
+W: Easter Town
+W: Valentine's Town
+W: Thanksgiving Town
+
+Q: Who is the rag doll in love with Jack?
+A: Sally
+W: Shock
+W: Lucy
+W: Emily
+
+Q: Who sang Jack's songs and wrote the music?
+A: Danny Elfman
+W: Tim Burton
+W: Alan Menken
+W: Randy Newman
+
+FILM: James and the Giant Peach (1996)
+
+Q: Which author wrote the book James and the Giant Peach?
+A: Roald Dahl
+W: Dr. Seuss
+W: Beverly Cleary
+W: E. B. White
+
+Q: Where does the giant peach finally land?
+A: New York City
+W: London
+W: Paris
+W: San Francisco
+
+FILM: A Goofy Movie (1995)
+
+Q: Which pop star does Max impersonate at the school assembly?
+A: Powerline
+W: Stacey
+W: Bobby Zimuruski
+W: Roxanne
+
+Q: What is the name of Max's crush?
+A: Roxanne
+W: Stacey
+W: Penny
+W: Daisy
+
+FILM: DuckTales the Movie: Treasure of the Lost Lamp (1990)
+
+Q: What does Scrooge's treasure hunt turn up?
+A: A lamp with a genie
+W: A cursed crown
+W: A golden goose
+W: A pirate map
+
+Q: Who is the villain who wants the lamp?
+A: Merlock
+W: Magica De Spell
+W: Flintheart Glomgold
+W: The Beagle Boys
+
+FILM: Return to Never Land (2002)
+
+Q: Whose daughter is taken to Never Land?
+A: Wendy's
+W: Tiger Lily's
+W: Captain Hook's
+W: Mrs. Darling's
+
+Q: What is the name of Wendy's daughter?
+A: Jane
+W: Mary
+W: Alice
+W: Rose
+
+FILM: The Jungle Book 2 (2003)
+
+Q: Who voiced Baloo in The Jungle Book 2?
+A: John Goodman
+W: Phil Harris
+W: Bill Murray
+W: Danny DeVito
+
+Q: What is the name of the village girl who befriends Mowgli?
+A: Shanti
+W: Meshua
+W: Ranjan
+W: Nala
+
+FILM: Frankenweenie (2012)
+
+Q: What is the name of Victor's dog, whom he brings back to life?
+A: Sparky
+W: Zero
+W: Scraps
+W: Persephone

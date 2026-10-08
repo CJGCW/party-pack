@@ -1,9 +1,11 @@
 import { io, type Socket } from 'socket.io-client';
 import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type RoomState, type ServerToClientEvents } from '../../shared/protocol';
 import { TOSS_UP } from '../../shared/games/tossUp';
+import { TRIVIA } from '../../shared/games/trivia';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { h } from './dom';
 import { createTossUp } from './games/tossUp';
+import { createTrivia } from './games/trivia';
 import { createWordleRace } from './games/wordleRace';
 
 /** A mini game's phone UI. */
@@ -17,6 +19,7 @@ type ControllerFactory = (root: HTMLElement, send: (input: unknown) => void) => 
 const CONTROLLERS: Record<string, ControllerFactory> = {
   [WORDLE_RACE.id]: createWordleRace,
   [TOSS_UP.id]: createTossUp,
+  [TRIVIA.id]: createTrivia,
 };
 
 const SESSION_KEY = 'party-pack-session';
