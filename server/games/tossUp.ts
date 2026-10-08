@@ -14,11 +14,12 @@ import {
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 
 /**
- * Points for puzzle `index` of `total`: the first third are worth 1,000, the middle
- * third 2,000 and the last third 3,000 (so 5 puzzles go 1k, 1k, 2k, 2k, 3k).
+ * Points for puzzle `index` of `total`: the first third are worth 500, the middle
+ * third 1,000 and the last third 1,500 (so 3 puzzles go 500, 1,000, 1,500). That keeps
+ * a strong game around 2,000-3,000 points, in line with Normal Word Rush.
  */
 function puzzleValue(index: number, total: number): number {
-  return 1000 * (1 + Math.floor((index * 3) / total));
+  return 500 * (1 + Math.floor((index * 3) / total));
 }
 
 const INTRO_MS = 4_000;
