@@ -424,9 +424,8 @@ export const drive: MicrogameImpl = {
   },
 };
 
-/** Phone sideways: tip it clockwise to pour the tea, then back to stop at the line. */
+/** Turn the phone clockwise to tip the teapot and pour, then back to stop at the line. */
 export const tea: MicrogameImpl = {
-  landscape: true,
   create(ctx) {
     const rate = byLevel(ctx, [0.35, 0.45, 0.55]);
     const half = byLevel(ctx, [0.09, 0.07, 0.055]);
@@ -435,7 +434,8 @@ export const tea: MicrogameImpl = {
     const hi = mid + half;
     const START = 0.3;
     const STOP_FOR = 0.3;
-    const cup = { x: 340, y: 200, w: 120, h: 120 };
+    const pot = { x: 120, y: 170 };
+    const cup = { x: 205, y: 320, w: 120, h: 130 };
     let level = 0;
     let tip = 0;
     let stopped = 0;
@@ -458,47 +458,54 @@ export const tea: MicrogameImpl = {
         }
       },
       draw(g) {
-        fillBg(g, '#f2d29b', '#d9a86a', LH);
-        roundRect(g, 0, cup.y + cup.h, LW, LH, 0, '#a0662f');
+        fillBg(g, '#f2d29b', '#d9a86a');
+        roundRect(g, 0, cup.y + cup.h, W, H, 0, '#a0662f');
         // Stream from the spout into the cup.
-        const pouring = flow() > 0 && !ctx.over;
-        if (pouring) roundRect(g, cup.x + 30, 120, 6 + flow() * 8, cup.y + cup.h - 120 - level * cup.h, 4, '#a0522d');
+        const angle = clamp(tip, -0.2, 1);
+        const spout = {
+          x: pot.x + Math.cos(angle) * 125 + Math.sin(angle) * 40,
+          y: pot.y + Math.sin(angle) * 125 - Math.cos(angle) * 40,
+        };
+        if (flow() > 0 && !ctx.over) {
+          const w = 6 + flow() * 8;
+          roundRect(g, spout.x - w / 2, spout.y, w, cup.y + cup.h - spout.y - level * cup.h, 4, '#a0522d');
+        }
         // Teapot, tipping with the phone.
         g.save();
-        g.translate(170, 120);
-        g.rotate(clamp(tip, -0.2, 1));
-        g.beginPath();
-        g.ellipse(0, 0, 80, 60, 0, 0, Math.PI * 2);
+        g.translate(pot.x, pot.y);
+        g.rotate(angle);
         g.fillStyle = PALETTE.blue;
+        g.beginPath();
+        g.moveTo(50, -10);
+        g.lineTo(125, -45);
+        g.lineTo(128, -32);
+        g.lineTo(60, 20);
         g.fill();
         g.beginPath();
-        g.moveTo(60, -10);
-        g.lineTo(140, -45);
-        g.lineTo(140, -30);
-        g.lineTo(70, 20);
+        g.ellipse(0, 0, 70, 54, 0, 0, Math.PI * 2);
         g.fill();
         g.strokeStyle = PALETTE.blue;
         g.lineWidth = 12;
         g.beginPath();
-        g.arc(-85, 0, 30, Math.PI * 0.5, Math.PI * 1.5);
+        g.arc(-75, 0, 26, Math.PI * 0.5, Math.PI * 1.5);
         g.stroke();
-        roundRect(g, -30, -72, 60, 16, 8, '#3a8fb8');
-        circle(g, 0, -78, 9, '#3a8fb8');
+        roundRect(g, -26, -64, 52, 14, 7, '#3a8fb8');
+        circle(g, 0, -70, 8, '#3a8fb8');
         g.restore();
         // Cup and the target band.
         const fill = Math.min(level, 1.05);
         roundRect(g, cup.x + 4, cup.y + cup.h * (1 - fill), cup.w - 8, cup.h * fill - 4, 6, '#a0522d');
+        g.fillStyle = 'rgba(255,209,102,0.35)';
+        g.fillRect(cup.x - 14, cup.y + cup.h * (1 - hi), cup.w + 28, cup.h * (hi - lo));
         g.strokeStyle = '#ffffff';
         g.lineWidth = 6;
         g.strokeRect(cup.x, cup.y, cup.w, cup.h);
         g.beginPath();
-        g.arc(cup.x + cup.w + 14, cup.y + 50, 22, -Math.PI / 2, Math.PI / 2);
+        g.arc(cup.x + cup.w + 4, cup.y + 55, 24, -Math.PI / 2, Math.PI / 2);
         g.stroke();
-        g.fillStyle = 'rgba(255,209,102,0.35)';
-        g.fillRect(cup.x - 16, cup.y + cup.h * (1 - hi), cup.w + 32, cup.h * (hi - lo));
-        if (verdict === 'spilled') label(g, 'SPILLED!', 420, 60, 40, PALETTE.danger);
-        else if (verdict === 'perfect') label(g, 'PERFECT CUP!', 420, 60, 36, PALETTE.accent);
-        else label(g, level >= lo ? 'Now tip it back!' : 'Tip right to pour', 420, 60, 24, PALETTE.bg);
+        if (verdict === 'spilled') label(g, 'SPILLED!', 180, 520, 40, PALETTE.danger);
+        else if (verdict === 'perfect') label(g, 'PERFECT CUP!', 180, 520, 38, PALETTE.accent);
+        else label(g, level >= lo ? 'Now turn it back!' : 'Turn your phone clockwise', 180, 520, 24, '#ffffff');
       },
     };
   },

@@ -244,12 +244,16 @@ export const pour: MicrogameImpl = {
 export const answer: MicrogameImpl = {
   create(ctx) {
     const count = byLevel(ctx, [3, 4, 6]);
-    const cols = count <= 4 ? 2 : 3;
-    const rows = Math.ceil(count / cols);
-    const phones = Array.from({ length: count }, (_, i) => ({
-      x: (W / (cols + 1)) * ((i % cols) + 1),
-      y: 140 + ((H - 180) / rows) * (Math.floor(i / cols) + 0.5),
-    }));
+    // Two columns; an odd one out sits centred on the last row.
+    const rows = Math.ceil(count / 2);
+    const cellW = W / 2;
+    const cellH = (H - 120) / rows;
+    const box = Math.min(cellW, cellH) - 30;
+    const phones = Array.from({ length: count }, (_, i) => {
+      const row = Math.floor(i / 2);
+      const alone = count % 2 === 1 && i === count - 1;
+      return { x: alone ? W / 2 : cellW * ((i % 2) + 0.5), y: 90 + cellH * (row + 0.5) };
+    });
     let ringing = randInt(ctx.rng, 0, count - 1);
     // At level 3 the ring hops to another phone part way through.
     const hopAt = ctx.level >= 3 ? rand(ctx.rng, 0.9, 1.6) : Infinity;
@@ -267,21 +271,29 @@ export const answer: MicrogameImpl = {
         phones.forEach((ph, i) => {
           const isRinging = i === ringing && !ctx.over;
           const shake = isRinging ? Math.sin(t * 60) * 0.18 : 0;
-          roundRect(g, ph.x - 55, ph.y - 55, 110, 110, 20, i === tapped ? (i === ringing ? PALETTE.correct : PALETTE.danger) : PALETTE.panelLight);
-          emoji(g, '☎️', ph.x, ph.y, 64, { rot: shake });
+          const fill = i === tapped ? (i === ringing ? PALETTE.correct : PALETTE.danger) : isRinging ? '#5b4fb0' : PALETTE.panelLight;
+          roundRect(g, ph.x - box / 2, ph.y - box / 2, box, box, 20, fill);
+          emoji(g, '☎️', ph.x, ph.y + 4, box * 0.5, { rot: shake });
           if (isRinging) {
+            // Ring marks either side of the handset, inside its box.
             g.strokeStyle = PALETTE.accent;
             g.lineWidth = 4;
+            g.lineCap = 'round';
+            const pulse = (t * 3) % 1;
             for (const s of [-1, 1]) {
-              g.beginPath();
-              g.arc(ph.x + s * 4, ph.y - 6, 50 + (t * 40) % 14, s < 0 ? Math.PI * 0.8 : -Math.PI * 0.2, s < 0 ? Math.PI * 1.2 : Math.PI * 0.2);
-              g.stroke();
+              for (const r of [box * 0.3, box * 0.38]) {
+                g.globalAlpha = 1 - pulse * 0.6;
+                g.beginPath();
+                g.arc(ph.x, ph.y + 4, r + pulse * 4, s < 0 ? Math.PI * 0.8 : -Math.PI * 0.2, s < 0 ? Math.PI * 1.2 : Math.PI * 0.2);
+                g.stroke();
+              }
             }
+            g.globalAlpha = 1;
           }
         });
       },
       down(p) {
-        const i = phones.findIndex((ph) => Math.abs(p.x - ph.x) < 60 && Math.abs(p.y - ph.y) < 60);
+        const i = phones.findIndex((ph) => Math.abs(p.x - ph.x) < box / 2 + 8 && Math.abs(p.y - ph.y) < box / 2 + 8);
         if (i < 0) return;
         tapped = i;
         if (i === ringing) ctx.win();
@@ -386,47 +398,6 @@ export const targets: MicrogameImpl = {
         if (!o) return;
         o.hit = 0;
         if (list.every((t) => t.hit >= 0)) ctx.win();
-      },
-    };
-  },
-};
-
-/** Wait for FIRE, then tap. Too early or too slow loses. */
-export const quickdraw: MicrogameImpl = {
-  create(ctx) {
-    const reaction = byLevel(ctx, [0.75, 0.55, 0.42]);
-    const fireAt = rand(ctx.rng, 1.0, Math.max(1.2, ctx.durationMs / 1000 - reaction - 0.4));
-    let state: 'wait' | 'fire' | 'early' | 'slow' | 'bang' = 'wait';
-    return {
-      update(_dt, t) {
-        if (state === 'wait' && t >= fireAt) state = 'fire';
-        if (state === 'fire' && t > fireAt + reaction) {
-          state = 'slow';
-          ctx.lose();
-        }
-      },
-      draw(g) {
-        fillBg(g, state === 'fire' ? '#ff9a3c' : '#f2c27b', '#b5651d');
-        circle(g, 180, 150, 60, '#fff3c4');
-        roundRect(g, 0, 420, W, 140, 0, '#a0522d');
-        const fallen = state === 'bang';
-        emoji(g, '🤠', 270, fallen ? 400 : 340, 110, { rot: fallen ? Math.PI / 2 : 0 });
-        emoji(g, '🌵', 60, 380, 90);
-        if (state === 'wait') label(g, 'WAIT…', 180, 250, 56, PALETTE.text);
-        else if (state === 'fire') label(g, 'FIRE!', 180, 250, 96, PALETTE.danger);
-        else if (state === 'early') label(g, 'TOO EARLY!', 180, 250, 52, PALETTE.danger);
-        else if (state === 'slow') label(g, 'TOO SLOW!', 180, 250, 52, PALETTE.danger);
-        else label(g, 'BANG!', 180, 250, 80, PALETTE.accent);
-        if (state === 'fire' || state === 'bang') emoji(g, '🔫', 90, 480, 80, { flip: true });
-      },
-      down() {
-        if (state === 'wait') {
-          state = 'early';
-          ctx.lose();
-        } else if (state === 'fire') {
-          state = 'bang';
-          ctx.win();
-        }
       },
     };
   },
