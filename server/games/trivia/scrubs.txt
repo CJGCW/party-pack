@@ -583,3 +583,221 @@ A: North Hollywood Medical Center
 W: Cedars-Sinai
 W: Seattle Grace
 W: Los Angeles General
+
+TOPIC: The Staff
+
+Q: How many tries did it take Ted to pass the bar exam?
+A: Five
+W: One
+W: Two
+W: Ten
+
+Q: Which college did Ted Buckland attend?
+A: Ithaca College
+W: Cornell
+W: Syracuse
+W: Hale University
+
+Q: Who played Ted Buckland?
+A: Sam Lloyd
+W: Neil Flynn
+W: Robert Maschio
+W: Johnny Kastl
+
+Q: Which of these are nicknames for Doug Murphy?
+A: Nervous Guy
+A: Pee Pants
+W: Gandhi
+W: Newbie
+
+Q: How does Dr. Beardface insist his name is pronounced?
+A: Beard-fa-SAY
+W: Beard-FACE
+W: Bear-DEFF-ice
+W: Beard-FOSS
+
+Q: Who turns out to be Lloyd the delivery guy's father?
+A: Colonel Doctor
+W: Dr. Kelso
+W: The Janitor
+W: Ted
+
+Q: Why is Colonel Doctor called that?
+A: He looks like Colonel Sanders
+W: He served in the Army
+W: His real name is Colonel
+W: He wears a military uniform
+
+Q: What is the real name of the "Snoop Dogg Attending"?
+A: Ronald
+W: Calvin
+W: Snoop
+W: Dwayne
+
+Q: What is Dr. Zeltzer's specialty?
+A: Oncology
+W: Cardiology
+W: Urology
+W: Gynecology
+
+Q: How did hook-handed security guard Leonard lose his hand?
+A: In an ice machine
+W: To a shark
+W: In a car door
+W: During surgery
+
+Q: Which illness does Ben Sullivan have?
+A: Leukemia
+W: Lymphoma
+W: Diabetes
+W: Heart disease
+
+Q: Which intern played by Aziz Ansari claims to have been a DJ?
+A: Ed "Big Ed" Dhandapani
+W: Cabbage
+W: Doug
+W: Josephine
+
+Q: What is Jimmy the orderly known for?
+A: Touching everyone far too much
+W: Never speaking
+W: Sleeping on the job
+W: Stealing lunches
+
+Q: Who played Franklyn, the unflappable lab technician?
+A: Masi Oka
+W: John Cho
+W: Ken Jeong
+W: Aziz Ansari
+
+Q: Who beat the Janitor in the election for janitors' union president?
+A: Randall
+W: Troy
+W: Lloyd
+W: Ted
+
+TOPIC: Family and Friends
+
+Q: Why does Jordan name her daughter Jennifer Dylan?
+A: So her initials are J.D.
+W: After her grandmother
+W: After Bob Dylan
+W: After Dr. Kelso's mother
+
+Q: What are the middle names of J.D.'s son, Sam?
+A: Perry Gilligan
+W: Christopher Turk
+W: Percival Kelso
+W: Daniel Ritter
+
+Q: What job did J.D.'s father, Sam Dorian, have?
+A: Office supplies salesman
+W: Insurance agent
+W: High school teacher
+W: Car salesman
+
+Q: What does Dan eventually become successful at?
+A: Real estate
+W: Medicine
+W: Stand-up comedy
+W: Bartending
+
+Q: Who played Jordan's sister, Danni?
+A: Tara Reid
+W: Heather Graham
+W: Elizabeth Banks
+W: Heather Locklear
+
+Q: How did the Janitor's wife, Lady, get her name?
+A: Her parents had been watching Lady and the Tramp
+W: She was named after a dog
+W: After Lady Gaga
+W: She won a beauty pageant
+
+Q: What instrument does Ted's girlfriend, Gooch, play?
+A: Ukulele
+W: Banjo
+W: Kazoo
+W: Harmonica
+
+Q: Who played Stephanie Gooch?
+A: Kate Micucci
+W: Zooey Deschanel
+W: Kristen Bell
+W: Natalie Morales
+
+Q: What does Elliot's ex Sean Kelly grow within four days of being dumped?
+A: A massive beard
+W: A mohawk
+W: A mustache
+W: A ponytail
+
+Q: What does Mrs. Wilk call J.D.?
+A: Tiger
+W: Newbie
+W: Bambi
+W: Scooter
+
+TOPIC: Patients
+
+Q: Who played Dr. Kevin Casey, the surgeon with severe OCD?
+A: Michael J. Fox
+W: Matthew Perry
+W: Ben Stiller
+W: Colin Hanks
+
+Q: What did recurring patient Jill Tracy actually die of?
+A: Rabies
+W: A cocaine overdose
+W: A heart attack
+W: Food poisoning
+
+Q: Who played Jill Tracy?
+A: Nicole Sullivan
+W: Tara Reid
+W: Heather Locklear
+W: Elizabeth Banks
+
+Q: What kind of patient is Harvey Corman?
+A: A cheap hypochondriac
+W: A celebrity chef
+W: A retired surgeon
+W: A professional wrestler
+
+Q: Who played Harvey Corman?
+A: Richard Kind
+W: Jon Lovitz
+W: Wayne Knight
+W: Jason Alexander
+
+TOPIC: Behind the Scenes
+
+Q: Who created Scrubs?
+A: Bill Lawrence
+W: Michael Schur
+W: Greg Daniels
+W: Dan Goor
+
+Q: In which year did Scrubs premiere on NBC?
+A: 2001
+W: 1999
+W: 2003
+W: 2005
+
+Q: How is Christa Miller, who played Jordan, connected to Scrubs creator Bill Lawrence?
+A: She's his wife
+W: She's his sister
+W: She's his cousin
+W: She was his college roommate
+
+Q: Which Friends star played Dr. Taylor Maddox in season 8?
+A: Courteney Cox
+W: Jennifer Aniston
+W: Lisa Kudrow
+W: Matthew Perry
+
+Q: Which Scrubs actor later played union boss Frank O'Sullivan on Brooklyn Nine-Nine?
+A: John C. McGinley
+W: Zach Braff
+W: Neil Flynn
+W: Ken Jenkins

@@ -513,3 +513,281 @@ A: Jimmy "The Butcher" Figgis
 W: Seamus Murphy
 W: The Vulture
 W: Doug Judy
+
+TOPIC: The Squad
+
+Q: What was Rosa expelled from as a teenager?
+A: Ballet school
+W: Military school
+W: Space camp
+W: Catholic school
+
+Q: What does Rosa become after leaving the NYPD?
+A: A private investigator
+W: A bounty hunter
+W: A mechanic
+W: A ballet teacher
+
+Q: How does Terry often refer to himself?
+A: In the third person
+W: As "the Sarge"
+W: As "Big Terry"
+W: As "Daddy"
+
+Q: What alias does Amy use when she goes undercover in prison?
+A: Isabel Cortez
+W: Emily Goldfinch
+W: Greg Stickney
+W: Amy Peralta
+
+Q: Where does Hitchcock claim to move in season 8?
+A: Brazil
+W: Florida
+W: Mexico
+W: Alaska
+
+Q: Which restaurant do Hitchcock and Scully love?
+A: Wing Slutz
+W: Sal's Pizza
+W: Shaw's Bar
+W: Paunch Burger
+
+Q: What medical device does Scully have?
+A: A pacemaker
+W: A hearing aid
+W: A glass eye
+W: A prosthetic leg
+
+Q: What jobs do Amy and Holt get in the series finale?
+A: Amy becomes a chief, Holt Deputy Commissioner
+W: Amy becomes captain, Holt commissioner
+W: Amy joins the FBI, Holt retires
+W: Amy becomes sergeant, Holt mayor
+
+TOPIC: Friends and Foes
+
+Q: What is the Vulture's real name?
+A: Keith Pembroke
+W: Kevin Pembroke
+W: Keith Prescott
+W: Seamus Murphy
+
+Q: What does the Vulture steal from Jake and Amy?
+A: Their wedding venue
+W: Their honeymoon tickets
+W: Their apartment
+W: Their dog
+
+Q: In which episode does Madeline Wuntch die?
+A: Ding Dong
+W: The Box
+W: Moo Moo
+W: Lights Out
+
+Q: Who played Adrian Pimento?
+A: Jason Mantzoukas
+W: Ken Marino
+W: Ike Barinholtz
+W: Ed Helms
+
+Q: Which Parks and Recreation character was also played by Pimento's actor?
+A: Dennis Feinstein
+W: Jean-Ralphio
+W: Jeremy Jamm
+W: Bobby Newport
+
+Q: Who played Debbie Fogle, the detective who turns out to be a mole?
+A: Vanessa Bayer
+W: Kristen Bell
+W: Cameron Esposito
+W: Chelsea Peretti
+
+Q: What is the name of Detective Lohank's cabin?
+A: Stink Puddle Manor
+W: Smell Swamp Lodge
+W: The Lohank Lair
+W: Moose Puddle Manor
+
+Q: Who played C.J. Stentley, the hopeless temporary captain?
+A: Ken Marino
+W: Dean Winters
+W: Ed Helms
+W: Bill Hader
+
+Q: Who played Captain Seth Dozerman?
+A: Bill Hader
+W: Ken Marino
+W: Fred Armisen
+W: Ed Helms
+
+Q: What kills Captain Dozerman?
+A: A heart attack after seeing Jake and Amy kiss
+W: A car crash
+W: Choking on yogurt
+W: A shootout
+
+Q: How does Jack Danger insist his name is pronounced?
+A: "Donger"
+W: "Dainger"
+W: "Dunger"
+W: "Danjay"
+
+Q: Who played postal inspector Jack Danger?
+A: Ed Helms
+W: Steve Carell
+W: Bill Hader
+W: Ken Marino
+
+Q: Who played the violinist Mlepnos?
+A: Fred Armisen
+W: Bill Hader
+W: Ike Barinholtz
+W: Andy Samberg
+
+Q: Who takes over as the Pontiac Bandit after Doug Judy?
+A: His sister, Trudy Judy
+W: His foster brother, George
+W: His wife
+W: Jake
+
+Q: Who played Trudy Judy?
+A: Nicole Byer
+W: Niecy Nash
+W: Chelsea Peretti
+W: Retta
+
+Q: Where does Doug Judy move with his wife in season 8?
+A: Amsterdam
+W: Miami
+W: Paris
+W: Mexico City
+
+Q: What is Doug Judy's wife's job?
+A: Federal judge
+W: Police captain
+W: Defense attorney
+W: Car dealer
+
+Q: Who played Jake's prison cellmate Caleb?
+A: Tim Meadows
+W: Craig Robinson
+W: Dennis Haysbert
+W: Terry Crews
+
+Q: Who turns out to be the FBI mole working for Figgis?
+A: Bob Annderson, Holt's old partner
+W: Agent Kendrick
+W: Captain Stentley
+W: Teddy Wells
+
+Q: Who played Melanie Hawkins, the lieutenant who runs a robbery crew?
+A: Gina Gershon
+W: Kyra Sedgwick
+W: Allison Tolman
+W: Gina Rodriguez
+
+Q: Who played Gintars, Nikolaj's biological father?
+A: Ike Barinholtz
+W: Ken Marino
+W: Jason Mantzoukas
+W: Fred Armisen
+
+Q: Which New Girl character crosses over into Brooklyn Nine-Nine?
+A: Jess Day
+W: Nick Miller
+W: Schmidt
+W: Winston Bishop
+
+TOPIC: Families
+
+Q: What does Jake's mother, Karen, do for a living?
+A: Art teacher
+W: Nurse
+W: Airline pilot
+W: Lawyer
+
+Q: Who played Jake's grandfather, Admiral Walter Peralta?
+A: Martin Mull
+W: Fred Willard
+W: Stephen Root
+W: Bradley Whitford
+
+Q: Who played Terry's wife, Sharon?
+A: Merrin Dungey
+W: Niecy Nash
+W: Retta
+W: Kerry Washington
+
+Q: What does Amy's brother David do?
+A: He's an NYPD lieutenant
+W: He's a firefighter
+W: He's a defense lawyer
+W: He's a doctor
+
+Q: What does Rosa's father Oscar do?
+A: He's a schoolteacher
+W: He's a cop
+W: He's a mechanic
+W: He's a chef
+
+Q: What did Charles's father, Lynn, do before retiring?
+A: Florist
+W: Chef
+W: Detective
+W: Dentist
+
+Q: What does Gina's mother, Darlene, do?
+A: Travel agent
+W: Dancer
+W: Lawyer
+W: Hairdresser
+
+Q: Who played Milton Boyle, Iggy's father?
+A: Ryan Phillippe
+W: Ryan Reynolds
+W: Ike Barinholtz
+W: Ken Marino
+
+Q: Who played Holt's sister, Debbie?
+A: Niecy Nash
+W: Nicole Byer
+W: Retta
+W: Merrin Dungey
+
+Q: Who played Charles's wife, Genevieve?
+A: Mary Lynn Rajskub
+W: Vanessa Bayer
+W: Kristen Bell
+W: Marilu Henner
+
+TOPIC: The Show
+
+Q: Who created Brooklyn Nine-Nine?
+A: Dan Goor and Michael Schur
+W: Greg Daniels and Michael Schur
+W: Bill Lawrence and Dan Goor
+W: Andy Samberg and Dan Goor
+
+Q: In which year did Brooklyn Nine-Nine premiere?
+A: 2013
+W: 2011
+W: 2015
+W: 2009
+
+Q: How soon after Fox canceled it did NBC pick up the show?
+A: About 30 hours
+W: About a week
+W: About six months
+W: About a year
+
+Q: Which real NYPD precinct building is shown as the Nine-Nine?
+A: The 78th Precinct
+W: The 99th Precinct
+W: The 1st Precinct
+W: The 9th Precinct
+
+Q: Which cast member won a Golden Globe for season 1?
+A: Andy Samberg
+W: Andre Braugher
+W: Terry Crews
+W: Chelsea Peretti
