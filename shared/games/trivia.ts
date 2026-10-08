@@ -41,7 +41,7 @@ export interface TriviaHostPlayer {
   gamePoints: number;
   /** Has locked in an answer to the current question. */
   answered: boolean;
-  /** At the reveal: did they get it right, and what did it earn. */
+  /** At the reveal: did they score anything, and what did it earn. */
   correct: boolean | null;
   questionPoints: number;
 }
@@ -56,8 +56,10 @@ export interface TriviaHostView {
   question: string;
   /** Empty during 'question', so nobody gets a head start. */
   answers: string[];
-  /** Only at the reveal. */
-  correctIndex: number | null;
+  /** Select-all-that-apply: any number of the answers may be right. */
+  multi: boolean;
+  /** Only at the reveal: every right answer. */
+  correctIndices: number[] | null;
   /** At the reveal: how many players picked each answer. */
   counts: number[] | null;
   msLeft: number;
@@ -71,12 +73,15 @@ export interface TriviaPlayerView {
   film: string;
   question: string;
   answers: string[];
-  myAnswer: number | null;
-  correctIndex: number | null;
+  multi: boolean;
+  /** What this player locked in (empty until they do). */
+  myAnswers: number[];
+  correctIndices: number[] | null;
   questionPoints: number;
   gamePoints: number;
   score: number;
   msLeft: number;
 }
 
-export type TriviaInput = { type: 'answer'; index: number };
+/** The chosen answers: exactly one for a normal question, one or more for select-all. */
+export type TriviaInput = { type: 'answer'; indices: number[] };

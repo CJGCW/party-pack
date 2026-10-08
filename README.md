@@ -83,7 +83,10 @@ W: Nathan Lane
 W: Jeremy Irons
 ```
 
-`A` is the right answer and the three `W`s are wrong ones; answer order is shuffled each time. The
+`A` is the right answer and the three `W`s are wrong ones; answer order is shuffled each time.
+Give a question more than one `A` (still four options in total) to make it **select all that apply**:
+players toggle answers and lock in, and score the share of right answers they picked minus the share
+of wrong ones they picked (never below 0), so picking every option scores nothing unless they're all right. The
 Disney & Pixar bank covers the theatrical Disney and Pixar animated features except direct-to-video
 or streaming sequels, live action, Song of the South, Toy Story 4 and Lightyear, plus Hook (1991) as a
 house exception; its facts were checked against Wikipedia. It also has "Across the Films" questions that compare

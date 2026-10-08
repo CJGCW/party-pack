@@ -2451,3 +2451,139 @@ A: Nick Wilde
 W: Judy Hopps
 W: Flash
 W: Chief Bogo
+
+# ===== Select all that apply =====
+# More than one A: line makes a question select-all. Every A must be right and
+# every W must be wrong.
+
+FILM: Across the Films
+
+Q: Which of these villains turn into a dragon?
+A: Maleficent
+A: Madam Mim
+W: Jafar
+W: Yzma
+
+Q: Which of these characters did Alan Tudyk voice?
+A: Heihei
+A: King Candy
+A: The Duke of Weselton
+W: Olaf
+
+Q: Which of these characters did Phil Harris voice?
+A: Baloo in The Jungle Book
+A: Little John in Robin Hood
+A: Thomas O'Malley in The Aristocats
+W: Bagheera in The Jungle Book
+
+Q: Which of these films are set in Paris?
+A: Ratatouille
+A: The Aristocats
+A: The Hunchback of Notre Dame
+W: Tangled
+
+Q: Which of these are Pixar films?
+A: Up
+A: Coco
+A: Luca
+W: Bolt
+
+Q: Which of these characters are horses?
+A: Maximus
+A: Philippe
+A: Bullseye
+W: Rajah
+
+Q: Which of these villains are lions?
+A: Scar
+A: Prince John
+W: Shere Khan
+W: Sabor
+
+Q: Which of these films have songs by Phil Collins?
+A: Tarzan
+A: Brother Bear
+W: The Lion King
+W: Hercules
+
+Q: Which of these heroines have a sister?
+A: Anna
+A: Elsa
+A: Ariel
+W: Jasmine
+
+Q: Which of these films are inspired by classic novels?
+A: The Hunchback of Notre Dame
+A: Treasure Planet
+A: Oliver & Company
+W: Encanto
+
+Q: Which of these characters are dogs?
+A: Dug
+A: Dante
+A: Zero
+W: Pua
+
+FILM: The Lion King (1994)
+
+Q: Which of these characters are hyenas?
+A: Shenzi
+A: Banzai
+A: Ed
+W: Zazu
+
+FILM: Encanto (2021)
+
+Q: Which of these are gifts in the Madrigal family?
+A: Super strength
+A: Super hearing
+A: Shapeshifting
+W: Flight
+
+FILM: The Sword in the Stone (1963)
+
+Q: Which animals does Merlin turn Arthur into?
+A: A fish
+A: A squirrel
+A: A bird
+W: A frog
+
+FILM: The Three Caballeros (1944)
+
+Q: Which characters are the Three Caballeros?
+A: Donald Duck
+A: José Carioca
+A: Panchito Pistoles
+W: Goofy
+
+FILM: Inside Out (2015)
+
+Q: Which of these emotions are in Riley's head in the first Inside Out?
+A: Joy
+A: Fear
+A: Disgust
+W: Anxiety
+
+FILM: Frozen (2013)
+
+Q: Which of these characters are made by Elsa's magic?
+A: Olaf
+A: Marshmallow
+W: Sven
+W: Bruni
+
+FILM: Moana (2016)
+
+Q: Which of these are Moana's animal companions?
+A: Heihei
+A: Pua
+W: Tamatoa
+W: Meeko
+
+FILM: Toy Story (1995)
+
+Q: Which of these toys belong to Andy in the first Toy Story?
+A: Woody
+A: Buzz Lightyear
+A: Hamm
+W: Jessie

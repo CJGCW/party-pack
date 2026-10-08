@@ -26,6 +26,7 @@ export class TriviaScene extends Phaser.Scene {
   private filmText!: Phaser.GameObjects.Text;
   private questionText!: Phaser.GameObjects.Text;
   private timerText!: Phaser.GameObjects.Text;
+  private multiText!: Phaser.GameObjects.Text;
   private tiles: Tile[] = [];
   private playersRow!: Phaser.GameObjects.Container;
   private overlay!: Phaser.GameObjects.Container;
@@ -49,6 +50,10 @@ export class TriviaScene extends Phaser.Scene {
       align: 'center',
       wordWrap: { width: 1600 },
     });
+
+    this.multiText = text(this, WIDTH / 2, 505, 'SELECT ALL THAT APPLY', 34, COLORS.accent, { fontStyle: '700' })
+      .setLetterSpacing(3)
+      .setVisible(false);
 
     for (let i = 0; i < ANSWER_STYLES.length; i++) {
       const x = WIDTH / 2 + (i % 2 === 0 ? -1 : 1) * (TILE_W / 2 + TILE_GAP / 2);
@@ -100,6 +105,7 @@ export class TriviaScene extends Phaser.Scene {
     this.headerText.setText(`Question ${view.questionNumber} of ${view.totalQuestions}  ·  ${view.packName}`);
     this.filmText.setText(view.film.toUpperCase());
     this.questionText.setText(view.question);
+    this.multiText.setVisible(view.multi && view.phase !== 'gameEnd');
     this.renderPlayers(view.players, view.phase);
 
     const key = `${view.questionNumber}|${view.phase}`;
@@ -130,7 +136,7 @@ export class TriviaScene extends Phaser.Scene {
   private showReveal(view: TriviaHostView) {
     view.answers.forEach((_, i) => {
       const tile = this.tiles[i];
-      const right = i === view.correctIndex;
+      const right = view.correctIndices?.includes(i) ?? false;
       tile.container.setAlpha(1).setScale(1);
       this.drawTile(i, right ? 'right' : 'wrong');
       tile.label.setAlpha(right ? 1 : 0.55);

@@ -21,8 +21,18 @@ const ANSWER_MS = 20_000;
 const BASE_POINTS = 500;
 const SPEED_BONUS = 500;
 
-export function questionPoints(msLeft: number): number {
-  return BASE_POINTS + Math.round((SPEED_BONUS * Math.max(0, msLeft)) / ANSWER_MS);
+/**
+ * Points for one player's answer. For select-all questions, partial credit: the
+ * share of right answers picked, minus the share of wrong answers picked (never
+ * below 0). Picking every option therefore scores nothing unless they're all right.
+ */
+export function questionPoints(msLeft: number, picked: number[], correct: number[]): number {
+  const right = picked.filter((i) => correct.includes(i)).length;
+  const wrong = picked.length - right;
+  const wrongOptions = ANSWER_COUNT - correct.length;
+  const share = Math.max(0, right / correct.length - (wrongOptions > 0 ? wrong / wrongOptions : 0));
+  const full = BASE_POINTS + (SPEED_BONUS * Math.max(0, msLeft)) / ANSWER_MS;
+  return Math.round(share * full);
 }
 
 // ---- Question banks -----------------------------------------------------------
@@ -37,13 +47,14 @@ export function questionPoints(msLeft: number): number {
 //   W: Nathan Lane
 //   W: Jeremy Irons
 //
-// A "FILM:" line applies to every question after it. A is the right answer and
-// each W is a wrong one. Lines starting with # are comments.
+// A "FILM:" line applies to every question after it. A is a right answer and
+// each W is a wrong one; there are always four in total. More than one A makes
+// it a select-all-that-apply question. Lines starting with # are comments.
 
 interface Question {
   film: string;
   question: string;
-  correct: string;
+  correct: string[];
   wrong: string[];
 }
 
@@ -55,7 +66,7 @@ function loadBank(file: string): Question[] {
   let current: Question | null = null;
   const finish = () => {
     if (!current) return;
-    if (!current.correct || current.wrong.length !== ANSWER_COUNT - 1) {
+    if (current.correct.length === 0 || current.correct.length + current.wrong.length !== ANSWER_COUNT) {
       console.warn(`[trivia] Skipping malformed question in ${file}: ${current.question}`);
     } else {
       questions.push(current);
@@ -77,9 +88,9 @@ function loadBank(file: string): Question[] {
       film = value;
     } else if (key === 'Q') {
       finish();
-      current = { film, question: value, correct: '', wrong: [] };
+      current = { film, question: value, correct: [], wrong: [] };
     } else if (current && key === 'A') {
-      current.correct = value;
+      current.correct.push(value);
     } else if (current && key === 'W') {
       current.wrong.push(value);
     }
@@ -120,11 +131,11 @@ class Trivia implements MiniGame {
   private phase: TriviaPhase = 'question';
   private questionIndex = 0;
   private question!: Question;
-  /** Answers in the order shown, and which of them is right. */
+  /** Answers in the order shown, and which of them are right. */
   private answers: string[] = [];
-  private correctIndex = 0;
-  /** Player id -> chosen answer index and the time left when they chose it. */
-  private picks = new Map<string, { index: number; msLeft: number }>();
+  private correctIndices: number[] = [];
+  /** Player id -> the answers they locked in and the time left when they did. */
+  private picks = new Map<string, { indices: number[]; msLeft: number }>();
   private lastPoints = new Map<string, number>();
   private gamePoints = new Map<string, number>();
   private phaseEndsAt = 0;
@@ -151,8 +162,8 @@ class Trivia implements MiniGame {
   private startQuestion(index: number) {
     this.questionIndex = index;
     this.question = dealQuestion(this.bankId);
-    this.answers = shuffle([this.question.correct, ...this.question.wrong]);
-    this.correctIndex = this.answers.indexOf(this.question.correct);
+    this.answers = shuffle([...this.question.correct, ...this.question.wrong]);
+    this.correctIndices = this.answers.flatMap((a, i) => (this.question.correct.includes(a) ? [i] : []));
     this.picks.clear();
     this.lastPoints.clear();
     this.setPhase('question', READ_MS, () => this.setPhase('answering', ANSWER_MS, () => this.reveal()));
@@ -160,10 +171,12 @@ class Trivia implements MiniGame {
 
   onInput(playerId: string, raw: unknown) {
     const input = raw as TriviaInput;
-    if (this.phase !== 'answering' || input?.type !== 'answer') return;
-    if (!Number.isInteger(input.index) || input.index < 0 || input.index >= this.answers.length) return;
+    if (this.phase !== 'answering' || input?.type !== 'answer' || !Array.isArray(input.indices)) return;
     if (this.picks.has(playerId)) return; // answers are final
-    this.picks.set(playerId, { index: input.index, msLeft: this.msLeft() });
+    const indices = [...new Set(input.indices)].filter((i) => Number.isInteger(i) && i >= 0 && i < this.answers.length);
+    // A normal question takes exactly one answer; select-all takes one or more.
+    if (indices.length === 0 || (!this.multi && indices.length !== 1)) return;
+    this.picks.set(playerId, { indices, msLeft: this.msLeft() });
 
     // Reveal as soon as everyone still here has answered.
     const connected = this.ctx.players().filter((p) => p.connected);
@@ -173,8 +186,8 @@ class Trivia implements MiniGame {
 
   private reveal() {
     for (const [playerId, pick] of this.picks) {
-      if (pick.index !== this.correctIndex) continue;
-      const points = questionPoints(pick.msLeft);
+      const points = questionPoints(pick.msLeft, pick.indices, this.correctIndices);
+      if (points === 0) continue;
       this.lastPoints.set(playerId, points);
       this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + points);
       this.ctx.addScore(playerId, points);
@@ -192,6 +205,10 @@ class Trivia implements MiniGame {
     return Math.max(0, this.phaseEndsAt - Date.now());
   }
 
+  private get multi() {
+    return this.question.correct.length > 1;
+  }
+
   private get revealing() {
     return this.phase === 'reveal' || this.phase === 'gameEnd';
   }
@@ -202,7 +219,7 @@ class Trivia implements MiniGame {
   }
 
   syncHost() {
-    const counts = this.answers.map((_, i) => [...this.picks.values()].filter((p) => p.index === i).length);
+    const counts = this.answers.map((_, i) => [...this.picks.values()].filter((p) => p.indices.includes(i)).length);
     const view: TriviaHostView = {
       phase: this.phase,
       packName: TRIVIA.modes.find((m) => m.id === this.bankId)?.name ?? '',
@@ -211,7 +228,8 @@ class Trivia implements MiniGame {
       film: this.question.film,
       question: this.question.question,
       answers: this.visibleAnswers(),
-      correctIndex: this.revealing ? this.correctIndex : null,
+      multi: this.multi,
+      correctIndices: this.revealing ? this.correctIndices : null,
       counts: this.revealing ? counts : null,
       msLeft: this.msLeft(),
       players: this.ctx.players().map((p) => ({
@@ -221,7 +239,7 @@ class Trivia implements MiniGame {
         score: p.score,
         gamePoints: this.gamePoints.get(p.id) ?? 0,
         answered: this.picks.has(p.id),
-        correct: this.revealing ? this.picks.get(p.id)?.index === this.correctIndex : null,
+        correct: this.revealing ? (this.lastPoints.get(p.id) ?? 0) > 0 : null,
         questionPoints: this.lastPoints.get(p.id) ?? 0,
       })),
     };
@@ -238,8 +256,9 @@ class Trivia implements MiniGame {
       film: this.question.film,
       question: this.question.question,
       answers: this.visibleAnswers(),
-      myAnswer: this.picks.get(playerId)?.index ?? null,
-      correctIndex: this.revealing ? this.correctIndex : null,
+      multi: this.multi,
+      myAnswers: this.picks.get(playerId)?.indices ?? [],
+      correctIndices: this.revealing ? this.correctIndices : null,
       questionPoints: this.lastPoints.get(playerId) ?? 0,
       gamePoints: this.gamePoints.get(playerId) ?? 0,
       score: player.score,
