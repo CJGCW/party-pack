@@ -38,6 +38,8 @@ export interface WordleHostPlayer {
   /** Milliseconds left on the clock when they solved it. */
   solvedMsLeft: number | null;
   roundPoints: number;
+  /** Points earned across all words in this game so far. */
+  gamePoints: number;
   score: number;
 }
 
@@ -73,6 +75,7 @@ export interface WordlePlayerView {
   finishRank: number | null;
   solvedMsLeft: number | null;
   roundPoints: number;
+  gamePoints: number;
   score: number;
   answer: string | null;
   definition: WordDefinition | null;

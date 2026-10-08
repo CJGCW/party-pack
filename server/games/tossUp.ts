@@ -11,6 +11,7 @@ import {
   type TossUpPhase,
   type TossUpPlayerView,
 } from '../../shared/games/tossUp';
+import { PUZZLE_RESULT_MS, ROUND_SCORES_MS } from '../../shared/timing';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 
 /**
@@ -28,8 +29,6 @@ const ANSWER_MS = 45_000;
 const WRONG_PAUSE_MS = 2_500;
 /** Last chance to buzz once every letter is showing. */
 const FULL_BOARD_GRACE_MS = 5_000;
-const RESULT_MS = 7_000;
-const GAME_END_MS = 15_000;
 
 // ---- Puzzle bank -------------------------------------------------------------
 
@@ -81,6 +80,8 @@ class TossUp implements MiniGame {
   private hiddenOrder: string[] = [];
   private hidden = new Set<string>();
   private lockedOut = new Set<string>();
+  /** Points each player has earned in this game (shown on the round scores screen). */
+  private gamePoints = new Map<string, number>();
   private buzzerId: string | null = null;
   private lastGuess: TossUpGuess | null = null;
   private solvedBy: string | null = null;
@@ -171,6 +172,7 @@ class TossUp implements MiniGame {
     if (normalizeAnswer(guess) === normalizeAnswer(this.puzzle.text)) {
       this.lastGuess = { playerId, name: this.nameOf(playerId), text: guess, correct: true };
       this.ctx.addScore(playerId, this.value);
+      this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + this.value);
       this.finishPuzzle(playerId);
     } else {
       this.wrongAnswer(playerId, guess);
@@ -204,10 +206,10 @@ class TossUp implements MiniGame {
     this.phase = solvedBy ? 'solved' : 'unsolved';
 
     const isLast = this.puzzleIndex >= this.totalPuzzles - 1;
-    this.schedule(RESULT_MS, () => {
+    this.schedule(PUZZLE_RESULT_MS, () => {
       if (!isLast) return this.startPuzzle(this.puzzleIndex + 1);
       this.phase = 'gameEnd';
-      this.schedule(GAME_END_MS, () => this.ctx.finish());
+      this.schedule(ROUND_SCORES_MS, () => this.ctx.finish());
       this.syncAll();
     });
     this.syncAll();
@@ -246,6 +248,7 @@ class TossUp implements MiniGame {
         color: p.color,
         score: p.score,
         lockedOut: this.lockedOut.has(p.id),
+        gamePoints: this.gamePoints.get(p.id) ?? 0,
       })),
     };
     this.ctx.sendHost(view);
@@ -264,6 +267,7 @@ class TossUp implements MiniGame {
       lines: this.maskedLines(),
       msLeft: this.msLeft(),
       score: player.score,
+      gamePoints: this.gamePoints.get(playerId) ?? 0,
       canBuzz: this.phase === 'revealing' && !lockedOut,
       answering: this.phase === 'buzzed' && this.buzzerId === playerId,
       lockedOut,

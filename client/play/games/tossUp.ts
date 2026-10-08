@@ -140,7 +140,7 @@ export function createTossUp(root: HTMLElement, send: (input: unknown) => void):
         setStatus('Nobody solved it.');
         break;
       case 'gameEnd':
-        setStatus(`Final score: ${view.score.toLocaleString()}. Look at the TV!`, 'good');
+        setStatus(`Round scores: you got +${view.gamePoints.toLocaleString()} this round. Look at the TV!`, 'good');
         break;
     }
   }

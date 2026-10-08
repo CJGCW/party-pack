@@ -6,6 +6,7 @@ import { net, socket } from './net';
 import { LobbyScene } from './scenes/LobbyScene';
 import { ResultsScene } from './scenes/ResultsScene';
 import { SpinnerScene } from './scenes/SpinnerScene';
+import { StandingsScene } from './scenes/StandingsScene';
 import { TossUpScene } from './scenes/TossUpScene';
 import { WordleRaceScene } from './scenes/WordleRaceScene';
 import { HEIGHT, WIDTH } from './theme';
@@ -31,6 +32,7 @@ const game = new Phaser.Game({
 game.scene.add(LobbyScene.KEY, LobbyScene, false);
 game.scene.add(SpinnerScene.KEY, SpinnerScene, false);
 game.scene.add(ResultsScene.KEY, ResultsScene, false);
+game.scene.add(StandingsScene.KEY, StandingsScene, false);
 game.scene.add(WordleRaceScene.KEY, WordleRaceScene, false);
 game.scene.add(TossUpScene.KEY, TossUpScene, false);
 game.events.once(Phaser.Core.Events.READY, () => {
@@ -45,9 +47,11 @@ function showSceneFor(state: RoomState) {
       ? GAME_SCENES[state.gameId]
       : state.phase === 'spinning'
         ? SpinnerScene.KEY
-        : state.phase === 'results'
-          ? ResultsScene.KEY
-          : LobbyScene.KEY;
+        : state.phase === 'standings'
+          ? StandingsScene.KEY
+          : state.phase === 'results'
+            ? ResultsScene.KEY
+            : LobbyScene.KEY;
   if (!key) return;
   const active = game.scene.getScenes(true)[0];
   if (active?.scene.key === key) return;

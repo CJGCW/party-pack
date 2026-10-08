@@ -24,6 +24,8 @@ export interface TossUpPlayer {
   color: string;
   score: number;
   lockedOut: boolean;
+  /** Points earned in this game so far. */
+  gamePoints: number;
 }
 
 export interface TossUpGuess {
@@ -64,6 +66,7 @@ export interface TossUpPlayerView {
   lines: string[];
   msLeft: number;
   score: number;
+  gamePoints: number;
   canBuzz: boolean;
   /** This player is the one answering. */
   answering: boolean;

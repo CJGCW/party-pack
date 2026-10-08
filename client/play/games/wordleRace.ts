@@ -179,16 +179,23 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
         h('p', { class: 'wr-scoring' }, describeScoring(view.guessCostSeconds)),
       );
       overlay.hidden = false;
-    } else if (view.phase === 'roundEnd' || view.phase === 'gameEnd') {
+    } else if (view.phase === 'roundEnd') {
       const answer = view.answer ?? '';
+      const isLast = view.round >= view.totalRounds;
       overlay.replaceChildren(
         h('p', {}, 'The word was'),
         h('div', { class: 'wr-answer' }, ...[...answer].map((l) => h('div', { class: 'wr-tile correct' }, l))),
         h('p', { class: 'wr-definition' }, describeDefinition(view.definition, view.mode)),
-        h('h2', {}, view.solved ? `You scored +${view.roundPoints}` : 'No points this round'),
+        h('h2', {}, view.solved ? `You scored +${view.roundPoints}` : 'No points for this word'),
         ...(view.solved ? [h('p', {}, describeSolve(view.guesses.length, view.solvedMsLeft))] : []),
-        h('div', { class: 'big' }, String(view.score)),
-        h('p', {}, view.phase === 'gameEnd' ? 'Final score. Look at the TV!' : 'Next word coming up…'),
+        h('p', {}, isLast ? 'Round scores coming up…' : 'Next word coming up…'),
+      );
+      overlay.hidden = false;
+    } else if (view.phase === 'gameEnd') {
+      overlay.replaceChildren(
+        h('h2', {}, 'Round scores'),
+        h('div', { class: 'big' }, `+${view.gamePoints.toLocaleString()}`),
+        h('p', {}, 'points this round. Look at the TV!'),
       );
       overlay.hidden = false;
     } else {

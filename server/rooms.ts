@@ -16,6 +16,7 @@ import {
   type SessionSettings,
   type WheelEntry,
 } from '../shared/protocol';
+import { STANDINGS_MS } from '../shared/timing';
 import { config } from './config';
 import { GAMES, findGame } from './games';
 import type { MiniGame } from './games/MiniGame';
@@ -73,6 +74,9 @@ export class Room {
   private session: Session | null = null;
   private spin: { entries: WheelEntry[]; targetIndex: number; endsAt: number } | null = null;
   private resultsEndAt = 0;
+  private standings: { previousScores: Record<string, number>; endsAt: number } | null = null;
+  /** Scores when the current game started, so standings can show what changed. */
+  private roundStartScores: Record<string, number> = {};
   private phaseTimer: NodeJS.Timeout | null = null;
   private nextPlayerId = 1;
   private cleanupTimer: NodeJS.Timeout | null = null;
@@ -95,6 +99,7 @@ export class Room {
   private get phase(): RoomState['phase'] {
     if (this.game) return 'game';
     if (this.spin) return 'spinning';
+    if (this.standings) return 'standings';
     if (this.resultsEndAt > Date.now()) return 'results';
     return 'lobby';
   }
@@ -124,6 +129,9 @@ export class Room {
             stopsInMs: Math.max(0, this.spin.endsAt - SPIN_RESULT_MS - Date.now()),
             msLeft: Math.max(0, this.spin.endsAt - Date.now()),
           }
+        : null,
+      standings: this.standings
+        ? { previousScores: this.standings.previousScores, msLeft: Math.max(0, this.standings.endsAt - Date.now()) }
         : null,
       resultsMsLeft: Math.max(0, this.resultsEndAt - Date.now()),
     };
@@ -291,6 +299,7 @@ export class Room {
     if (count > def.info.maxPlayers) return `${def.info.name} allows at most ${def.info.maxPlayers} players.`;
 
     this.gameId = gameId;
+    this.roundStartScores = Object.fromEntries([...this.players.values()].map((p) => [p.id, p.score]));
     const game = def.create(
       {
         players: () => [...this.players.values()].map(publicPlayer),
@@ -322,14 +331,20 @@ export class Room {
     this.game?.dispose();
     this.game = null;
     this.gameId = null;
-    const session = this.session;
-    if (session && session.round < session.totalRounds && this.connectedCount() > 0) {
-      this.nextRound();
-    } else if (session) {
-      this.showResults();
-    } else {
-      this.returnToLobby();
-    }
+    if (this.session) this.showStandings();
+    else this.returnToLobby();
+  }
+
+  /** Running totals after a round, animated on the TV, then the next spin or the final results. */
+  private showStandings() {
+    this.standings = { previousScores: this.roundStartScores, endsAt: Date.now() + STANDINGS_MS };
+    this.setPhaseTimer(STANDINGS_MS, () => {
+      this.standings = null;
+      const session = this.session!;
+      if (session.round < session.totalRounds && this.connectedCount() > 0) this.nextRound();
+      else this.showResults();
+    });
+    this.broadcastState();
   }
 
   private showResults() {
@@ -347,6 +362,7 @@ export class Room {
     this.gameId = null;
     this.session = null;
     this.spin = null;
+    this.standings = null;
     this.resultsEndAt = 0;
     // Drop players who left mid-game now that we're back in the lobby.
     for (const p of [...this.players.values()]) if (!p.connected) this.players.delete(p.id);

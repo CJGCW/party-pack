@@ -9,7 +9,8 @@ import {
   type WordleHostView,
 } from '../../../shared/games/wordleRace';
 import { listen, net } from '../net';
-import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, hex, panel, text } from '../theme';
+import { showRoundScores } from '../roundScores';
+import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, hex, text } from '../theme';
 
 const RESULT_COLOR: Record<LetterResult, number> = {
   correct: COLORS.correct,
@@ -19,7 +20,6 @@ const RESULT_COLOR: Record<LetterResult, number> = {
 
 /** Rows shown per board; with unlimited guesses, older rows scroll off the top. */
 const VISIBLE_ROWS = 6;
-const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
 
 interface Board {
   container: Phaser.GameObjects.Container;
@@ -229,14 +229,15 @@ export class WordleRaceScene extends Phaser.Scene {
       this.overlay.add(text(this, WIDTH / 2, HEIGHT / 2 - 25, describeScoring(view.guessCostSeconds), 34, COLORS.accent));
       this.countdownText = text(this, WIDTH / 2, HEIGHT / 2 + 140, '', 200, COLORS.text, { fontStyle: '700' });
       this.overlay.add(this.countdownText);
-    } else if (view.phase === 'roundEnd' || view.phase === 'gameEnd') {
+    } else if (view.phase === 'roundEnd') {
       // Let the last guesses flip before covering the boards.
       this.time.delayedCall(1200, () => {
         if (this.view?.phase !== view.phase || this.view.round !== view.round) return;
         this.dim(0.75);
-        if (view.phase === 'roundEnd') this.showRoundEnd(view);
-        else this.showGameEnd(view);
+        this.showRoundEnd(view);
       });
+    } else if (view.phase === 'gameEnd') {
+      showRoundScores(this, this.overlay, view.players.map((p) => ({ name: p.name, color: p.color, points: p.gamePoints })));
     }
   }
 
@@ -282,41 +283,6 @@ export class WordleRaceScene extends Phaser.Scene {
       const t = text(this, WIDTH / 2, 570 + i * 62, line, 44, i === 0 && finishers.length ? COLORS.accent : COLORS.text).setAlpha(0);
       this.overlay.add(t);
       this.tweens.add({ targets: t, alpha: 1, x: { from: WIDTH / 2 - 60, to: WIDTH / 2 }, duration: 300, delay: 900 + i * 200 });
-    });
-  }
-
-  private showGameEnd(view: WordleHostView) {
-    this.overlay.add(text(this, WIDTH / 2, 150, 'The last word was', 40, COLORS.muted));
-    this.revealWord(view.answer ?? '?????', 250);
-    this.showDefinition(view, 350, 32);
-
-    const standings = [...view.players].sort((a, b) => b.score - a.score);
-    const winner = standings[0];
-    if (winner) {
-      const crown = text(this, WIDTH / 2, 445, `${winner.name} WINS!`, 96, winner.color, {
-        fontStyle: '700',
-        stroke: '#140f2e',
-        strokeThickness: 10,
-      }).setScale(0);
-      this.overlay.add(crown);
-      this.tweens.add({ targets: crown, scale: 1, duration: 600, delay: 900, ease: 'Elastic.easeOut' });
-      this.time.delayedCall(1000, () => {
-        burstConfetti(this, WIDTH * 0.25, HEIGHT * 0.6, 80);
-        burstConfetti(this, WIDTH * 0.75, HEIGHT * 0.6, 80);
-      });
-    }
-
-    this.overlay.add(panel(this, WIDTH / 2 - 420, 520, 840, 60 + standings.length * 56));
-    standings.forEach((p, i) => {
-      const y = 560 + i * 56;
-      const row = [
-        text(this, WIDTH / 2 - 340, y, ORDINAL[i], 36, COLORS.muted),
-        text(this, WIDTH / 2 - 60, y, p.name, 40, p.color, { fontStyle: '700' }),
-        text(this, WIDTH / 2 + 300, y, String(p.score), 40, COLORS.text),
-      ];
-      for (const t of row) t.setAlpha(0);
-      this.overlay.add(row);
-      this.tweens.add({ targets: row, alpha: 1, duration: 300, delay: 1400 + (standings.length - i) * 250 });
     });
   }
 }

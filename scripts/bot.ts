@@ -1,6 +1,6 @@
 // Test bots for playing Word Rush without enough people.
 //
-//   npm run bot -- <ROOM CODE> [number of bots] [--start] [--hard]
+//   npm run bot -- <ROOM CODE> [number of bots] [--start] [--hard] [--rounds=N] [--puzzles=N]
 //
 // Each bot solves the word by narrowing down candidates from its guess colours,
 // waiting a random 1-4 seconds between guesses. --start makes the first bot start
@@ -12,10 +12,14 @@ import { WORDLE_RACE, scoreGuess, type WordlePlayerView } from '../shared/games/
 import type { ClientToServerEvents, ServerToClientEvents } from '../shared/protocol';
 
 const args = process.argv.slice(2);
+// Flags start with --, so the room code and bot count are the other arguments.
 const code = args.find((a) => /^[a-z]{4}$/i.test(a))?.toUpperCase();
 const count = Number(args.find((a) => /^\d+$/.test(a)) ?? 1);
 const start = args.includes('--start');
 const modeId = args.includes('--hard') ? 'hard' : 'normal';
+const flag = (name: string, fallback: number) => Number(args.find((a) => a.startsWith(`--${name}=`))?.split('=')[1] ?? fallback);
+const rounds = flag('rounds', 1);
+const puzzlesPerRound = flag('puzzles', 3);
 if (!code) {
   console.error('Usage: npm run bot -- <ROOM CODE> [count] [--start] [--hard]');
   process.exit(1);
@@ -34,7 +38,8 @@ function runBot(name: string, isStarter: boolean) {
 
   socket.on('game:player', (raw) => {
     const view = raw as WordlePlayerView;
-    if (view.round !== round) {
+    // A new word, or a whole new game (whose word counter starts again at 1).
+    if (view.round !== round || view.guesses.length < seenGuesses) {
       round = view.round;
       candidates = dictionary;
       seenGuesses = 0;
@@ -61,12 +66,12 @@ function runBot(name: string, isStarter: boolean) {
     console.log(`${name} joined ${code}`);
     if (isStarter) {
       setTimeout(() => {
-        // Debug mode starts a game directly; otherwise spin a one-round session with
-        // only Word Rush on the wheel, since that's the only game bots can play.
+        // Debug mode starts a game directly; otherwise spin a session (1 round by default)
+        // with only Word Rush on the wheel, since that's the only game bots can play.
         socket.emit('room:startGame', { gameId: WORDLE_RACE.id, modeId }, (r) => {
           if (r.ok) return console.log('start:', r);
           const enabled = [`${WORDLE_RACE.id}:${modeId}`];
-          socket.emit('room:updateSettings', { enabled, rounds: 1, puzzlesPerRound: 3 }, () =>
+          socket.emit('room:updateSettings', { enabled, rounds, puzzlesPerRound }, () =>
             socket.emit('room:startSession', (s) => console.log('start session:', s)),
           );
         });

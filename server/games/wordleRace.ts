@@ -12,12 +12,11 @@ import {
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 import { define } from './definitions';
 import { isValidGuess, pickAnswers } from './words';
+import { PUZZLE_RESULT_MS, ROUND_SCORES_MS } from '../../shared/timing';
 
 const COUNTDOWN_MS = 4_000;
 /** Round length per mode. Hard words are obscure, so players get longer. */
 const ROUND_MS: Record<WordleModeId, number> = { normal: 150_000, hard: 240_000 };
-const ROUND_END_MS = 9_000;
-const GAME_END_MS = 15_000;
 
 // Scoring: points = (seconds left - GUESS_COST_MS x guesses) x POINTS_PER_SECOND.
 // Each guess is worth 8 seconds of points in both modes (the clock itself isn't
@@ -46,6 +45,8 @@ class WordleRace implements MiniGame {
   private round = 0;
   private answers: string[];
   private progress = new Map<string, Progress>();
+  /** Points each player has earned in this game (shown on the round scores screen). */
+  private gamePoints = new Map<string, number>();
   private finishers = 0;
   private phaseEndsAt = 0;
   private timer: NodeJS.Timeout | null = null;
@@ -85,12 +86,13 @@ class WordleRace implements MiniGame {
     this.setPhase('countdown', COUNTDOWN_MS, () => this.setPhase('playing', ROUND_MS[this.mode], () => this.endRound()));
   }
 
+  /** Every word ends with the same reveal; after the last one comes the round scores. */
   private endRound() {
-    if (this.round >= this.totalWords) {
-      this.setPhase('gameEnd', GAME_END_MS, () => this.ctx.finish());
-    } else {
-      this.setPhase('roundEnd', ROUND_END_MS, () => this.startRound(this.round + 1));
-    }
+    const isLast = this.round >= this.totalWords;
+    this.setPhase('roundEnd', PUZZLE_RESULT_MS, () => {
+      if (isLast) this.setPhase('gameEnd', ROUND_SCORES_MS, () => this.ctx.finish());
+      else this.startRound(this.round + 1);
+    });
   }
 
   onInput(playerId: string, raw: unknown) {
@@ -115,6 +117,7 @@ class WordleRace implements MiniGame {
         prog.solvedMsLeft = this.msLeft();
         prog.roundPoints = roundPoints(prog.solvedMsLeft, prog.guesses.length);
         this.ctx.addScore(playerId, prog.roundPoints);
+        this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + prog.roundPoints);
       }
     }
 
@@ -168,6 +171,7 @@ class WordleRace implements MiniGame {
             finishRank: prog.finishRank,
             solvedMsLeft: prog.solvedMsLeft,
             roundPoints: prog.roundPoints,
+            gamePoints: this.gamePoints.get(p.id) ?? 0,
             score: p.score,
           };
         }),
@@ -191,6 +195,7 @@ class WordleRace implements MiniGame {
       finishRank: prog.finishRank,
       solvedMsLeft: prog.solvedMsLeft,
       roundPoints: prog.roundPoints,
+      gamePoints: this.gamePoints.get(playerId) ?? 0,
       score: player.score,
       answer: this.revealedAnswer(),
       definition: this.revealedDefinition(),

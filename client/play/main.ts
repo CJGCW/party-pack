@@ -126,6 +126,7 @@ function render() {
   controller?.instance.destroy();
   controller = null;
   if (room.phase === 'spinning') renderSpinning();
+  else if (room.phase === 'standings') renderStandings();
   else if (room.phase === 'results') renderResults();
   else renderLobby();
 }
@@ -279,6 +280,25 @@ function renderSpinning() {
   spinTimer = setTimeout(() => {
     status.textContent = `Next up: ${spin.entries[spin.targetIndex].label}`;
   }, spin.stopsInMs);
+}
+
+function renderStandings() {
+  const { standings, session } = room!;
+  const player = me()!;
+  const ranked = [...room!.players].sort((a, b) => b.score - a.score);
+  const place = ranked.findIndex((p) => p.id === playerId) + 1;
+  const gained = player.score - (standings?.previousScores[player.id] ?? 0);
+  app.replaceChildren(
+    h(
+      'div',
+      { class: 'center' },
+      h('h2', {}, session ? `Standings after round ${session.round} of ${session.totalRounds}` : 'Standings'),
+      h('div', { class: 'big-place' }, `${place}${ordinalSuffix(place)} place`),
+      h('div', { class: 'badge' }, `${player.score.toLocaleString()} pts`),
+      h('p', {}, gained > 0 ? `+${gained.toLocaleString()} this round` : 'No points this round'),
+      h('p', {}, 'Watch the TV!'),
+    ),
+  );
 }
 
 function renderResults() {

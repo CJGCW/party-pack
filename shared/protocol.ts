@@ -33,7 +33,7 @@ export interface PlayerInfo {
   isVip: boolean;
 }
 
-export type RoomPhase = 'lobby' | 'spinning' | 'game' | 'results';
+export type RoomPhase = 'lobby' | 'spinning' | 'game' | 'standings' | 'results';
 
 export const MIN_ROUNDS = 1;
 export const MAX_ROUNDS = 10;
@@ -75,6 +75,13 @@ export interface SpinState {
   msLeft: number;
 }
 
+export interface StandingsState {
+  /** Each player's total before the round that just ended, keyed by player id. */
+  previousScores: Record<string, number>;
+  /** Milliseconds until the next spin (or the final results). */
+  msLeft: number;
+}
+
 export interface RoomState {
   code: string;
   joinUrl: string;
@@ -91,6 +98,8 @@ export interface RoomState {
   session: { round: number; totalRounds: number } | null;
   /** Present during the 'spinning' phase. */
   spin: SpinState | null;
+  /** Present during the 'standings' phase, between rounds of a session. */
+  standings: StandingsState | null;
   /** Milliseconds left on the final results screen, during 'results'. */
   resultsMsLeft: number;
 }

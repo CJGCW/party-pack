@@ -7,7 +7,8 @@ import {
   type TossUpPlayer,
 } from '../../../shared/games/tossUp';
 import { listen, net } from '../net';
-import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, hex, panel, text } from '../theme';
+import { showRoundScores } from '../roundScores';
+import { COLORS, WIDTH, addBackdrop, burstConfetti, hex, panel, text } from '../theme';
 
 const TILE_W = 104;
 const TILE_H = 128;
@@ -19,7 +20,6 @@ const TILE_PUZZLE = 0xffffff; // puzzle cells (blank until revealed)
 const TILE_FLASH = 0x5ec8f2; // a letter lighting up as it's revealed
 const LETTER_COLOR = '#140f2e';
 
-const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
 
 interface Tile {
   rect: Phaser.GameObjects.Rectangle;
@@ -266,33 +266,6 @@ export class TossUpScene extends Phaser.Scene {
   }
 
   private showGameEnd(view: TossUpHostView) {
-    this.overlay.add(this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x0a0720, 0.85).setOrigin(0));
-    const standings = [...view.players].sort((a, b) => b.score - a.score);
-    const winner = standings[0];
-    if (winner) {
-      const crown = text(this, WIDTH / 2, 250, `${winner.name} WINS!`, 110, winner.color, {
-        fontStyle: '700',
-        stroke: '#140f2e',
-        strokeThickness: 10,
-      }).setScale(0);
-      this.overlay.add(crown);
-      this.tweens.add({ targets: crown, scale: 1, duration: 600, delay: 300, ease: 'Elastic.easeOut' });
-      this.time.delayedCall(400, () => {
-        burstConfetti(this, WIDTH * 0.25, HEIGHT * 0.5, 80);
-        burstConfetti(this, WIDTH * 0.75, HEIGHT * 0.5, 80);
-      });
-    }
-    this.overlay.add(panel(this, WIDTH / 2 - 420, 380, 840, 60 + standings.length * 60));
-    standings.forEach((p, i) => {
-      const y = 425 + i * 60;
-      const row = [
-        text(this, WIDTH / 2 - 340, y, ORDINAL[i], 38, COLORS.muted),
-        text(this, WIDTH / 2 - 60, y, p.name, 42, p.color, { fontStyle: '700' }),
-        text(this, WIDTH / 2 + 300, y, p.score.toLocaleString(), 42, COLORS.text),
-      ];
-      for (const t of row) t.setAlpha(0);
-      this.overlay.add(row);
-      this.tweens.add({ targets: row, alpha: 1, duration: 300, delay: 800 + (standings.length - i) * 250 });
-    });
+    showRoundScores(this, this.overlay, view.players.map((p) => ({ name: p.name, color: p.color, points: p.gamePoints })));
   }
 }
