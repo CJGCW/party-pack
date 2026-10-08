@@ -18,9 +18,9 @@ const PUZZLE_VALUES = [1000, 1000, 2000, 2000, 3000];
 
 const INTRO_MS = 4_000;
 /** Time between letters appearing. */
-const REVEAL_INTERVAL_MS = 1_100;
+const REVEAL_INTERVAL_MS = 1_500;
 /** Time the buzzer gets to type their answer. */
-const ANSWER_MS = 15_000;
+const ANSWER_MS = 20_000;
 /** Pause after a wrong answer before letters start appearing again. */
 const WRONG_PAUSE_MS = 2_500;
 /** Last chance to buzz once every letter is showing. */
