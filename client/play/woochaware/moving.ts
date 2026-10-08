@@ -16,7 +16,6 @@ import {
   label,
   pick,
   rand,
-  randInt,
   roundRect,
   type MicrogameImpl,
   type Pointer,
@@ -511,45 +510,77 @@ export const tea: MicrogameImpl = {
   },
 };
 
-/** Turn the phone like a dial to bring the number to the top, and hold it there. */
+/**
+ * Turn the phone like a dial to dial in the combination: each number has to be held
+ * at the top briefly, then it's on to the next, turning the other way like a real safe.
+ */
 export const dial: MicrogameImpl = {
   create(ctx) {
-    const tol = byLevel(ctx, [0.13, 0.1, 0.075]);
-    const hold = byLevel(ctx, [0.5, 0.6, 0.7]);
+    const count = byLevel(ctx, [2, 2, 3]);
+    const tol = byLevel(ctx, [0.12, 0.1, 0.08]);
+    const hold = byLevel(ctx, [0.4, 0.45, 0.5]);
     const NUMBERS = 40;
-    // Pick a number that needs a real turn, but not more than a comfortable one.
-    let target = 0;
-    let need = 0;
-    for (let tries = 0; tries < 100; tries++) {
-      target = randInt(ctx.rng, 0, NUMBERS - 1);
-      need = wrap((-target / NUMBERS) * Math.PI * 2);
-      if (Math.abs(need) > 0.5 && Math.abs(need) < 1.6) break;
+    /** How far the dial turns for each bit the phone turns. */
+    const GEAR = 3;
+    const numberAt = (dialAngle: number) => ((Math.round((-dialAngle / (Math.PI * 2)) * NUMBERS) % NUMBERS) + NUMBERS) % NUMBERS;
+    const angleOf = (n: number) => wrap((-n / NUMBERS) * Math.PI * 2);
+    // Alternate directions, each a comfortable turn of the phone (about 15 to 45 degrees).
+    const combo: { n: number; angle: number }[] = [];
+    let dir = ctx.rng() < 0.5 ? -1 : 1;
+    for (let i = 0; i < count; i++) {
+      for (let tries = 0; tries < 100; tries++) {
+        const n = numberAt(dir * rand(ctx.rng, 0.8, 2.3));
+        const angle = angleOf(n);
+        const prev = combo[i - 1]?.angle ?? 0;
+        if (Math.abs(angle) >= 0.7 && Math.abs(angle) <= 2.4 && Math.abs(angle - prev) >= 0.9) {
+          combo.push({ n, angle });
+          break;
+        }
+      }
+      if (combo.length < i + 1) combo.push({ n: numberAt(dir * 1.5), angle: angleOf(numberAt(dir * 1.5)) });
+      dir = -dir;
     }
+    let step = 0;
     let angle = 0;
     let held = 0;
+    let clickT = 0;
     const cx = 180;
-    const cy = 310;
+    const cy = 320;
+    const aligned = () => step < count && Math.abs(wrap(angle - combo[step].angle)) < tol;
     return {
       update(dt) {
+        clickT = Math.max(0, clickT - dt);
         if (ctx.over) return;
-        // The dial turns twice as far as the phone.
-        angle = ctx.input.steer() * 2;
-        held = Math.abs(wrap(angle - need)) < tol ? held + dt : 0;
-        if (held >= hold) ctx.win();
+        angle = ctx.input.steer() * GEAR;
+        held = aligned() ? held + dt : 0;
+        if (held >= hold) {
+          step++;
+          held = 0;
+          clickT = 0.35;
+          if (step >= count) ctx.win();
+        }
       },
       draw(g) {
         fillBg(g, '#4a4570', '#2c2366');
-        roundRect(g, 20, 110, 320, 400, 24, '#8d8fa0');
-        roundRect(g, 36, 126, 288, 368, 18, '#a3a6b8');
-        label(g, String(target), 180, 60, 56, PALETTE.accent);
-        const aligned = Math.abs(wrap(angle - need)) < tol;
+        // The combination, with the current number picked out.
+        const spacing = 90;
+        combo.forEach((c, i) => {
+          const x = 180 + (i - (count - 1) / 2) * spacing;
+          const done = i < step;
+          const current = i === step && !ctx.over;
+          if (current) roundRect(g, x - 38, 30, 76, 60, 14, 'rgba(255,209,102,0.2)');
+          label(g, String(c.n), x, 60, current ? 50 : 40, done ? PALETTE.correct : current ? PALETTE.accent : PALETTE.muted);
+          if (i < count - 1) label(g, '·', x + spacing / 2, 60, 40, PALETTE.muted);
+        });
+        roundRect(g, 20, 120, 320, 400, 24, '#8d8fa0');
+        roundRect(g, 36, 136, 288, 368, 18, '#a3a6b8');
         // Marker at the top.
         g.beginPath();
         g.moveTo(cx - 12, cy - 152);
         g.lineTo(cx + 12, cy - 152);
         g.lineTo(cx, cy - 132);
         g.closePath();
-        g.fillStyle = aligned ? PALETTE.correct : PALETTE.danger;
+        g.fillStyle = aligned() || clickT > 0 ? PALETTE.correct : PALETTE.danger;
         g.fill();
         g.save();
         g.translate(cx, cy);
@@ -557,9 +588,8 @@ export const dial: MicrogameImpl = {
         circle(g, 0, 0, 125, '#2a2a33');
         circle(g, 0, 0, 112, '#3d3d4a');
         for (let n = 0; n < NUMBERS; n++) {
-          const a = (n / NUMBERS) * Math.PI * 2;
           g.save();
-          g.rotate(a);
+          g.rotate((n / NUMBERS) * Math.PI * 2);
           g.fillStyle = '#ffffff';
           g.fillRect(-1.5, -112, 3, n % 5 === 0 ? 16 : 8);
           if (n % 5 === 0) label(g, String(n), 0, -82, 18, '#ffffff');
@@ -574,8 +604,9 @@ export const dial: MicrogameImpl = {
           g.arc(cx, cy, 138, -Math.PI / 2, -Math.PI / 2 + Math.min(1, held / hold) * Math.PI * 2);
           g.stroke();
         }
-        if (ctx.over && held >= hold) label(g, 'CLICK! OPEN!', 180, 535, 36, PALETTE.accent);
-        else if (!ctx.over) label(g, 'Turn your phone to spin the dial', 180, 535, 20, PALETTE.muted);
+        if (clickT > 0 && !ctx.over) label(g, 'CLICK!', 180, cy, 40, PALETTE.accent);
+        if (ctx.over && step >= count) label(g, 'OPEN!', 180, 545, 40, PALETTE.accent);
+        else if (!ctx.over) label(g, step === 0 ? 'Turn your phone to spin the dial' : 'Now the next number!', 180, 545, 20, PALETTE.muted);
       },
     };
   },

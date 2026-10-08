@@ -75,7 +75,7 @@ export const MICROGAMES = [
   { id: 'ski', name: 'Slalom', command: 'SLALOM!', hint: 'Tilt left and right to ski through every gate.', durationMs: 6500, controls: 'tilt' },
   { id: 'drive', name: 'Road Trip', command: 'STEER!', hint: 'Turn the phone like a wheel to dodge the cones.', durationMs: 6000, controls: 'steer', landscape: true },
   { id: 'tea', name: 'Tea Time', command: 'POUR!', hint: 'Turn the phone clockwise to pour, back to stop at the line.', durationMs: 6500, controls: 'steer' },
-  { id: 'dial', name: 'Safe Cracker', command: 'TURN!', hint: 'Turn the phone to spin the dial to the number.', durationMs: 6000, controls: 'steer' },
+  { id: 'dial', name: 'Safe Cracker', command: 'CRACK IT!', hint: 'Turn the phone to dial in each number of the combination.', durationMs: 8000, controls: 'steer' },
   { id: 'ketchup', name: 'Ketchup', command: 'SHAKE!', hint: 'Shake gently to get the ketchup out.', durationMs: 5000, controls: 'shake' },
   { id: 'spoon', name: 'Egg and Spoon', command: 'STEADY!', hint: "Keep the egg on the spoon. Don't jiggle!", durationMs: 6000, controls: 'still' },
 ] as const satisfies readonly MicrogameInfo[];
