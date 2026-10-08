@@ -8,8 +8,8 @@ const ROW_H = 92;
 const ROW_GAP = 14;
 const TOP = 300;
 /** Pause before the totals start counting up, and how long the count takes. */
-const COUNT_DELAY_MS = 1100;
-const COUNT_MS = 2600;
+const COUNT_DELAY_MS = 600;
+const COUNT_MS = 1800;
 
 interface Row {
   player: PlayerInfo;
@@ -88,7 +88,7 @@ export class StandingsScene extends Phaser.Scene {
 
     // Slide in from the side, one after another.
     container.setX(WIDTH / 2 - 120).setAlpha(0);
-    this.tweens.add({ targets: container, x: WIDTH / 2, alpha: 1, duration: 350, delay: 100 + index * 90, ease: 'Cubic.easeOut' });
+    this.tweens.add({ targets: container, x: WIDTH / 2, alpha: 1, duration: 300, delay: 50 + index * 60, ease: 'Cubic.easeOut' });
     return { player, container, rank, score, from, to: player.score, shown: from };
   }
 

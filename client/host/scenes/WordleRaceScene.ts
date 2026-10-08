@@ -231,7 +231,7 @@ export class WordleRaceScene extends Phaser.Scene {
       this.overlay.add(this.countdownText);
     } else if (view.phase === 'roundEnd') {
       // Let the last guesses flip before covering the boards.
-      this.time.delayedCall(1200, () => {
+      this.time.delayedCall(700, () => {
         if (this.view?.phase !== view.phase || this.view.round !== view.round) return;
         this.dim(0.75);
         this.showRoundEnd(view);
@@ -266,7 +266,7 @@ export class WordleRaceScene extends Phaser.Scene {
       wordWrap: { width: 1500 },
     }).setAlpha(0);
     this.overlay.add(t);
-    this.tweens.add({ targets: t, alpha: 1, duration: 400, delay: 800 });
+    this.tweens.add({ targets: t, alpha: 1, duration: 300, delay: 500 });
   }
 
   private showRoundEnd(view: WordleHostView) {
@@ -282,7 +282,7 @@ export class WordleRaceScene extends Phaser.Scene {
     lines.forEach((line, i) => {
       const t = text(this, WIDTH / 2, 570 + i * 62, line, 44, i === 0 && finishers.length ? COLORS.accent : COLORS.text).setAlpha(0);
       this.overlay.add(t);
-      this.tweens.add({ targets: t, alpha: 1, x: { from: WIDTH / 2 - 60, to: WIDTH / 2 }, duration: 300, delay: 900 + i * 200 });
+      this.tweens.add({ targets: t, alpha: 1, x: { from: WIDTH / 2 - 60, to: WIDTH / 2 }, duration: 300, delay: 500 + i * 150 });
     });
   }
 }

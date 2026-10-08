@@ -27,8 +27,9 @@ The first player to join is the **VIP**. On their phone they choose which games 
 **wheel**, how many **rounds** to play (1–10), and how many **puzzles per round** (1–10: puzzles in
 Letter Drop, words in Word Rush; it applies to every game), then spin it (the host screen has a SPIN!
 button too). Each round the wheel picks a game at random. Every game paces the same way: each puzzle ends
-with its answer (8s), the last one is followed by the round's scores (8s), then a standings
-screen counts the running totals up and re-ranks players as they overtake each other (8s),
+with its answer (4s), the last one is followed by the round's scores (4s; skipped when a round
+has only one puzzle), then a standings screen counts the running totals up and re-ranks players
+as they overtake each other (4s),
 before the next spin or the final results. These lengths are in `shared/timing.ts`. Press **Esc** on the host screen to abandon a session.
 
 ### Debug mode

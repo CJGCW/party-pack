@@ -86,12 +86,14 @@ class WordleRace implements MiniGame {
     this.setPhase('countdown', COUNTDOWN_MS, () => this.setPhase('playing', ROUND_MS[this.mode], () => this.endRound()));
   }
 
-  /** Every word ends with the same reveal; after the last one comes the round scores. */
+  /** Every word ends with the same reveal; after the last one come the round scores. */
   private endRound() {
     const isLast = this.round >= this.totalWords;
     this.setPhase('roundEnd', PUZZLE_RESULT_MS, () => {
-      if (isLast) this.setPhase('gameEnd', ROUND_SCORES_MS, () => this.ctx.finish());
-      else this.startRound(this.round + 1);
+      if (!isLast) this.startRound(this.round + 1);
+      // With a single word, round scores would just repeat the result, so skip them.
+      else if (this.totalWords === 1) this.ctx.finish();
+      else this.setPhase('gameEnd', ROUND_SCORES_MS, () => this.ctx.finish());
     });
   }
 

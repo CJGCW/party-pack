@@ -31,12 +31,12 @@ export function showRoundScores(scene: Phaser.Scene, overlay: Phaser.GameObjects
     for (const t of [name, pts]) t.setAlpha(0);
     overlay.add([name, pts]);
 
-    const delay = 300 + i * 180;
+    const delay = 150 + i * 100;
     scene.tweens.add({ targets: [name, pts], alpha: 1, duration: 250, delay });
     scene.tweens.addCounter({
       from: 0,
       to: s.points,
-      duration: 1200,
+      duration: 900,
       delay: delay + 200,
       ease: 'Cubic.easeOut',
       onUpdate: (t) => pts.setText(`+${Math.round(t.getValue() ?? 0).toLocaleString()}`),
@@ -44,7 +44,7 @@ export function showRoundScores(scene: Phaser.Scene, overlay: Phaser.GameObjects
   });
 
   if (sorted[0]?.points > 0) {
-    scene.time.delayedCall(1700, () => {
+    scene.time.delayedCall(1000, () => {
       burstConfetti(scene, WIDTH * 0.25, HEIGHT * 0.45, 60);
       burstConfetti(scene, WIDTH * 0.75, HEIGHT * 0.45, 60);
     });

@@ -208,6 +208,8 @@ class TossUp implements MiniGame {
     const isLast = this.puzzleIndex >= this.totalPuzzles - 1;
     this.schedule(PUZZLE_RESULT_MS, () => {
       if (!isLast) return this.startPuzzle(this.puzzleIndex + 1);
+      // With a single puzzle, round scores would just repeat the result, so skip them.
+      if (this.totalPuzzles === 1) return this.ctx.finish();
       this.phase = 'gameEnd';
       this.schedule(ROUND_SCORES_MS, () => this.ctx.finish());
       this.syncAll();
