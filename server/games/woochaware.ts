@@ -22,6 +22,9 @@ const POINTS_PER_WIN = 150;
 const INTRO_MS = 1_600;
 /** Extra intro time when the speed goes up, to announce it. */
 const SPEED_UP_MS = 900;
+/** Extra intro time for motion games (to read how to hold the phone), and more to turn it sideways. */
+const MOTION_INTRO_MS = 600;
+const LANDSCAPE_INTRO_MS = 1_200;
 /** Who made it, between microgames. */
 const RESULT_MS = 1_500;
 /** Debug practice plays the chosen microgame once at each level. */
@@ -102,7 +105,11 @@ class WoochaWare implements MiniGame {
     this.level = this.levelFor(round);
     this.seed = Math.floor(Math.random() * 2 ** 31);
     this.results.clear();
-    this.setPhase('intro', INTRO_MS + (this.speedUp ? SPEED_UP_MS : 0), () =>
+    const extra =
+      (this.speedUp ? SPEED_UP_MS : 0) +
+      (this.microgame.controls ? MOTION_INTRO_MS : 0) +
+      (this.microgame.landscape ? LANDSCAPE_INTRO_MS : 0);
+    this.setPhase('intro', INTRO_MS + extra, () =>
       this.setPhase('play', playTime(this.microgame, this.level) + PLAY_GRACE_MS, () => this.showResult()),
     );
   }

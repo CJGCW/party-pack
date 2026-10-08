@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PLAY_GRACE_MS, findMicrogame, type WoochaHostPlayer, type WoochaHostView } from '../../../shared/games/woochaware';
+import { PLAY_GRACE_MS, controlsHint, findMicrogame, type WoochaHostPlayer, type WoochaHostView } from '../../../shared/games/woochaware';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
 import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, hex, panel, text } from '../theme';
@@ -21,6 +21,7 @@ export class WoochaWareScene extends Phaser.Scene {
   private commandText!: Phaser.GameObjects.Text;
   private nameText!: Phaser.GameObjects.Text;
   private statusText!: Phaser.GameObjects.Text;
+  private howText!: Phaser.GameObjects.Text;
   private fuse!: Phaser.GameObjects.Graphics;
   private spark!: Phaser.GameObjects.Text;
   private playersRow!: Phaser.GameObjects.Container;
@@ -41,6 +42,7 @@ export class WoochaWareScene extends Phaser.Scene {
     this.commandText = text(this, WIDTH / 2, 420, '', 200, COLORS.accent, { fontStyle: '700' }).setStroke('#140f2e', 18);
     this.nameText = text(this, WIDTH / 2, 590, '', 52, COLORS.muted);
     this.statusText = text(this, WIDTH / 2, 720, '', 56, COLORS.text, { fontStyle: '700' });
+    this.howText = text(this, WIDTH / 2, 670, '', 44, COLORS.accent, { fontStyle: '700' });
     this.fuse = this.add.graphics();
     this.spark = text(this, 0, 0, '🔥', 64).setVisible(false);
     this.playersRow = this.add.container(WIDTH / 2, 960);
@@ -90,6 +92,7 @@ export class WoochaWareScene extends Phaser.Scene {
       this.commandText.setText(info?.command ?? '').setPosition(WIDTH / 2, 420).setAlpha(0).setScale(0.4);
       this.tweens.add({ targets: this.commandText, alpha: 1, scale: 1, duration: 350, ease: 'Back.easeOut', delay: view.speedUp ? 700 : 0 });
       this.nameText.setText(info?.name ?? '');
+      this.howText.setText(info ? controlsHint(info).toUpperCase() : '');
       this.statusText.setText('');
       if (view.speedUp) this.flashSpeedUp();
     } else if (view.phase === 'play') {
@@ -97,6 +100,7 @@ export class WoochaWareScene extends Phaser.Scene {
       this.commandText.setAlpha(1).setScale(1);
       this.tweens.add({ targets: this.commandText, y: 400, duration: 200 });
       this.nameText.setText('Play on your phone!');
+      this.howText.setText('');
       this.showProgress(view);
     } else if (view.phase === 'result') {
       const made = view.players.filter((p) => p.result).length;

@@ -20,6 +20,7 @@
     "obscenity": "^0.4.6",
     "phaser": "^3.90.0",
     "qrcode": "^1.5.4",
+    "selfsigned": "^2.4.1",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "wordnet-db": "^3.1.14"

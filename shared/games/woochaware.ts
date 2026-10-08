@@ -20,6 +20,25 @@ export interface MicrogameInfo {
   hint: string;
   /** Play time at level 1; faster levels get less (see LEVEL_SPEED). */
   durationMs: number;
+  /** Played by moving the phone rather than touching it (touch still works as a fallback). */
+  controls?: MotionControls;
+  /** Played with the phone turned sideways. */
+  landscape?: boolean;
+}
+
+/** tilt: tip it like a tray. steer: turn it like a steering wheel. shake: gentle shakes. still: hold it steady. */
+export type MotionControls = 'tilt' | 'steer' | 'shake' | 'still';
+
+/** How to hold the phone, for the TV and phones. */
+export function controlsHint(info: MicrogameInfo): string {
+  const how = {
+    tilt: 'Tilt your phone',
+    steer: 'Turn your phone like a steering wheel',
+    shake: 'Shake your phone gently',
+    still: 'Hold your phone steady',
+  };
+  const parts = [info.landscape ? 'Turn your phone sideways' : '', info.controls ? how[info.controls] : ''];
+  return parts.filter(Boolean).join(' · ');
 }
 
 export const MICROGAMES = [
@@ -49,6 +68,17 @@ export const MICROGAMES = [
   { id: 'scan', name: 'Self Checkout', command: 'SCAN!', hint: 'Drag the barcode over the red laser.', durationMs: 5000 },
   { id: 'pick', name: 'Nose Job', command: 'PICK!', hint: 'Get your finger in the nostril.', durationMs: 4500 },
   { id: 'zip', name: 'Zip It', command: 'ZIP!', hint: 'Drag the zipper all the way up.', durationMs: 4000 },
+  // Motion games: tilt, turn or gently shake the phone.
+  { id: 'roll', name: 'Hole in One', command: 'ROLL!', hint: 'Tilt to roll the ball into the hole. Miss the traps!', durationMs: 6500, controls: 'tilt' },
+  { id: 'balance', name: 'Tray Trouble', command: 'BALANCE!', hint: "Tilt to keep the drink on the tray when the wind blows.", durationMs: 6000, controls: 'tilt' },
+  { id: 'level', name: 'Spirit Level', command: 'LEVEL IT!', hint: 'Tilt until the bubble sits in the ring, and hold it.', durationMs: 6000, controls: 'tilt' },
+  { id: 'search', name: 'Lights Out', command: 'SEARCH!', hint: 'Tilt to move the flashlight and find the cat.', durationMs: 6000, controls: 'tilt' },
+  { id: 'ski', name: 'Slalom', command: 'SLALOM!', hint: 'Tilt left and right to ski through every gate.', durationMs: 6500, controls: 'tilt' },
+  { id: 'drive', name: 'Road Trip', command: 'STEER!', hint: 'Turn the phone like a wheel to dodge the cones.', durationMs: 6000, controls: 'steer', landscape: true },
+  { id: 'tea', name: 'Tea Time', command: 'POUR!', hint: 'Tip the phone to pour, tip back to stop at the line.', durationMs: 6500, controls: 'steer', landscape: true },
+  { id: 'dial', name: 'Safe Cracker', command: 'TURN!', hint: 'Turn the phone to spin the dial to the number.', durationMs: 6000, controls: 'steer' },
+  { id: 'ketchup', name: 'Ketchup', command: 'SHAKE!', hint: 'Shake gently to get the ketchup out.', durationMs: 5000, controls: 'shake' },
+  { id: 'spoon', name: 'Egg and Spoon', command: 'STEADY!', hint: "Keep the egg on the spoon. Don't jiggle!", durationMs: 6000, controls: 'still' },
 ] as const satisfies readonly MicrogameInfo[];
 
 export type MicrogameId = (typeof MICROGAMES)[number]['id'];

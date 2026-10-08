@@ -1,12 +1,16 @@
 import express from 'express';
 import { createServer } from 'node:http';
+import { createServer as createHttpsServer } from 'node:https';
 import { networkInterfaces } from 'node:os';
 import { resolve } from 'node:path';
 import { Server } from 'socket.io';
+import { loadCertificate } from './certificate';
 import { config } from './config';
 import { Room, RoomManager, type IO } from './rooms';
 
 const PORT = Number(process.env.PORT ?? 3000);
+/** Phones join here when HTTPS is on. */
+const HTTPS_PORT = Number(process.env.HTTPS_PORT ?? PORT + 443);
 const isProd = process.env.NODE_ENV === 'production';
 const projectRoot = resolve(import.meta.dirname, '..');
 
@@ -24,11 +28,15 @@ function lanAddress(): string {
   );
 }
 
-const joinUrl = `http://${lanAddress()}${PORT === 80 ? '' : `:${PORT}`}`;
+const lan = lanAddress();
+const joinUrl = config.https ? `https://${lan}:${HTTPS_PORT}` : `http://${lan}${PORT === 80 ? '' : `:${PORT}`}`;
 
 const app = express();
 const httpServer = createServer(app);
+// The same app over HTTPS for phones, sharing the rooms and sockets.
+const httpsServer = config.https ? createHttpsServer(loadCertificate(lan), app) : null;
 const io: IO = new Server(httpServer);
+if (httpsServer) io.attach(httpsServer);
 const rooms = new RoomManager(io, joinUrl);
 
 app.get('/host', (_req, res) => res.redirect('/host.html'));
@@ -43,6 +51,10 @@ if (isProd) {
     server: { middlewareMode: true, hmr: { server: httpServer } },
   });
   app.use(vite.middlewares);
+  // Hot reload's websocket lives on the HTTP server; pass HTTPS pages' connections to it too.
+  httpsServer?.on('upgrade', (req, socket, head) => {
+    if (req.headers['sec-websocket-protocol'] === 'vite-hmr') httpServer.emit('upgrade', req, socket, head);
+  });
 }
 
 io.on('connection', (socket) => {
@@ -86,10 +98,15 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => roomOf()?.handleDisconnect(socket));
 });
 
+httpsServer?.listen(HTTPS_PORT, '0.0.0.0');
 httpServer.listen(PORT, '0.0.0.0', () => {
   console.log('\n  Party Pack is running!\n');
   console.log(`  Host screen (open on the TV/laptop): http://localhost:${PORT}/host`);
   console.log(`  Players join on their phones at:     ${joinUrl}\n`);
+  if (httpsServer) {
+    console.log("  Phones warn that the connection isn't private (the certificate is self-signed):");
+    console.log('  tap Advanced, then Proceed / Visit website. Each phone only has to do this once.\n');
+  }
   if (config.woochaDebug) console.log('  WOOCHAWARE DEBUG: the VIP picks a WoochaWare microgame to practise.\n');
   else if (config.debugMode) console.log('  DEBUG MODE: the VIP picks each game directly (no wheel).\n');
 });

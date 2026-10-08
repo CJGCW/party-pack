@@ -1,5 +1,6 @@
 import {
   PLAY_GRACE_MS,
+  controlsHint,
   findMicrogame,
   type MicrogameId,
   type WoochaInput,
@@ -7,6 +8,7 @@ import {
 } from '../../../shared/games/woochaware';
 import { h } from '../dom';
 import type { Controller } from '../main';
+import { sensorsLive } from '../motion';
 import { MicroRunner } from '../woochaware/engine';
 import { MICROGAME_IMPLS } from '../woochaware/index';
 
@@ -30,12 +32,22 @@ export function createWoochaWare(root: HTMLElement, send: (input: unknown) => vo
   const subEl = h('div', { class: 'ww-sub' });
   const overlay = h('div', { class: 'ww-overlay' }, bigEl, subEl);
   const banner = h('div', { class: 'ww-banner' });
+  const noteEl = h('div', { class: 'ww-note' });
+  const screen = h('div', { class: 'ww-screen' });
 
-  const runner = new MicroRunner((won) => {
-    localResult = won;
-    if (view) send({ type: 'result', round: view.round, won } satisfies WoochaInput);
-    render();
-  });
+  const runner = new MicroRunner(
+    (won) => {
+      localResult = won;
+      if (view) send({ type: 'result', round: view.round, won } satisfies WoochaInput);
+      render();
+    },
+    // Landscape games make the screen wide, or keep it tall and draw sideways.
+    (aspect, sideways) => {
+      screen.style.setProperty('--aspect', String(aspect));
+      screen.classList.toggle('sideways', sideways);
+    },
+  );
+  screen.append(runner.canvas, overlay, banner);
 
   root.append(
     h(
@@ -43,7 +55,8 @@ export function createWoochaWare(root: HTMLElement, send: (input: unknown) => vo
       { class: 'ww' },
       h('div', { class: 'wr-top' }, headerEl, levelEl, scoreEl),
       fuse,
-      h('div', { class: 'ww-stage' }, h('div', { class: 'ww-screen' }, runner.canvas, overlay, banner)),
+      noteEl,
+      h('div', { class: 'ww-stage' }, screen),
     ),
   );
 
@@ -95,11 +108,19 @@ export function createWoochaWare(root: HTMLElement, send: (input: unknown) => vo
     fuse.style.visibility = view.phase === 'play' && started && result === null ? 'visible' : 'hidden';
     runner.canvas.style.visibility = view.phase === 'stageEnd' || view.phase === 'gameEnd' ? 'hidden' : 'visible';
     setBanner('');
+    const moving = !!info?.controls && (view.phase === 'intro' || view.phase === 'play');
+    noteEl.hidden = !moving || sensorsLive();
+    noteEl.textContent = window.isSecureContext
+      ? 'No motion sensor here: drag on the screen instead.'
+      : 'Motion needs the https:// join link. Drag on the screen instead.';
 
     switch (view.phase) {
-      case 'intro':
-        setOverlay(info?.command ?? '', view.speedUp ? 'SPEED UP!' : info?.name ?? '', 'command');
+      case 'intro': {
+        const how = info ? controlsHint(info) : '';
+        const sub = [view.speedUp ? 'SPEED UP!' : info?.name ?? '', how].filter(Boolean).join('\n');
+        setOverlay(info?.command ?? '', sub, 'command');
         break;
+      }
       case 'play':
         if (!started && result === null) setOverlay('Wait for the next one…');
         else {

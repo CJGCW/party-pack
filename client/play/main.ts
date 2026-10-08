@@ -5,6 +5,7 @@ import { TRIVIA } from '../../shared/games/trivia';
 import { WOOCHAWARE } from '../../shared/games/woochaware';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { h } from './dom';
+import { needsMotionPermission, requestMotionPermission } from './motion';
 import { createTossUp } from './games/tossUp';
 import { createTrivia } from './games/trivia';
 import { createWoochaWare } from './games/woochaware';
@@ -166,6 +167,8 @@ function renderJoin(error = '') {
       class: 'stack',
       onsubmit: (e) => {
         e.preventDefault();
+        // iPhones only share motion sensors after a tap asks; Join is that tap.
+        if (needsMotionPermission()) void requestMotionPermission();
         const name = nameInput.value.trim();
         localStorage.setItem('party-pack-name', name);
         button.disabled = true;
@@ -196,6 +199,16 @@ function renderLobby() {
     h('div', { class: 'badge' }, player.name),
     h('h2', {}, "You're in!"),
   ];
+  // After a refresh the permission has to be asked for again, from a tap.
+  if (needsMotionPermission()) {
+    children.push(
+      h(
+        'button',
+        { class: 'secondary', onclick: () => requestMotionPermission().then(() => render()) },
+        'Turn on motion controls',
+      ),
+    );
+  }
   if (room!.woochaDebug) children.push(...microgamePicker(player.isVip));
   else if (room!.debugMode) children.push(...debugGamePicker(player.isVip));
   else children.push(...wheelSettings(player.isVip));

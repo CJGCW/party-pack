@@ -23,6 +23,15 @@ The server prints two addresses:
 Phones must be on the same Wi-Fi as the host computer. The first time it runs, Windows
 asks whether Node may accept connections. Allow it on **private** networks.
 
+Phones join over **HTTPS** (port 3443 by default, `HTTPS_PORT` to change it), because phone
+browsers only share their motion sensors with secure pages, and WoochaWare's tilt and shake games
+need them. The certificate is self-signed, so each phone warns once that the connection isn't
+private: tap **Advanced**, then **Proceed** (Android) or **Visit this website** (iPhone). iPhones
+also ask to allow motion access when you tap Play (or tap **Turn on motion controls** in the lobby
+after a refresh). The certificate is kept in `.certs/` and remade if the computer's address changes.
+To serve phones over plain HTTP instead, set `"https": false` in `party-pack.config.json` (or
+`PARTY_PACK_HTTPS=0`); motion games then fall back to dragging on the screen.
+
 The first player to join is the **VIP**. On their phone they choose which games go on the
 **wheel**, how many **rounds** to play (1–10), and how many **puzzles per round** (1–10: puzzles in
 Letter Drop, words in Word Rush; it applies to every game), then spin it (the host screen has a SPIN!
@@ -55,7 +64,7 @@ without scoring, then returns to the list. It takes priority over `debugMode`.
 | **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Each solve scores (seconds left − 8s per guess) × 10, minimum 100. Guesses don't take time off the clock; they only lower your score. One word per puzzle. **Normal** (2½-minute rounds) uses words with a dictionary definition, shown at the reveal; **Hard** (4-minute rounds) uses obscure words with none. |
 | **Letter Drop** | 1–8 | A puzzle board fills in one letter at a time. Buzz in on your phone and type the answer: right scores 750 points; wrong locks you out of that puzzle. |
 | **Trivia** | 1–8 | Multiple choice on the TV; everyone answers on their phone within 20 seconds. A right answer scores 500 plus up to 500 more for speed. Each question bank is a mode on the wheel: **Disney & Pixar** (characters, stories and voice actors from the theatrical animated films), **Scrubs** (seasons 1–8), **Brooklyn Nine-Nine** and **Parks and Recreation**. |
-| **WoochaWare** | 1–8 | WarioWare-style microgames played on the phones' touch screens (26 of them, in `client/play/woochaware/`). Each puzzle is a stage of 5 microgames, a few seconds each; every win scores 150. The speed level rises from 1 to 3 over the game. |
+| **WoochaWare** | 1–8 | WarioWare-style microgames (36 of them, in `client/play/woochaware/`): 26 played on the touch screen and 10 by tilting, turning or gently shaking the phone, some held sideways. Without motion sensors those 10 work by dragging instead. Each puzzle is a stage of 5 microgames, a few seconds each; every win scores 150. The speed level rises from 1 to 3 over the game. |
 
 ### Testing with bots
 
