@@ -15,9 +15,9 @@ import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 
 /**
  * Every puzzle is worth the same: there's no way to tell how hard a puzzle is, so
- * none should count for more. 3 puzzles make 3,000, in line with Normal Word Rush.
+ * none should count for more.
  */
-const PUZZLE_VALUE = 1000;
+const PUZZLE_VALUE = 750;
 
 const INTRO_MS = 4_000;
 /** Time between letters appearing. */

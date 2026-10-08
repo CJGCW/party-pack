@@ -6,7 +6,7 @@ export const TOSS_UP: GameInfo = {
   description: 'Letters appear one by one. Buzz in and solve the puzzle first!',
   minPlayers: 1,
   maxPlayers: 8,
-  modes: [{ id: 'standard', name: 'Play', description: 'Every puzzle is worth 1,000 points.' }],
+  modes: [{ id: 'standard', name: 'Play', description: 'Every puzzle is worth 750 points.' }],
 };
 
 /** The puzzle board is 4 rows of 14 tiles. */
