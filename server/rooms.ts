@@ -36,7 +36,7 @@ const EMPTY_ROOM_TTL_MS = 10 * 60 * 1000;
 const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I or O, they look like 1 and 0
 
 /** How long the wheel spins, then how long it shows the chosen game before starting it. */
-const SPIN_MS = 6_000;
+const SPIN_MS = 2_000;
 const SPIN_RESULT_MS = 3_000;
 /** Final results screen at the end of a session. */
 const RESULTS_MS = 15_000;

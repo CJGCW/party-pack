@@ -49,7 +49,7 @@ export class SpinnerScene extends Phaser.Scene {
       if (this.lastSlice !== -1) {
         this.tweens.killTweensOf(this.arrow);
         this.arrow.setAngle(-18);
-        this.tweens.add({ targets: this.arrow, angle: 0, duration: 140, ease: 'Back.easeOut' });
+        this.tweens.add({ targets: this.arrow, angle: 0, duration: 90, ease: 'Back.easeOut' });
       }
       this.lastSlice = slice;
     }
@@ -158,7 +158,8 @@ export class SpinnerScene extends Phaser.Scene {
   }
 
   private showChosen(label: string, index: number) {
-    this.tweens.add({ targets: this.labels[index], scale: 1.25, duration: 300, yoyo: true, repeat: 2 });
+    const chosen = this.labels[index];
+    this.tweens.add({ targets: chosen, scale: chosen.scale * 1.25, duration: 300, yoyo: true, repeat: 2 });
     const banner = text(this, 0, 0, label.toUpperCase(), 84, COLORS.text, {
       fontStyle: '700',
       stroke: '#140f2e',
