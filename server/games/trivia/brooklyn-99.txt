@@ -233,3 +233,283 @@ A: Hitchcock
 W: Jake
 W: Holt
 W: Scully
+
+TOPIC: Jake
+
+Q: What nickname was Jake stuck with in high school, after Gina framed him?
+A: The Tattler
+W: The Snitch
+W: The Narc
+W: Jakey Two-Face
+
+Q: What did Jake and his 74th Precinct partner call themselves?
+A: The Beatsie Boys
+W: The Beat Brothers
+W: The Patrol Pals
+W: The Blue Bros
+
+Q: What classic car does Jake own?
+A: A 1967 Ford Mustang
+W: A 1969 Dodge Charger
+W: A Pontiac Firebird
+W: A 1970 Chevy Camaro
+
+Q: Who played Jake's mother, Karen?
+A: Katey Sagal
+W: Jane Lynch
+W: Laura Dern
+W: Kathy Bates
+
+Q: Who played Jake's father, Roger?
+A: Bradley Whitford
+W: Dean Winters
+W: Ken Marino
+W: Bill Hader
+
+Q: What was the name of Jake's childhood sweetheart?
+A: Jenny Gildenhorn
+W: Jenny Goldstein
+W: Kelly Gildenhorn
+W: Maddie Gilmore
+
+Q: Who played Sophia Perez, the defense attorney Jake dates?
+A: Eva Longoria
+W: Jennifer Lopez
+W: Gina Rodriguez
+W: Eva Mendes
+
+Q: In which episode do Jake and Amy share their first kiss?
+A: Johnny and Dora
+W: The Fugitive
+W: HalloVeen
+W: Charges and Specs
+
+Q: What does Jake do in the series finale?
+A: Quits to be a stay-at-home dad
+W: Becomes captain
+W: Moves to Florida
+W: Joins the FBI
+
+Q: What is the name of Jake's half-sister?
+A: Kate
+W: Kelly
+W: Kim
+W: Karen
+
+TOPIC: Captain Holt
+
+Q: What fake name does Holt use in witness protection?
+A: Greg Stickney
+W: Ray Smith
+W: Greg Stanley
+W: Kevin Cheddarson
+
+Q: What is Holt's mysterious tattoo, revealed in the series finale?
+A: Kevin's head on Cheddar's body
+W: The NYPD shield
+W: Cheddar's paw print
+W: The word "Bone"
+
+Q: What does Holt name the Corvair Doug Judy gives him to replace Gertie?
+A: Sexarella
+W: Gertie II
+W: Cheddar
+W: Kevina
+
+Q: What does Holt call his mother?
+A: Your Honor
+W: Mother dearest
+W: Ma'am
+W: Judge Holt
+
+Q: Who played Holt's nephew Marcus, who dates Rosa?
+A: Nick Cannon
+W: Craig Robinson
+W: Jaleel White
+W: Donald Glover
+
+Q: Who did Holt lose the race for police commissioner to?
+A: John Kelly
+W: Madeline Wuntch
+W: Seamus Murphy
+W: Frank O'Sullivan
+
+Q: What does Commissioner Wuntch demote Holt to in season 6?
+A: A uniformed officer
+W: A desk sergeant
+W: A school crossing guard
+W: A detective
+
+Q: How long did Holt spend in Community Affairs before getting the Nine-Nine?
+A: Twelve years
+W: Two years
+W: Five years
+W: Twenty years
+
+Q: In which year did Holt come out?
+A: 1987
+W: 1979
+W: 1993
+W: 2001
+
+TOPIC: Amy
+
+Q: What is Amy's career dream?
+A: To be the NYPD's youngest captain
+W: To be police commissioner
+W: To be mayor of New York
+W: To join the FBI
+
+Q: Who played Amy's father, Victor Santiago?
+A: Jimmy Smits
+W: Benjamin Bratt
+W: Andy García
+W: Danny Trejo
+
+Q: Who played Amy's brother David Santiago?
+A: Lin-Manuel Miranda
+W: Oscar Isaac
+W: Diego Luna
+W: Jimmy Smits
+
+Q: Which fellow cop does Amy date in seasons 1 and 2?
+A: Teddy Wells
+W: Doug Judy
+W: The Vulture
+W: Marcus
+
+TOPIC: Rosa
+
+Q: What is Rosa's full first name?
+A: Rosalita
+W: Rosamund
+W: Rosemary
+W: Rosanna
+
+Q: Which of these is an alias Rosa has used?
+A: Emily Goldfinch
+W: Emily Nightingale
+W: Rosa Smith
+W: Janet Snakehole
+
+Q: Who played Rosa's father, Oscar Diaz?
+A: Danny Trejo
+W: Jimmy Smits
+W: Edward James Olmos
+W: Andy García
+
+Q: In which episode does Rosa come out as bisexual?
+A: "99"
+W: "Game Night"
+W: "The Box"
+W: "HalloVeen"
+
+TOPIC: Terry
+
+Q: What is Terry's full name?
+A: Terrence Vincent Jeffords
+W: Terrance Victor Jeffords
+W: Terrell Vincent Jeffords
+W: Terry Jefferson
+
+Q: Who is godfather to Terry's daughter Ava?
+A: Jake
+W: Holt
+W: Charles
+W: Scully
+
+Q: Who becomes captain of the Nine-Nine in the series finale?
+A: Terry
+W: Amy
+W: Jake
+W: Rosa
+
+Q: What does Terry's brother-in-law Zeke call him?
+A: Tiny Terry
+W: Terry Bear
+W: Big T
+W: Yogurt Boy
+
+TOPIC: Charles
+
+Q: Which college did Charles graduate from?
+A: Sarah Lawrence College
+W: Vassar College
+W: Columbia University
+W: NYU
+
+Q: Which police horse upstages Charles at his Medal for Valor ceremony?
+A: Sergeant Peanut Butter
+W: Officer Oats
+W: Captain Carrots
+W: Detective Hay
+
+Q: What does Charles get to look after as "the One True Boyle"?
+A: The family sourdough starter
+W: The family farm
+W: Nana's recipe book
+W: The family fortune
+
+Q: Why does Vivian break off her engagement with Charles?
+A: He won't move to Canada with her
+W: He forgot their anniversary
+W: She falls for Jake
+W: He hates her cooking
+
+Q: Who played Charles's father, Lynn Boyle?
+A: Stephen Root
+W: Bradley Whitford
+W: Martin Mull
+W: Fred Willard
+
+TOPIC: Gina
+
+Q: What is Gina's full first name?
+A: Regina
+W: Georgina
+W: Virginia
+W: Angelina
+
+Q: How many times has Gina been engaged?
+A: Eight
+W: Three
+W: Zero
+W: Twelve
+
+Q: Who is the father of Gina's daughter, Iggy?
+A: Milton Boyle
+W: Charles Boyle
+W: Lynn Boyle
+W: Doug Judy
+
+Q: Gina's mother Darlene marries which character?
+A: Lynn Boyle, Charles's father
+W: Roger Peralta
+W: The Vulture
+W: Scully
+
+TOPIC: The Show
+
+Q: Which network picked up Brooklyn Nine-Nine after Fox canceled it?
+A: NBC
+W: ABC
+W: Netflix
+W: Hulu
+
+Q: How many seasons did Brooklyn Nine-Nine run?
+A: Eight
+W: Six
+W: Seven
+W: Nine
+
+Q: Which award did season 1 win for best comedy series?
+A: The Golden Globe
+W: The Emmy
+W: The Peabody
+W: The SAG Award
+
+Q: Which mobster forces Jake and Holt into witness protection?
+A: Jimmy "The Butcher" Figgis
+W: Seamus Murphy
+W: The Vulture
+W: Doug Judy

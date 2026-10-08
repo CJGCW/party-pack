@@ -255,3 +255,349 @@ A: Amy Poehler
 W: Aubrey Plaza
 W: Rashida Jones
 W: Retta
+
+TOPIC: Leslie Knope
+
+Q: What is Leslie's middle name?
+A: Barbara
+W: Beatrice
+W: Bernadette
+W: Bonnie
+
+Q: Where was Leslie born?
+A: Eagleton
+W: Pawnee
+W: Indianapolis
+W: Partridge
+
+Q: Which university did Leslie graduate from?
+A: Indiana University
+W: Purdue
+W: Notre Dame
+W: Ball State
+
+Q: What is the name of Leslie's mother?
+A: Marlene Griggs-Knope
+W: Marla Knope
+W: Tamara Knope
+W: Joan Callamezzo
+
+Q: Which politician does Leslie have a crush on?
+A: Joe Biden
+W: Barack Obama
+W: Bill Clinton
+W: John Kerry
+
+Q: Which of these does Leslie dislike?
+A: Libraries
+A: Eagleton
+A: Salads
+W: Waffles
+
+Q: By how many votes did Leslie beat Bobby Newport for city council?
+A: 21
+W: 2
+W: 100
+W: 1
+
+Q: What tax does Leslie pass as a city councilor?
+A: A soda tax
+W: A candy tax
+W: A beer tax
+W: A parking tax
+
+Q: Who replaces Leslie on the city council after she is recalled?
+A: Ingrid de Forest
+W: Bobby Newport
+W: Jeremy Jamm
+W: Marcia Langman
+
+Q: Who walks Leslie down the aisle?
+A: Ron Swanson
+W: Andy Dwyer
+W: Chris Traeger
+W: Tom Haverford
+
+Q: What are the names of Leslie and Ben's triplets?
+A: Westley, Stephen and Sonia
+W: William, Stephen and Sonia
+W: Westley, Simon and Sophie
+W: Ben Jr., Stephen and Sonia
+
+Q: Which city planner did Leslie have a crush on in season 1?
+A: Mark Brendanawicz
+W: Tom Haverford
+W: Chris Traeger
+W: Dave Sanderson
+
+TOPIC: Ron Swanson
+
+Q: What is Ron's middle name?
+A: Ulysses
+W: Ulric
+W: Ulrich
+W: Ugo
+
+Q: What does Ron do so nobody throws him a birthday party?
+A: Redacts his birthday from government records
+W: Takes the day off every year
+W: Claims it's on Leap Day
+W: Tells everyone it's in December
+
+Q: According to Ron, how many times has he cried?
+A: Twice
+W: Never
+W: Once
+W: Three times
+
+Q: What is the name of the company Ron starts after leaving government?
+A: The Very Good Building Company
+W: Swanson Woodworks
+W: Ron's Rustic Furniture
+W: The Pretty Good Construction Company
+
+Q: Who does Ron marry after his two Tammys?
+A: Diane Lewis
+W: Tammy One
+W: Marcia Langman
+W: Shauna Malwae-Tweep
+
+Q: Who played Diane Lewis?
+A: Lucy Lawless
+W: Megan Mullally
+W: Patricia Clarkson
+W: Christie Brinkley
+
+Q: How do Ron and Diane meet?
+A: He fixes the pothole outside her house
+W: She's his dentist
+W: At a woodworking class
+W: She's April's boss
+
+Q: What is the name of Ron and Diane's son?
+A: John
+W: Ron Jr.
+W: Swanson
+W: Duke
+
+Q: Which actor, Nick Offerman's real-life wife, played Ron's ex Tammy Two?
+A: Megan Mullally
+W: Lucy Lawless
+W: Patricia Clarkson
+W: Paula Pell
+
+Q: What job does Leslie get Ron at the end of the series?
+A: Superintendent of Pawnee National Park
+W: Mayor of Pawnee
+W: Director of the National Park Service
+W: Governor of Indiana
+
+Q: Who serves as Ron's "best man" at his wedding to Diane?
+A: April
+W: Andy
+W: Tom
+W: Leslie
+
+TOPIC: April and Andy
+
+Q: What does April's family call her?
+A: Zuzu
+W: Lulu
+W: Bebe
+W: Mimi
+
+Q: What is April's favorite band?
+A: Neutral Milk Hotel
+W: Mouse Rat
+W: The Strokes
+W: My Chemical Romance
+
+Q: What is the name of April's younger sister?
+A: Natalie
+W: Nicole
+W: Natasha
+W: Nora
+
+Q: What job does April take after leaving the Parks Department office?
+A: Deputy Director of Animal Control
+W: Director of the Parks Department
+W: Veterinarian
+W: City council member
+
+Q: How long had April and Andy been dating when they got married?
+A: About a month
+W: Six months
+W: Two years
+W: One week
+
+Q: Which of these are aliases April has used?
+A: Janet Snakehole
+A: Satan's Niece
+W: Kip Hackman
+W: Duke Silver
+
+Q: How did Andy break both his legs before the show began?
+A: He fell into the pit
+W: A skateboarding accident
+W: He jumped off the stage at a Mouse Rat show
+W: He fell off City Hall's roof
+
+Q: Which NFL team is Andy a big fan of?
+A: The Indianapolis Colts
+W: The Chicago Bears
+W: The Green Bay Packers
+W: The Cincinnati Bengals
+
+Q: On which holiday is Andy and April's son, Jack, born?
+A: Halloween
+W: Christmas
+W: Galentine's Day
+W: Thanksgiving
+
+Q: What happens when Andy takes the police exam?
+A: He aces the written test but fails the psych evaluation
+W: He fails the written test
+W: He oversleeps and misses it
+W: He passes and becomes a cop
+
+TOPIC: Tom and Friends
+
+Q: What does Tom call his technique of dressing to stand out?
+A: Peacocking
+W: Strutting
+W: Swagging
+W: Flexing
+
+Q: What is the name of Tom's book?
+A: Failure: An American Success Story
+W: Swag: The Tom Haverford Story
+W: Treat Yo' Self
+W: How to Get Rich Quick
+
+Q: What is the name of Tom's cologne?
+A: Tommy Fresh
+W: Haverford No. 5
+W: Swag Spray
+W: Snake Juice
+
+Q: What does Tom call desserts?
+A: 'Serts
+W: Sweeties
+W: Dezzies
+W: Sugies
+
+Q: Which of these were Tom's business ventures?
+A: Rent-A-Swag
+A: Tom's Bistro
+A: Entertainment 720
+W: Sweetums
+
+Q: Where does Tom meet Lucy?
+A: The Snake Hole Lounge
+W: JJ's Diner
+W: Tom's Bistro
+W: The Pawnee Rangers camp
+
+Q: Who is Jean-Ralphio's twin sister?
+A: Mona-Lisa Saperstein
+W: Jessica Wicks
+W: Shauna Malwae-Tweep
+W: Lucy
+
+Q: Who played Mona-Lisa Saperstein?
+A: Jenny Slate
+W: Aubrey Plaza
+W: Kristen Bell
+W: Natalie Morales
+
+Q: Who played Dr. Saperstein, Jean-Ralphio's father?
+A: Henry Winkler
+W: Fred Willard
+W: Paul Rudd
+W: Jeff Goldblum
+
+Q: Which councilman's catchphrase is "You just got Jammed"?
+A: Jeremy Jamm
+W: Bill Dexhart
+W: Douglass Howser
+W: Fielding Milton
+
+Q: Who played Pawnee's late Mayor Gunderson?
+A: Bill Murray
+W: Paul Rudd
+W: Will Ferrell
+W: Steve Carell
+
+Q: Which Brooklyn Nine-Nine star plays Carl Lorthner, the park ranger who can't speak quietly?
+A: Andy Samberg
+W: Joe Lo Truglio
+W: Terry Crews
+W: Chelsea Peretti
+
+Q: Who does hairdresser Typhoon marry?
+A: Craig Middlebrooks
+W: Jerry Gergich
+W: Jean-Ralphio
+W: Councilman Howser
+
+TOPIC: Ben, Ann and Chris
+
+Q: Which college did Ben attend?
+A: Carleton College
+W: Indiana University
+W: University of Minnesota
+W: Oberlin College
+
+Q: What was Ben's college radio show?
+A: Zoot Suit Wyatt
+W: Wyatt After Dark
+W: The Calzone Hour
+W: Ben's Big Band
+
+Q: What is the name of Ben's failed calzone restaurant idea?
+A: The Low-Cal Calzone Zone
+W: Calzone Kingdom
+W: Wyatt's Pockets
+W: The Calzone Hole
+
+Q: What newspaper headline mocked Ben's time as mayor?
+A: "Ice Town Costs Ice Clown His Town Crown"
+W: "Boy Mayor Melts Down"
+W: "Partridge Puts Kid on Ice"
+W: "Mayor Wyatt Skates Out of Office"
+
+Q: In which episode do Leslie and Ben become a couple?
+A: Road Trip
+W: Harvest Festival
+W: Galentine's Day
+W: The Fight
+
+Q: Why does Ben resign in season 4?
+A: To protect Leslie's job after their relationship comes out
+W: To run for mayor
+W: To make board games full time
+W: To move to Washington
+
+Q: Where is Ann Perkins originally from?
+A: Ann Arbor, Michigan
+W: Pawnee, Indiana
+W: Chicago, Illinois
+W: Indianapolis, Indiana
+
+Q: Which of these men has Ann dated?
+A: Andy Dwyer
+A: Mark Brendanawicz
+A: Tom Haverford
+W: Ron Swanson
+
+Q: What was Chris born with?
+A: A rare blood disorder
+W: A heart murmur
+W: Six toes
+W: Perfect pitch
+
+Q: Who is the father of Ann's son, Oliver?
+A: Chris Traeger
+W: Andy Dwyer
+W: Mark Brendanawicz
+W: An anonymous donor

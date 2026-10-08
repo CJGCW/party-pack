@@ -255,3 +255,331 @@ A: Zach Braff
 A: Donald Faison
 A: Judy Reyes
 W: Rob Lowe
+
+TOPIC: J.D.
+
+Q: Which Ohio town did J.D. grow up in?
+A: Trotwood
+W: Cleveland
+W: Akron
+W: Toledo
+
+Q: Who played J.D.'s father, Sam?
+A: John Ritter
+W: Dick Van Dyke
+W: Ted Danson
+W: Bob Newhart
+
+Q: Who played J.D.'s older brother, Dan?
+A: Tom Cavanagh
+W: Scott Foley
+W: Jay Mohr
+W: Ryan Reynolds
+
+Q: How does Dan break the news that their father has died?
+A: He brings J.D. a fudge cake
+W: In a letter
+W: With a singing telegram
+W: Over the hospital PA
+
+Q: What started the feud between J.D. and the Janitor?
+A: A penny jammed in a door
+W: A spilled coffee
+W: A stolen parking spot
+W: A mopped floor J.D. walked on
+
+Q: In the finale, what does the Janitor reveal about the penny?
+A: J.D. really did put it in the door
+W: The Janitor put it there himself
+W: It was Turk's penny
+W: There never was a penny
+
+Q: Which hospital does J.D. move to in season 8 to be near his son?
+A: St. Vincent's
+W: St. Augustine's
+W: Mercy General
+W: Hale Memorial
+
+Q: What does J.D. do with his head when he starts to daydream?
+A: Tilts it back and to the left
+W: Shakes it side to side
+W: Rests it on his hand
+W: Closes his eyes and nods
+
+Q: Which two Sullivan sisters does J.D. have relationships with?
+A: Jordan and Danni
+W: Jordan and Paige
+W: Danni and Kim
+W: Jordan and Molly
+
+Q: In which season does J.D. become an attending physician?
+A: Season 5
+W: Season 3
+W: Season 6
+W: Season 7
+
+TOPIC: Dr. Cox
+
+Q: What is Dr. Cox's middle name?
+A: Ulysses
+W: Ignatius
+W: Augustus
+W: Montgomery
+
+Q: In which city did Dr. Cox grow up?
+A: Pittsburgh
+W: Boston
+W: Chicago
+W: Philadelphia
+
+Q: Which university did Dr. Cox attend before Johns Hopkins?
+A: Hale University
+W: Harvard
+W: Princeton
+W: Dartmouth
+
+Q: Which actor does Dr. Cox claim to hate?
+A: Hugh Jackman
+W: Russell Crowe
+W: Tom Cruise
+W: Ryan Reynolds
+
+Q: Which hockey team's jersey does Dr. Cox wear?
+A: The Detroit Red Wings
+W: The Pittsburgh Penguins
+W: The Boston Bruins
+W: The Chicago Blackhawks
+
+Q: What drink is Dr. Cox usually seen with?
+A: Scotch
+W: Gin
+W: Red wine
+W: Beer
+
+Q: What was Jack Cox's first full sentence?
+A: "Daddy drinks a lot"
+W: "Daddy yells a lot"
+W: "I love Newbie"
+W: "Where's Mommy?"
+
+Q: What nickname does Dr. Cox give Turk?
+A: Gandhi
+W: Gandalf
+W: Chocolate Bear
+W: Turkleton
+
+Q: Who played Dr. Cox's born-again Christian sister, Paige?
+A: Cheryl Hines
+W: Christa Miller
+W: Jane Lynch
+W: Megan Mullally
+
+Q: In "My Dream Job", what does Dr. Cox do to Kelso in front of the staff?
+A: Punches him in the face
+W: Pours coffee on him
+W: Quits on the spot
+W: Locks him in a closet
+
+TOPIC: Turk
+
+Q: What illness is Turk diagnosed with in season 4?
+A: Type 2 diabetes
+W: Asthma
+W: High blood pressure
+W: Celiac disease
+
+Q: What does Dr. Kelso keep calling Turk?
+A: Turkleton
+W: Turkey
+W: Gandhi
+W: Chocolate Bear
+
+Q: Who paid for Turk's college and medical school?
+A: His brother Kevin
+W: His mother
+W: Dr. Kelso
+W: A football scholarship
+
+Q: What is Turk's religion?
+A: Roman Catholic
+W: Jehovah's Witness
+W: Baptist
+W: Buddhist
+
+Q: What is the name of the air band Turk is in with the Janitor, Ted and Lloyd?
+A: The Cool Cats
+W: The Worthless Peons
+W: The Brain Trust
+W: The Sacred Hearts
+
+Q: In which episode do Turk and Carla get married?
+A: My Best Friend's Wedding
+W: My Big Day
+W: My Musical
+W: My Finale
+
+TOPIC: Elliot
+
+Q: What specialty did Elliot's father want her to go into?
+A: Gynecology
+W: Surgery
+W: Pediatrics
+W: Psychiatry
+
+Q: Which university did Elliot go to?
+A: Brown
+W: Yale
+W: Harvard
+W: Dartmouth
+
+Q: Who played Elliot's friend and mentor Molly Clock?
+A: Heather Graham
+W: Elizabeth Banks
+W: Mandy Moore
+W: Courteney Cox
+
+Q: What was Sean Kelly's job?
+A: Animal trainer at SeaWorld
+W: Lawyer
+W: Paramedic
+W: Pilot
+
+Q: Which of these men did Elliot date?
+A: Sean Kelly
+A: Paul Flowers
+A: Dan Dorian
+W: Ted Buckland
+
+TOPIC: Carla
+
+Q: Where was Carla born?
+A: The Dominican Republic
+W: Puerto Rico
+W: Cuba
+W: Mexico
+
+Q: Where did Carla grow up after moving as a child?
+A: Chicago
+W: Miami
+W: New York
+W: Los Angeles
+
+Q: What do J.D. and Carla use to symbolize their friendship?
+A: Mardi Gras beads
+W: Friendship bracelets
+W: A stuffed dog
+W: Matching scrubs
+
+Q: Who played Carla's brother Marco?
+A: Freddy Rodriguez
+W: John Leguizamo
+W: Benjamin Bratt
+W: Michael Peña
+
+TOPIC: Dr. Kelso
+
+Q: Finish Dr. Kelso's put-down: J.D. is "nothing but..."
+A: "...a large pair of scrubs"
+W: "...a walking malpractice suit"
+W: "...a lab coat with legs"
+W: "...a waste of a stethoscope"
+
+Q: Why does Dr. Kelso hate bicycles?
+A: His father left the family on Kelso's bike
+W: He crashed one as a kid
+W: A cyclist hit his car
+W: He's allergic to spandex
+
+Q: What does Dr. Kelso's son Harrison write about him?
+A: A musical called "Dr. Dad"
+W: A tell-all memoir
+W: A hit country song
+W: An angry blog
+
+Q: Which military unit did Dr. Kelso serve in?
+A: The Navy SEALs
+W: The Army Rangers
+W: The Marines
+W: The Green Berets
+
+Q: What name does Dr. Kelso have tattooed on him?
+A: "Johnny"
+W: "Bob"
+W: "Mom"
+W: "Navy"
+
+Q: Where did Dr. Kelso go to medical school?
+A: Stanford
+W: Harvard
+W: Johns Hopkins
+W: Hale
+
+Q: What was Dr. Kelso's family name originally?
+A: Kelsonovich
+W: Kelsowski
+W: Kelsonberg
+W: McKelso
+
+Q: How old is Dr. Kelso when he steps down as Chief of Medicine?
+A: 65
+W: 60
+W: 70
+W: 75
+
+TOPIC: The Janitor and Friends
+
+Q: What is the name of the Janitor's wife?
+A: Lady
+W: Enid
+W: Doris
+W: Lily
+
+Q: What is the name of the Janitor's group of hospital workers who scheme with him?
+A: The Brain Trust
+W: The Worthless Peons
+W: The Cool Cats
+W: The Inner Circle
+
+Q: Which of these were members of the Janitor's Brain Trust?
+A: Ted
+A: Doug
+A: The Todd
+W: J.D.
+
+Q: What is Cabbage, J.D.'s favorite intern, known for?
+A: His ape impression
+W: His amazing memory
+W: His bow ties
+W: Never washing his hands
+
+Q: Where did The Todd learn to high-five?
+A: At medical school in the Bahamas
+W: On the football team
+W: From Turk
+W: In the Navy
+
+Q: What does Doug Murphy usually have in his mouth?
+A: A lollipop
+W: A toothpick
+W: Bubble gum
+W: A pen cap
+
+TOPIC: Sacred Heart
+
+Q: Which network aired season 8 of Scrubs?
+A: ABC
+W: NBC
+W: CBS
+W: Fox
+
+Q: What was hung backwards in the opening credits for most of the first five seasons?
+A: The chest X-ray
+W: The hospital sign
+W: J.D.'s name tag
+W: A wall clock
+
+Q: Which real hospital was Scrubs filmed in for its first eight seasons?
+A: North Hollywood Medical Center
+W: Cedars-Sinai
+W: Seattle Grace
+W: Los Angeles General
