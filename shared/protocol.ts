@@ -1,5 +1,7 @@
 // Messages shared between the server, the host screen and the phone controllers.
 
+import type { MicrogameInfo } from './games/woochaware';
+
 export const MAX_PLAYERS = 8;
 export const MAX_NAME_LENGTH = 12;
 
@@ -91,6 +93,10 @@ export interface RoomState {
   games: GameInfo[];
   /** Debug mode: the VIP picks a specific game instead of spinning the wheel. */
   debugMode: boolean;
+  /** WoochaWare debug: the VIP picks a single microgame to practise from `microgames`. */
+  woochaDebug: boolean;
+  /** Every WoochaWare microgame (for the WoochaWare debug list). */
+  microgames: MicrogameInfo[];
   /** Every game/mode that can go on the wheel. */
   wheelEntries: WheelEntry[];
   settings: SessionSettings;
@@ -116,8 +122,11 @@ export interface ClientToServerEvents {
   'room:updateSettings': (settings: SessionSettings, ack: Ack) => void;
   /** VIP (or host) starts a session: spin the wheel, play, repeat for each round. */
   'room:startSession': (ack: Ack) => void;
-  /** Debug mode only: VIP (or host) starts one specific mini game. */
-  'room:startGame': (req: { gameId: string; modeId?: string }, ack: Ack) => void;
+  /**
+   * Debug mode only: VIP (or host) starts one specific mini game. In WoochaWare debug,
+   * `microgameId` picks the WoochaWare microgame to practise.
+   */
+  'room:startGame': (req: { gameId: string; modeId?: string; microgameId?: string }, ack: Ack) => void;
   /** Host screen or VIP phone abandons the current game or session. */
   'room:backToLobby': () => void;
   /** Mini-game specific input from a phone. */

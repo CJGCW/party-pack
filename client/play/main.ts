@@ -2,10 +2,12 @@ import { io, type Socket } from 'socket.io-client';
 import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type RoomState, type ServerToClientEvents } from '../../shared/protocol';
 import { TOSS_UP } from '../../shared/games/tossUp';
 import { TRIVIA } from '../../shared/games/trivia';
+import { WOOCHAWARE } from '../../shared/games/woochaware';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { h } from './dom';
 import { createTossUp } from './games/tossUp';
 import { createTrivia } from './games/trivia';
+import { createWoochaWare } from './games/woochaware';
 import { createWordleRace } from './games/wordleRace';
 
 /** A mini game's phone UI. */
@@ -20,6 +22,7 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [WORDLE_RACE.id]: createWordleRace,
   [TOSS_UP.id]: createTossUp,
   [TRIVIA.id]: createTrivia,
+  [WOOCHAWARE.id]: createWoochaWare,
 };
 
 const SESSION_KEY = 'party-pack-session';
@@ -193,7 +196,8 @@ function renderLobby() {
     h('div', { class: 'badge' }, player.name),
     h('h2', {}, "You're in!"),
   ];
-  if (room!.debugMode) children.push(...debugGamePicker(player.isVip));
+  if (room!.woochaDebug) children.push(...microgamePicker(player.isVip));
+  else if (room!.debugMode) children.push(...debugGamePicker(player.isVip));
   else children.push(...wheelSettings(player.isVip));
   app.replaceChildren(h('div', { class: 'center' }, ...children));
 }
@@ -354,4 +358,29 @@ function debugGamePicker(isVip: boolean): Node[] {
     children.push(h('p', {}, 'Waiting for the VIP to pick a game…'));
   }
   return children;
+}
+
+/** WoochaWare debug: only WoochaWare's microgames, each played once at every level. */
+function microgamePicker(isVip: boolean): Node[] {
+  if (!isVip) return [h('p', {}, 'WOOCHAWARE DEBUG · Waiting for the VIP to pick a microgame…')];
+  const errorEl = h('div', { class: 'error' });
+  const buttons = room!.microgames.map((m) =>
+    h(
+      'button',
+      {
+        class: 'mode-button',
+        onclick: () =>
+          socket.emit('room:startGame', { gameId: WOOCHAWARE.id, microgameId: m.id }, (res) => {
+            if (!res.ok) errorEl.textContent = res.error;
+          }),
+      },
+      h('span', {}, `${m.command} ${m.name}`),
+      h('small', {}, m.hint),
+    ),
+  );
+  return [
+    h('p', {}, 'WOOCHAWARE DEBUG · Pick a microgame. It plays once at each level (1, 2, 3).'),
+    errorEl,
+    h('div', { class: 'game-card' }, ...buttons),
+  ];
 }

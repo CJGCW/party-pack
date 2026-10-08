@@ -25,6 +25,8 @@ export interface MiniGame {
 export interface GameOptions {
   /** How many puzzles to play (Letter Drop puzzles, Word Rush words). */
   puzzles: number;
+  /** WoochaWare debug: practice just this microgame. */
+  microgame?: string;
 }
 
 export interface MiniGameDefinition {

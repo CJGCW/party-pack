@@ -41,6 +41,13 @@ a click on the host screen) starts one chosen game. Turn it on with either:
 - `"debugMode": true` in `party-pack.config.json` (an environment variable
   `PARTY_PACK_DEBUG=1`/`0` overrides the file).
 
+### WoochaWare debug
+
+To test WoochaWare's microgames one at a time, turn on WoochaWare debug with `npm run dev:woocha`
+or `"woochaDebug": true` in `party-pack.config.json` (`PARTY_PACK_WOOCHA_DEBUG=1`/`0` overrides it).
+The VIP's phone then lists only the microgames; tapping one plays it once at each speed level (1, 2, 3),
+without scoring, then returns to the list. It takes priority over `debugMode`.
+
 ## Games
 
 | Game | Players | How it plays |
@@ -48,6 +55,7 @@ a click on the host screen) starts one chosen game. Turn it on with either:
 | **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Each solve scores (seconds left − 8s per guess) × 10, minimum 100. Guesses don't take time off the clock; they only lower your score. One word per puzzle. **Normal** (2½-minute rounds) uses words with a dictionary definition, shown at the reveal; **Hard** (4-minute rounds) uses obscure words with none. |
 | **Letter Drop** | 1–8 | A puzzle board fills in one letter at a time. Buzz in on your phone and type the answer: right scores 750 points; wrong locks you out of that puzzle. |
 | **Trivia** | 1–8 | Multiple choice on the TV; everyone answers on their phone within 20 seconds. A right answer scores 500 plus up to 500 more for speed. Each question bank is a mode on the wheel: **Disney & Pixar** (characters, stories and voice actors from the theatrical animated films), **Scrubs** (seasons 1–8), **Brooklyn Nine-Nine** and **Parks and Recreation**. |
+| **WoochaWare** | 1–8 | WarioWare-style microgames played on the phones' touch screens (26 of them, in `client/play/woochaware/`). Each puzzle is a stage of 5 microgames, a few seconds each; every win scores 150. The speed level rises from 1 to 3 over the game. |
 
 ### Testing with bots
 

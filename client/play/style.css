@@ -284,3 +284,47 @@ button.secondary { background: var(--panel-light); }
 .tv-multi[hidden], .tv-lock[hidden] { display: none; }
 .tv-lock { font-size: 24px; padding: 16px; background: var(--accent); color: var(--bg); }
 .tv-lock:disabled { opacity: 0.4; }
+
+/* ---------- WoochaWare ---------- */
+
+.ww { height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 8px; user-select: none; -webkit-user-select: none; }
+.ww-level { color: var(--accent); }
+.ww-fuse { height: 12px; border-radius: 6px; background: var(--empty); overflow: hidden; flex: none; }
+.ww-fuse-fill { height: 100%; width: 100%; background: var(--accent); border-radius: 6px; }
+.ww-fuse-fill.low { background: var(--danger); }
+/* The screen keeps the microgames' 360 x 560 shape, as big as fits. */
+.ww-stage { flex: 1; min-height: 0; display: flex; justify-content: center; align-items: flex-start; container-type: size; }
+.ww-screen { position: relative; width: min(100cqw, calc(100cqh * 360 / 560)); aspect-ratio: 360 / 560; }
+.ww-canvas { display: block; width: 100%; height: 100%; border-radius: 18px; touch-action: none; }
+.ww-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  pointer-events: none;
+}
+.ww-overlay[hidden], .ww-banner[hidden] { display: none; }
+.ww-overlay.command { background: rgba(20, 15, 46, 0.55); border-radius: 18px; }
+.ww-big { font-size: 44px; font-weight: 700; color: var(--text); text-shadow: 0 4px 0 var(--bg); }
+.ww-overlay.command .ww-big { font-size: 64px; color: var(--accent); animation: pop 0.3s; }
+.ww-overlay.good .ww-big { color: var(--accent); font-size: 72px; }
+.ww-overlay.bad .ww-big { color: var(--danger); font-size: 72px; }
+.ww-sub { font-size: 22px; color: var(--muted); }
+.ww-banner {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  padding: 10px 28px;
+  border-radius: 999px;
+  font-size: 30px;
+  font-weight: 700;
+  pointer-events: none;
+  background: var(--panel);
+}
+.ww-banner.good { background: var(--correct); }
+.ww-banner.bad { background: var(--danger); }

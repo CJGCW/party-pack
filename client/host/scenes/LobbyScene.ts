@@ -68,7 +68,11 @@ export class LobbyScene extends Phaser.Scene {
     this.renderQr(`${state.joinUrl}/?code=${state.code}`);
     this.renderPlayers(state);
     const playerCount = state.players.filter((p) => p.connected).length;
-    if (state.debugMode) {
+    if (state.woochaDebug) {
+      this.hintText.setText('WOOCHAWARE DEBUG: the VIP picks a microgame to practise on their phone');
+      for (const c of this.gameCards) c.destroy();
+      this.gameCards = [];
+    } else if (state.debugMode) {
       this.hintText.setText('DEBUG MODE: pick a game (click here, or the VIP can start it from their phone)');
       this.renderGames(state.games, playerCount);
     } else {

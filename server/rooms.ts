@@ -17,6 +17,7 @@ import {
   type WheelEntry,
 } from '../shared/protocol';
 import { STANDINGS_MS } from '../shared/timing';
+import { MICROGAMES, WOOCHAWARE, findMicrogame } from '../shared/games/woochaware';
 import { config } from './config';
 import { GAMES, findGame } from './games';
 import type { MiniGame } from './games/MiniGame';
@@ -119,6 +120,8 @@ export class Room {
       players: [...this.players.values()].map(publicPlayer),
       games: GAMES.map((g) => g.info),
       debugMode: config.debugMode,
+      woochaDebug: config.woochaDebug,
+      microgames: [...MICROGAMES],
       wheelEntries: WHEEL_ENTRIES,
       settings: this.settings,
       session: this.session ? { round: this.session.round, totalRounds: this.session.totalRounds } : null,
@@ -248,7 +251,7 @@ export class Room {
   }
 
   startSession(): string | null {
-    if (config.debugMode) return 'Debug mode is on: pick a game instead.';
+    if (config.debugMode || config.woochaDebug) return 'Debug mode is on: pick a game instead.';
     if (this.busy) return 'A game is already running.';
     const players = this.connectedCount();
     // Only games that suit this many players can go on the wheel.
@@ -282,15 +285,19 @@ export class Room {
     this.broadcastState();
   }
 
-  /** Debug mode only: play one specific game. */
-  startGame(gameId: string, modeId?: string): string | null {
-    if (!config.debugMode) return 'Spin the wheel to pick a game.';
+  /** Debug mode only: play one specific game (or, in WoochaWare debug, one microgame). */
+  startGame(gameId: string, modeId?: string, microgameId?: string): string | null {
+    if (config.woochaDebug) {
+      if (gameId !== WOOCHAWARE.id || !microgameId || !findMicrogame(microgameId)) return 'Pick a microgame.';
+    } else if (!config.debugMode) {
+      return 'Spin the wheel to pick a game.';
+    }
     if (this.busy) return 'A game is already running.';
     for (const p of this.players.values()) p.score = 0;
-    return this.launchGame(gameId, modeId);
+    return this.launchGame(gameId, modeId, config.woochaDebug ? microgameId : undefined);
   }
 
-  private launchGame(gameId: string, modeId?: string): string | null {
+  private launchGame(gameId: string, modeId?: string, microgameId?: string): string | null {
     const def = findGame(gameId);
     if (!def) return 'Unknown game.';
     const mode = modeId ? def.info.modes.find((m) => m.id === modeId) : def.info.modes[0];
@@ -320,7 +327,7 @@ export class Room {
         },
       },
       mode.id,
-      { puzzles: this.settings.puzzlesPerRound },
+      { puzzles: this.settings.puzzlesPerRound, microgame: microgameId },
     );
     this.game = game;
     this.broadcastState();

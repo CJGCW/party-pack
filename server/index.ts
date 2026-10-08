@@ -72,7 +72,9 @@ io.on('connection', (socket) => {
 
   socket.on('room:updateSettings', (settings, ack) => controlled(ack, (room) => room.updateSettings(settings)));
   socket.on('room:startSession', (ack) => controlled(ack, (room) => room.startSession()));
-  socket.on('room:startGame', ({ gameId, modeId }, ack) => controlled(ack, (room) => room.startGame(gameId, modeId)));
+  socket.on('room:startGame', ({ gameId, modeId, microgameId }, ack) =>
+    controlled(ack, (room) => room.startGame(gameId, modeId, microgameId)),
+  );
 
   socket.on('room:backToLobby', () => {
     const room = roomOf();
@@ -88,5 +90,6 @@ httpServer.listen(PORT, '0.0.0.0', () => {
   console.log('\n  Party Pack is running!\n');
   console.log(`  Host screen (open on the TV/laptop): http://localhost:${PORT}/host`);
   console.log(`  Players join on their phones at:     ${joinUrl}\n`);
-  if (config.debugMode) console.log('  DEBUG MODE: the VIP picks each game directly (no wheel).\n');
+  if (config.woochaDebug) console.log('  WOOCHAWARE DEBUG: the VIP picks a WoochaWare microgame to practise.\n');
+  else if (config.debugMode) console.log('  DEBUG MODE: the VIP picks each game directly (no wheel).\n');
 });

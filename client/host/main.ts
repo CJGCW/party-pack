@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { RoomState } from '../../shared/protocol';
 import { TOSS_UP } from '../../shared/games/tossUp';
 import { TRIVIA } from '../../shared/games/trivia';
+import { WOOCHAWARE } from '../../shared/games/woochaware';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { net, socket } from './net';
 import { LobbyScene } from './scenes/LobbyScene';
@@ -10,6 +11,7 @@ import { SpinnerScene } from './scenes/SpinnerScene';
 import { StandingsScene } from './scenes/StandingsScene';
 import { TossUpScene } from './scenes/TossUpScene';
 import { TriviaScene } from './scenes/TriviaScene';
+import { WoochaWareScene } from './scenes/WoochaWareScene';
 import { WordleRaceScene } from './scenes/WordleRaceScene';
 import { HEIGHT, WIDTH } from './theme';
 
@@ -18,6 +20,7 @@ const GAME_SCENES: Record<string, string> = {
   [WORDLE_RACE.id]: WordleRaceScene.KEY,
   [TOSS_UP.id]: TossUpScene.KEY,
   [TRIVIA.id]: TriviaScene.KEY,
+  [WOOCHAWARE.id]: WoochaWareScene.KEY,
 };
 
 await document.fonts.load('600 32px Fredoka').catch(() => undefined);
@@ -39,6 +42,7 @@ game.scene.add(StandingsScene.KEY, StandingsScene, false);
 game.scene.add(WordleRaceScene.KEY, WordleRaceScene, false);
 game.scene.add(TossUpScene.KEY, TossUpScene, false);
 game.scene.add(TriviaScene.KEY, TriviaScene, false);
+game.scene.add(WoochaWareScene.KEY, WoochaWareScene, false);
 game.events.once(Phaser.Core.Events.READY, () => {
   if (net.room) showSceneFor(net.room);
   else game.scene.start(LobbyScene.KEY);
