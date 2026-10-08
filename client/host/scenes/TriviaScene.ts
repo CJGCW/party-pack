@@ -60,7 +60,7 @@ export class TriviaScene extends Phaser.Scene {
       const y = TILES_TOP + Math.floor(i / 2) * (TILE_H + TILE_GAP) + TILE_H / 2;
       const container = this.add.container(x, y).setAlpha(0);
       const bg = this.add.graphics();
-      const shape = text(this, -TILE_W / 2 + 60, 0, ANSWER_STYLES[i].shape, 56, COLORS.text);
+      const shape = text(this, -TILE_W / 2 + 60, 0, ANSWER_STYLES[i].shape, 56, COLORS.accent);
       const label = text(this, 30, 0, '', 44, COLORS.text, {
         fontStyle: '700',
         align: 'center',
@@ -87,14 +87,15 @@ export class TriviaScene extends Phaser.Scene {
     this.timerText.setText(String(secs)).setColor(secs <= 5 ? COLORS.danger : COLORS.text);
   }
 
+  /** Purple panel tiles like the rest of the game; the right answers go green at the reveal. */
   private drawTile(i: number, state: 'normal' | 'right' | 'wrong') {
     const { bg } = this.tiles[i];
-    const color = hex(ANSWER_STYLES[i].color);
+    const fill = state === 'right' ? COLORS.correct : state === 'wrong' ? COLORS.panel : COLORS.panelLight;
     bg.clear();
-    bg.fillStyle(state === 'wrong' ? 0x2c2366 : color, state === 'wrong' ? 0.7 : 1);
+    bg.fillStyle(fill, state === 'wrong' ? 0.7 : 1);
     bg.fillRoundedRect(-TILE_W / 2, -TILE_H / 2, TILE_W, TILE_H, 24);
-    if (state === 'right') {
-      bg.lineStyle(10, 0xffffff, 1);
+    if (state !== 'wrong') {
+      bg.lineStyle(state === 'right' ? 8 : 3, state === 'right' ? 0xffffff : 0x5f57a0, 1);
       bg.strokeRoundedRect(-TILE_W / 2, -TILE_H / 2, TILE_W, TILE_H, 24);
     }
   }

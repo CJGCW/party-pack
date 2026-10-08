@@ -18,13 +18,11 @@ export const TRIVIA: GameInfo = {
 
 export const ANSWER_COUNT = 4;
 
-/** Colours and shapes for answers A-D, matched on the TV and phones. */
-export const ANSWER_STYLES = [
-  { color: '#e5484d', shape: '▲' },
-  { color: '#3e7bfa', shape: '◆' },
-  { color: '#e0a526', shape: '●' },
-  { color: '#30a46c', shape: '■' },
-];
+/**
+ * Shapes for answers A-D, matched on the TV and phones. The tiles themselves use
+ * the game's usual purple panel colour; the right answers turn green at the reveal.
+ */
+export const ANSWER_STYLES = [{ shape: '▲' }, { shape: '◆' }, { shape: '●' }, { shape: '■' }];
 
 /**
  * 'question': the question alone, so everyone can read it.

@@ -28,7 +28,7 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
   const buttons = ANSWER_STYLES.map((style, i) => {
     const btn = h(
       'button',
-      { class: 'tv-answer', type: 'button', style: `--answer:${style.color}` },
+      { class: 'tv-answer', type: 'button' },
       h('span', { class: 'tv-shape' }, style.shape),
       h('span', { class: 'tv-text' }),
     );
