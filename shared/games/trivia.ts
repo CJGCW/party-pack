@@ -13,6 +13,9 @@ export const TRIVIA: GameInfo = {
       name: 'Disney & Pixar',
       description: 'Characters, stories and voice actors from Disney and Pixar animated films.',
     },
+    { id: 'scrubs', name: 'Scrubs', description: 'Sacred Heart Hospital, seasons 1 to 8.' },
+    { id: 'brooklyn-99', name: 'Brooklyn Nine-Nine', description: 'The detectives of the 99th Precinct.' },
+    { id: 'parks-and-rec', name: 'Parks and Recreation', description: 'The Pawnee Parks Department.' },
   ],
 };
 

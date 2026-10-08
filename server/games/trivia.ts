@@ -47,7 +47,7 @@ export function questionPoints(msLeft: number, picked: number[], correct: number
 //   W: Nathan Lane
 //   W: Jeremy Irons
 //
-// A "FILM:" line applies to every question after it. A is a right answer and
+// A "FILM:" (or "TOPIC:") line is the banner for every question after it. A is a right answer and
 // each W is a wrong one; there are always four in total. More than one A makes
 // it a select-all-that-apply question. Lines starting with # are comments.
 
@@ -77,13 +77,14 @@ function loadBank(file: string): Question[] {
   for (const raw of readFileSync(join(BANK_DIR, file), 'utf8').split(/\r?\n/)) {
     const line = raw.trim();
     if (!line || line.startsWith('#')) continue;
-    const match = /^(FILM|Q|A|W):\s*(.+)$/.exec(line);
+    const match = /^(FILM|TOPIC|Q|A|W):\s*(.+)$/.exec(line);
     if (!match) {
       console.warn(`[trivia] Ignoring line in ${file}: ${line}`);
       continue;
     }
     const [, key, value] = match;
-    if (key === 'FILM') {
+    // TOPIC is FILM by another name, for banks that aren't about films (e.g. TV shows).
+    if (key === 'FILM' || key === 'TOPIC') {
       finish();
       film = value;
     } else if (key === 'Q') {

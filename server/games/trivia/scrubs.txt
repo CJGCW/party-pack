@@ -1,0 +1,257 @@
+# Scrubs trivia: seasons 1 to 8 of the original show only (no season 9).
+# Same format as disney-pixar.txt; TOPIC: lines are the banner shown above each
+# question. Facts checked against Wikipedia and other sources.
+
+TOPIC: Sacred Heart
+
+Q: What is the name of the hospital in Scrubs?
+A: Sacred Heart
+W: St. Vincent's
+W: Mercy General
+W: Seattle Grace
+
+Q: What word do almost all episode titles in seasons 1-8 begin with?
+A: My
+W: The
+W: Our
+W: Doctor
+
+Q: What is the Scrubs theme song?
+A: "Superman" by Lazlo Bane
+W: "Save Me" by Remy Zero
+W: "I'll Be There for You" by The Rembrandts
+W: "How to Save a Life" by The Fray
+
+Q: What is the name of Ted's a cappella group?
+A: The Worthless Peons
+W: The Sacred Harmonies
+W: The Scrub Notes
+W: The Bedpans
+
+Q: What is the season 8 finale called?
+A: My Finale
+W: My Last Day
+W: My Goodbye
+W: My Way Home
+
+Q: In which season is the musical episode, "My Musical"?
+A: Season 6
+W: Season 4
+W: Season 5
+W: Season 7
+
+Q: What did the cast and crew jokingly call the show's unnamed city?
+A: San DiFrangeles
+W: Los Sacramento
+W: San Angeleno
+W: Frisco Diego
+
+TOPIC: The Doctors
+
+Q: What is Dr. Cox's first name?
+A: Perry
+W: Patrick
+W: Peter
+W: Paul
+
+Q: What is Dr. Cox's full first name?
+A: Percival
+W: Peregrine
+W: Perseus
+W: Percy
+
+Q: What does Dr. Cox usually call J.D. when he isn't calling him a girl's name?
+A: Newbie
+W: Rookie
+W: Scooter
+W: Kiddo
+
+Q: What nickname does Dr. Cox use for Elliot?
+A: Barbie
+W: Blondie
+W: Princess
+W: Goldilocks
+
+Q: What does Carla call J.D.?
+A: Bambi
+W: Newbie
+W: Thumper
+W: Sunshine
+
+Q: What does Dr. Cox call Dr. Kelso?
+A: Bobbo
+W: Bobby
+W: Big Bob
+W: The Kelsonator
+
+Q: What is Turk's middle name?
+A: Duncan
+W: Donald
+W: Darnell
+W: Dwayne
+
+Q: Which pet name does J.D. most often use for Turk?
+A: Chocolate Bear
+W: Brown Bear
+W: Mocha Bear
+W: Black Whale
+
+Q: Which college did J.D. and Turk attend together?
+A: The College of William & Mary
+W: Ohio State
+W: Georgetown
+W: Duke
+
+Q: What is the name of the stuffed dog J.D. and Turk share?
+A: Rowdy
+W: Rex
+W: Buster
+W: Sasha
+
+Q: What does J.D. name his scooter?
+A: Sasha
+W: Rowdy
+W: Elliot
+W: Vespa
+
+Q: What is The Todd's last name?
+A: Quinlan
+W: Toddson
+W: Mallory
+W: Quigley
+
+Q: What kind of doctor is Doug Murphy, eventually?
+A: A pathologist
+W: A surgeon
+W: A radiologist
+W: An anesthesiologist
+
+Q: What is Kim Briggs's specialty?
+A: Urology
+W: Pediatrics
+W: Cardiology
+W: Dermatology
+
+Q: What is the name of J.D. and Kim's son?
+A: Sam
+W: Jack
+W: Ben
+W: Isaac
+
+Q: Who is Dr. Cox's ex-wife?
+A: Jordan Sullivan
+W: Kim Briggs
+W: Danni Sullivan
+W: Elliot Reid
+
+Q: What are the names of Dr. Cox's two children?
+A: Jack and Jennifer Dylan
+W: Jack and Isabella
+W: Ben and Jennifer Dylan
+W: Sam and Jack
+
+Q: Who is Dr. Cox's best friend, Jordan's brother?
+A: Ben Sullivan
+W: Dan Dorian
+W: Keith Dudemeister
+W: Sean Kelly
+
+Q: Who played Ben Sullivan?
+A: Brendan Fraser
+W: Matthew Perry
+W: Michael J. Fox
+W: Colin Farrell
+
+Q: What is the name of Elliot's fiancé, whom she leaves for J.D.?
+A: Keith Dudemeister
+W: Sean Kelly
+W: Paul Flowers
+W: Jake Pinkerton
+
+Q: What is the name of Turk and Carla's first daughter?
+A: Isabella
+W: Jennifer Dylan
+W: Rosa
+W: Lily
+
+Q: What are the names of Dr. Kelso's wife and son, who are often mentioned but never seen?
+A: Enid and Harrison
+W: Gloria and Harrison
+W: Enid and Hugh
+W: Margaret and Bobby
+
+Q: Which song do J.D. and Turk sing to each other in "My Musical"?
+A: Guy Love
+W: Bro Love
+W: Best Friends Forever
+W: Eagle Song
+
+TOPIC: The Staff
+
+Q: What is Ted Buckland's job at Sacred Heart?
+A: Hospital lawyer
+W: Administrator
+W: Pharmacist
+W: Chaplain
+
+Q: In the series finale, what last name does the Janitor say he has?
+A: Matthews
+W: Mitchell
+W: Jones
+W: Smith
+
+Q: Which nurse falls into a coma after a car crash in season 6?
+A: Laverne
+W: Carla
+W: Shirley
+W: Roxanne
+
+Q: Who is chief of medicine by the end of season 8?
+A: Dr. Cox
+W: Dr. Turk
+W: Dr. Reid
+W: The Todd
+
+TOPIC: The Cast
+
+Q: Who played J.D.?
+A: Zach Braff
+W: Donald Faison
+W: Neil Flynn
+W: Seth Green
+
+Q: Who played Dr. Cox?
+A: John C. McGinley
+W: Ken Jenkins
+W: John Goodman
+W: Michael McKean
+
+Q: Who played Elliot Reid?
+A: Sarah Chalke
+W: Christa Miller
+W: Elizabeth Banks
+W: Mandy Moore
+
+Q: Who played Carla Espinosa?
+A: Judy Reyes
+W: Aloma Wright
+W: Eva Longoria
+W: Rosario Dawson
+
+Q: Who played the Janitor?
+A: Neil Flynn
+W: Sam Lloyd
+W: Robert Maschio
+W: Ken Jenkins
+
+Q: Who played Kim Briggs?
+A: Elizabeth Banks
+W: Sarah Chalke
+W: Mandy Moore
+W: Heather Graham
+
+Q: Which of these actors were Scrubs main cast members?
+A: Zach Braff
+A: Donald Faison
+A: Judy Reyes
+W: Rob Lowe

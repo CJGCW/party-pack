@@ -1,0 +1,257 @@
+# Parks and Recreation trivia. Same format as disney-pixar.txt; TOPIC: lines are
+# the banner shown above each question. Facts checked against Wikipedia and other
+# sources.
+
+TOPIC: Pawnee
+
+Q: Which state is Pawnee in?
+A: Indiana
+W: Illinois
+W: Ohio
+W: Iowa
+
+Q: What does Leslie promise to turn into a park in season 1?
+A: An abandoned construction pit
+W: An empty parking lot
+W: An old landfill
+W: A closed-down mall
+
+Q: Which neighboring town does Pawnee absorb after it goes bankrupt?
+A: Eagleton
+W: Partridge
+W: Snerling
+W: Bloomington
+
+Q: In what year does the final season take place?
+A: 2017
+W: 2015
+W: 2020
+W: 2025
+
+Q: What kind of animal is Li'l Sebastian?
+A: A miniature horse
+W: A pony
+W: A donkey
+W: A goat
+
+Q: Which song does Andy write in memory of Li'l Sebastian?
+A: 5000 Candles in the Wind
+W: Li'l Sebastian Forever
+W: Goodbye, Little Horse
+W: Ride On, Sebastian
+
+TOPIC: Leslie Knope
+
+Q: What is Leslie's ultimate dream job?
+A: President of the United States
+W: Governor of Indiana
+W: Mayor of Pawnee
+W: Director of the National Park Service
+
+Q: On what date is Galentine's Day?
+A: February 13
+W: February 14
+W: February 15
+W: March 1
+
+Q: What is Leslie's favorite food at JJ's Diner?
+A: Waffles
+W: Pancakes
+W: Pie
+W: French toast
+
+Q: How many babies do Leslie and Ben have at once?
+A: Three (triplets)
+W: Two (twins)
+W: One
+W: Four
+
+TOPIC: Ron Swanson
+
+Q: What is the name of Ron's smooth-jazz saxophonist alter ego?
+A: Duke Silver
+W: Ron Gold
+W: Sax Swanson
+W: Mr. Smooth
+
+Q: What do Ron's two ex-wives have in common?
+A: They are both named Tammy
+W: They are both IRS agents
+W: They are both librarians
+W: They both married Tom
+
+Q: Ron's mother is also named what?
+A: Tammy
+W: Tamara Jean
+W: Diane
+W: Gayle
+
+Q: Which of these does Ron love?
+A: Breakfast food
+A: Hunting
+A: Meat
+W: Salad
+
+TOPIC: The Parks Department
+
+Q: What was Tom Haverford's birth name?
+A: Darwish Sabir Ishmael Gani
+W: Thomas Haverford
+W: Tomas Ali Haverford
+W: Darius Tomas Gani
+
+Q: Who co-founds Entertainment 720 with Tom?
+A: Jean-Ralphio Saperstein
+W: Andy Dwyer
+W: Ben Wyatt
+W: Chris Traeger
+
+Q: Which two characters celebrate "Treat Yo' Self" day every year?
+A: Tom and Donna
+W: Leslie and Ann
+W: April and Andy
+W: Ben and Chris
+
+Q: What is Jerry Gergich's real first name, revealed under oath?
+A: Garry
+W: Larry
+W: Terry
+W: Barry
+
+Q: What is unusual about Jerry's birthday?
+A: It's on Leap Day
+W: It's on Christmas
+W: It's the same day as Leslie's
+W: Nobody knows it
+
+Q: Which supermodel plays Jerry's wife, Gayle?
+A: Christie Brinkley
+W: Cindy Crawford
+W: Heidi Klum
+W: Elle Macpherson
+
+Q: What job does Jerry eventually win in Pawnee?
+A: Mayor
+W: City council member
+W: Parks director
+W: Fire chief
+
+Q: Which of these is Donna known for?
+A: Her beloved Mercedes
+W: Her shoeshine stand
+W: Her saxophone
+W: Her miniature horse
+
+Q: How long does Chris Traeger hope to live?
+A: 150 years
+W: 100 years
+W: 120 years
+W: Forever
+
+TOPIC: April and Andy
+
+Q: What was Andy's band called before Mouse Rat?
+A: Scarecrow Boat
+W: The Pit Stops
+W: Whiskey Dance
+W: Andy and the Dwyers
+
+Q: What is the name of Andy's FBI agent alter ego?
+A: Burt Macklin
+W: Kip Hackman
+W: Johnny Karate
+W: Duke Silver
+
+Q: What is the name of April's alter ego, an aristocratic widow with a dark secret?
+A: Janet Snakehole
+W: Lady Snakehole
+W: Burt Macklin
+W: Tammy Swanson
+
+Q: What is the name of Andy's children's TV character?
+A: Johnny Karate
+W: Burt Macklin
+W: Captain Pawnee
+W: Andy Awesome
+
+Q: What was Andy's job when the show began?
+A: Shoeshiner
+W: Bartender
+W: Mailman
+W: Security guard
+
+TOPIC: Ann and Ben
+
+Q: What is Ann Perkins's job?
+A: Nurse
+W: Doctor
+W: Teacher
+W: Pharmacist
+
+Q: What is the name of Ann's son?
+A: Oliver
+W: Owen
+W: Chris Jr.
+W: Leslie
+
+Q: Where do Ann and Chris move when they leave Pawnee?
+A: Ann Arbor, Michigan
+W: Indianapolis, Indiana
+W: Chicago, Illinois
+W: Partridge, Minnesota
+
+Q: What happened when Ben was elected mayor of Partridge, Minnesota, at 18?
+A: He was impeached after two months
+W: He served three full terms
+W: He resigned on his first day
+W: He lost to a dog
+
+Q: What was the name of Ben's failed winter-sports complex?
+A: Ice Town
+W: Snow World
+W: Frozen Partridge
+W: Winterland
+
+Q: What board game does Ben invent?
+A: The Cones of Dunshire
+W: Settlers of Pawnee
+W: Ice Town: The Game
+W: Knights of Eagleton
+
+TOPIC: The Cast
+
+Q: Who played Leslie Knope?
+A: Amy Poehler
+W: Tina Fey
+W: Kristen Wiig
+W: Maya Rudolph
+
+Q: Who played Ron Swanson?
+A: Nick Offerman
+W: Adam Scott
+W: Ron Livingston
+W: Jim O'Heir
+
+Q: Who played April Ludgate?
+A: Aubrey Plaza
+W: Rashida Jones
+W: Chelsea Peretti
+W: Stephanie Beatriz
+
+Q: Who played Chris Traeger?
+A: Rob Lowe
+W: Adam Scott
+W: Paul Rudd
+W: Will Arnett
+
+Q: Who played Jean-Ralphio?
+A: Ben Schwartz
+W: Aziz Ansari
+W: Andy Samberg
+W: Nick Kroll
+
+Q: Which Parks and Recreation actor also voices Joy in Inside Out?
+A: Amy Poehler
+W: Aubrey Plaza
+W: Rashida Jones
+W: Retta

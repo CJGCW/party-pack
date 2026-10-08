@@ -47,7 +47,7 @@ a click on the host screen) starts one chosen game. Turn it on with either:
 | --- | --- | --- |
 | **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Each solve scores (seconds left − 8s per guess) × 10, minimum 100. Guesses don't take time off the clock; they only lower your score. One word per puzzle. **Normal** (2½-minute rounds) uses words with a dictionary definition, shown at the reveal; **Hard** (4-minute rounds) uses obscure words with none. |
 | **Letter Drop** | 1–8 | A puzzle board fills in one letter at a time. Buzz in on your phone and type the answer: right scores 750 points; wrong locks you out of that puzzle. |
-| **Trivia** | 1–8 | Multiple choice on the TV; everyone answers on their phone within 20 seconds. A right answer scores 500 plus up to 500 more for speed. Each question bank is a mode on the wheel; the first is **Disney & Pixar** (characters, stories and voice actors from the theatrical animated films). |
+| **Trivia** | 1–8 | Multiple choice on the TV; everyone answers on their phone within 20 seconds. A right answer scores 500 plus up to 500 more for speed. Each question bank is a mode on the wheel: **Disney & Pixar** (characters, stories and voice actors from the theatrical animated films), **Scrubs** (seasons 1–8), **Brooklyn Nine-Nine** and **Parks and Recreation**. |
 
 ### Testing with bots
 
@@ -71,7 +71,8 @@ The point value and timings are at the top of `server/games/tossUp.ts`.
 
 ### Trivia questions
 
-Each question bank is a text file in `server/games/trivia/` (one mode per file, e.g. `disney-pixar.txt`). Questions look like:
+Each question bank is a text file in `server/games/trivia/` (one mode per file, e.g. `disney-pixar.txt`). Banks about TV shows use
+`TOPIC:` instead of `FILM:` for the banner above each question. Questions look like:
 
 ```
 FILM: The Lion King (1994)

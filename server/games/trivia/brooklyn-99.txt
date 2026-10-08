@@ -1,0 +1,235 @@
+# Brooklyn Nine-Nine trivia. Same format as disney-pixar.txt; TOPIC: lines are
+# the banner shown above each question. Facts checked against Wikipedia and other
+# sources.
+
+TOPIC: The 99th Precinct
+
+Q: Who played Jake Peralta?
+A: Andy Samberg
+W: Joe Lo Truglio
+W: Adam Scott
+W: Seth Rogen
+
+Q: Who played Captain Raymond Holt?
+A: Andre Braugher
+W: Terry Crews
+W: Craig Robinson
+W: Laurence Fishburne
+
+Q: Who played Rosa Diaz?
+A: Stephanie Beatriz
+W: Melissa Fumero
+W: Chelsea Peretti
+W: Aubrey Plaza
+
+Q: Who played Amy Santiago?
+A: Melissa Fumero
+W: Stephanie Beatriz
+W: Chelsea Peretti
+W: Gina Rodriguez
+
+Q: Who played Gina Linetti?
+A: Chelsea Peretti
+W: Melissa Fumero
+W: Retta
+W: Aubrey Plaza
+
+Q: Which Brooklyn Nine-Nine actor is also the voice of Mirabel in Encanto?
+A: Stephanie Beatriz
+W: Melissa Fumero
+W: Chelsea Peretti
+W: Joe Lo Truglio
+
+TOPIC: The Detectives
+
+Q: Which movie is Jake obsessed with?
+A: Die Hard
+W: Lethal Weapon
+W: Speed
+W: Point Break
+
+Q: Who is Jake's son named after?
+A: John McClane
+W: John Wick
+W: Martin Riggs
+W: Jack Ryan
+
+Q: What is the nickname of Jake and Amy's son, McClane?
+A: Mac
+W: Mickey
+W: Lane
+W: Jake Jr.
+
+Q: Which word became one of Jake's best-known catchphrases?
+A: Noice
+W: Bingo
+W: Booyah
+W: Groovy
+
+Q: What does Jake keep saying after Amy says something innocent?
+A: "Title of your sex tape"
+W: "That's what she said"
+W: "Cool cool cool"
+W: "Noice"
+
+Q: What was Jake's father Roger's job?
+A: Airline pilot
+W: Police officer
+W: Firefighter
+W: Lawyer
+
+Q: How many brothers does Amy Santiago have?
+A: Seven
+W: Three
+W: Five
+W: Twelve
+
+Q: What is Amy severely allergic to?
+A: Dogs
+W: Peanuts
+W: Shellfish
+W: Gluten
+
+Q: Which of these hobbies does Rosa have?
+A: Restoring old cars
+A: Making jewelry
+A: Archery
+W: Baking
+
+Q: What food does Terry love?
+A: Yogurt
+W: Protein bars
+W: Kale smoothies
+W: Granola
+
+Q: What are the names of Terry's twin daughters?
+A: Cagney and Lacey
+W: Ava and Lacey
+W: Mary and Kate
+W: Thelma and Louise
+
+Q: Where did Terry play football as a linebacker?
+A: Syracuse University
+W: Penn State
+W: Ohio State
+W: Notre Dame
+
+Q: What country is Charles Boyle's adopted son Nikolaj from?
+A: Latvia
+W: Lithuania
+W: Estonia
+W: Poland
+
+Q: What is the name of Charles Boyle's wife?
+A: Genevieve
+W: Vivian
+W: Gina
+W: Sophia
+
+Q: What is the name of Boyle's meatball sub food truck?
+A: The One Thing
+W: Sub Par
+W: The Meatball Wagon
+W: Boyle's Balls
+
+Q: Why does Gina wear false teeth?
+A: A bowling ball hit her in fourth grade
+W: A skateboarding accident
+W: A dance competition fall
+W: A softball to the face
+
+Q: What is the name of Gina's web show?
+A: The G-Hive
+W: Gina Live
+W: Linetti Talks
+W: The Gina Zone
+
+Q: Which of these are true of Hitchcock and Scully?
+A: They've been partners for over 30 years
+A: Scully has a twin brother named Earl
+W: Hitchcock has never closed a case
+W: Scully hates singing
+
+TOPIC: Captain Holt
+
+Q: What is the name of Captain Holt's husband?
+A: Kevin Cozner
+W: Kevin Holt
+W: Keith Pembroke
+W: Kevin Wuntch
+
+Q: What does Kevin Cozner teach?
+A: Classics
+W: Philosophy
+W: Mathematics
+W: Law
+
+Q: What kind of dog is Cheddar?
+A: A corgi
+W: A dachshund
+W: A beagle
+W: A pug
+
+Q: Who is Captain Holt's longtime rival?
+A: Madeline Wuntch
+W: Teddy Wells
+W: Seamus Murphy
+W: Melanie Hawkins
+
+Q: Who played Madeline Wuntch?
+A: Kyra Sedgwick
+W: Jane Lynch
+W: Laura Dern
+W: Allison Janney
+
+Q: What was the name of Holt's beloved burgundy Chevrolet Corvair?
+A: Gertie
+W: Bessie
+W: Ruby
+W: Cheddar
+
+TOPIC: Friends and Foes
+
+Q: What is "The Vulture" known for?
+A: Taking over nearly solved cases and claiming the credit
+W: Stealing only Pontiacs
+W: Running the Halloween Heist
+W: Leaking cases to the press
+
+Q: Who played the Vulture?
+A: Dean Winters
+W: Craig Robinson
+W: Bradley Whitford
+W: Ken Marino
+
+Q: What does Doug Judy, "The Pontiac Bandit", steal?
+A: Only Pontiacs
+W: Only Cadillacs
+W: Only police cars
+W: Only motorcycles
+
+Q: Who played Doug Judy?
+A: Craig Robinson
+W: Terry Crews
+W: Andre Braugher
+W: Dean Winters
+
+TOPIC: The Halloween Heist
+
+Q: What does Jake do at the end of the "HalloVeen" heist?
+A: Propose to Amy
+W: Quit the precinct
+W: Arrest Holt
+W: Adopt Cheddar
+
+Q: Who was the first three-time Halloween Heist champion?
+A: Rosa
+W: Jake
+W: Amy
+W: Holt
+
+Q: Who wins the final Halloween Heist in the series finale?
+A: Hitchcock
+W: Jake
+W: Holt
+W: Scully
