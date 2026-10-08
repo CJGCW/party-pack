@@ -6,6 +6,7 @@
   "description": "A Jackbox-style party game collection played over the local network.",
   "scripts": {
     "dev": "tsx watch --clear-screen=false server/index.ts",
+    "dev:debug": "cross-env PARTY_PACK_DEBUG=1 tsx watch --clear-screen=false server/index.ts",
     "build": "vite build",
     "start": "vite build && cross-env NODE_ENV=production tsx server/index.ts",
     "bot": "tsx scripts/bot.ts",

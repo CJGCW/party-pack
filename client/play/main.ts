@@ -1,5 +1,5 @@
 import { io, type Socket } from 'socket.io-client';
-import { MAX_NAME_LENGTH, type ClientToServerEvents, type RoomState, type ServerToClientEvents } from '../../shared/protocol';
+import { MAX_NAME_LENGTH, MAX_ROUNDS, MIN_ROUNDS, type ClientToServerEvents, type RoomState, type ServerToClientEvents } from '../../shared/protocol';
 import { TOSS_UP } from '../../shared/games/tossUp';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { h } from './dom';
@@ -125,7 +125,9 @@ function render() {
 
   controller?.instance.destroy();
   controller = null;
-  renderLobby();
+  if (room.phase === 'spinning') renderSpinning();
+  else if (room.phase === 'results') renderResults();
+  else renderLobby();
 }
 
 function renderJoin(error = '') {
@@ -179,16 +181,125 @@ function renderJoin(error = '') {
   (codeInput.value ? nameInput : codeInput).focus();
 }
 
+let spinTimer: ReturnType<typeof setTimeout> | null = null;
+
 function renderLobby() {
   const player = me()!;
   const children: (Node | string)[] = [
     h('div', { class: 'badge' }, player.name),
     h('h2', {}, "You're in!"),
   ];
+  if (room!.debugMode) children.push(...debugGamePicker(player.isVip));
+  else children.push(...wheelSettings(player.isVip));
+  app.replaceChildren(h('div', { class: 'center' }, ...children));
+}
 
-  if (player.isVip) {
+/** Normal mode: the VIP chooses what's on the wheel and how many rounds, then spins. */
+function wheelSettings(isVip: boolean): Node[] {
+  const { settings, wheelEntries } = room!;
+  const errorEl = h('div', { class: 'error' });
+  const save = (next: typeof settings) =>
+    socket.emit('room:updateSettings', next, (res) => {
+      if (!res.ok) errorEl.textContent = res.error;
+    });
+
+  const toggles = wheelEntries.map((entry) => {
+    const on = settings.enabled.includes(entry.id);
+    return h(
+      'button',
+      {
+        class: `toggle${on ? ' on' : ''}`,
+        disabled: !isVip,
+        onclick: () => {
+          const enabled = on ? settings.enabled.filter((id) => id !== entry.id) : [...settings.enabled, entry.id];
+          save({ ...settings, enabled });
+        },
+      },
+      h('span', { class: 'check' }, on ? '✓' : ''),
+      entry.label,
+    );
+  });
+
+  const rounds = settings.rounds;
+  const stepper = h(
+    'div',
+    { class: 'stepper' },
+    h('button', { class: 'secondary', disabled: !isVip || rounds <= MIN_ROUNDS, onclick: () => save({ ...settings, rounds: rounds - 1 }) }, '−'),
+    h('div', { class: 'stepper-value' }, `${rounds} ${rounds === 1 ? 'round' : 'rounds'}`),
+    h('button', { class: 'secondary', disabled: !isVip || rounds >= MAX_ROUNDS, onclick: () => save({ ...settings, rounds: rounds + 1 }) }, '+'),
+  );
+
+  const card = h(
+    'div',
+    { class: 'game-card' },
+    h('h2', {}, 'Games on the wheel'),
+    ...toggles,
+    h('h2', {}, 'Rounds'),
+    stepper,
+  );
+
+  if (!isVip) return [card, h('p', {}, 'Waiting for the VIP to spin the wheel…')];
+  const spin = h(
+    'button',
+    {
+      class: 'spin-button',
+      onclick: () =>
+        socket.emit('room:startSession', (res) => {
+          if (!res.ok) errorEl.textContent = res.error;
+        }),
+    },
+    'Spin the wheel!',
+  );
+  return [h('p', {}, "You're the VIP. Choose the games and rounds:"), card, spin, errorEl];
+}
+
+function renderSpinning() {
+  const spin = room!.spin!;
+  const session = room!.session;
+  const status = h('h2', {}, 'Spinning the wheel…');
+  app.replaceChildren(
+    h(
+      'div',
+      { class: 'center' },
+      session ? h('p', {}, `Round ${session.round} of ${session.totalRounds}`) : '',
+      h('div', { class: 'spin-emoji' }, '🎡'),
+      status,
+      h('p', {}, 'Watch the TV!'),
+    ),
+  );
+  // Only reveal the game once the wheel on the TV has stopped.
+  if (spinTimer) clearTimeout(spinTimer);
+  spinTimer = setTimeout(() => {
+    status.textContent = `Next up: ${spin.entries[spin.targetIndex].label}`;
+  }, spin.stopsInMs);
+}
+
+function renderResults() {
+  const standings = [...room!.players].sort((a, b) => b.score - a.score);
+  const place = standings.findIndex((p) => p.id === playerId) + 1;
+  const player = me()!;
+  app.replaceChildren(
+    h(
+      'div',
+      { class: 'center' },
+      h('h2', {}, 'Final results'),
+      h('div', { class: 'big-place' }, place === 1 ? '🏆 1st!' : `${place}${ordinalSuffix(place)} place`),
+      h('div', { class: 'badge' }, `${player.score.toLocaleString()} pts`),
+      h('p', {}, 'Back to the lobby soon…'),
+    ),
+  );
+}
+
+function ordinalSuffix(n: number) {
+  return n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
+}
+
+/** Debug mode: the VIP starts one specific game, the way the lobby used to work. */
+function debugGamePicker(isVip: boolean): Node[] {
+  const children: Node[] = [];
+  if (isVip) {
     const errorEl = h('div', { class: 'error' });
-    children.push(h('p', {}, "You're the VIP. Pick a game when everyone's here:"));
+    children.push(h('p', {}, "DEBUG MODE · You're the VIP. Pick a game:"));
     for (const game of room!.games) {
       const modeButtons = game.modes.map((mode, i) =>
         h(
@@ -212,6 +323,5 @@ function renderLobby() {
   } else {
     children.push(h('p', {}, 'Waiting for the VIP to pick a game…'));
   }
-
-  app.replaceChildren(h('div', { class: 'center' }, ...children));
+  return children;
 }

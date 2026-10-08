@@ -60,10 +60,17 @@ function runBot(name: string, isStarter: boolean) {
     }
     console.log(`${name} joined ${code}`);
     if (isStarter) {
-      setTimeout(
-        () => socket.emit('room:startGame', { gameId: WORDLE_RACE.id, modeId }, (r) => console.log('start:', r)),
-        500 + count * 200,
-      );
+      setTimeout(() => {
+        // Debug mode starts a game directly; otherwise spin a one-round session with
+        // only Word Rush on the wheel, since that's the only game bots can play.
+        socket.emit('room:startGame', { gameId: WORDLE_RACE.id, modeId }, (r) => {
+          if (r.ok) return console.log('start:', r);
+          const enabled = [`${WORDLE_RACE.id}:${modeId}`];
+          socket.emit('room:updateSettings', { enabled, rounds: 1 }, () =>
+            socket.emit('room:startSession', (s) => console.log('start session:', s)),
+          );
+        });
+      }, 500 + count * 200);
     }
   });
 }

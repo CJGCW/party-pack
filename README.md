@@ -23,8 +23,19 @@ The server prints two addresses:
 Phones must be on the same Wi-Fi as the host computer. The first time it runs, Windows
 asks whether Node may accept connections. Allow it on **private** networks.
 
-The first player to join is the **VIP** and can start games from their phone. You can also
-click a game on the host screen. Press **Esc** on the host screen to abandon a game.
+The first player to join is the **VIP**. On their phone they choose which games go on the
+**wheel** and how many **rounds** to play (1–10), then spin it (the host screen has a SPIN!
+button too). Each round the wheel picks a game at random; scores add up across rounds, and a
+final results screen ends the session. Press **Esc** on the host screen to abandon a session.
+
+### Debug mode
+
+For testing a specific game, debug mode replaces the wheel with the old picker: the VIP (or
+a click on the host screen) starts one chosen game. Turn it on with either:
+
+- `npm run dev:debug`, or
+- `"debugMode": true` in `party-pack.config.json` (an environment variable
+  `PARTY_PACK_DEBUG=1`/`0` overrides the file).
 
 ## Games
 
@@ -43,7 +54,8 @@ npm run bot -- ABCD 3 --start
 ```
 
 This adds 3 bots to room `ABCD`. `--start` makes a bot start the game, which only works
-if the bots joined an empty room so one of them is the VIP. Add `--hard` for hard mode.
+if the bots joined an empty room so one of them is the VIP. Outside debug mode it sets the wheel
+to Word Rush only (the one game bots can play) for a single round. Add `--hard` for hard mode.
 
 ### Letter Drop puzzles
 

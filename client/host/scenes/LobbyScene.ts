@@ -17,6 +17,7 @@ export class LobbyScene extends Phaser.Scene {
   private slots: Phaser.GameObjects.Container[] = [];
   private gameCards: Phaser.GameObjects.Container[] = [];
   private knownPlayers = new Set<string>();
+  private hintText!: Phaser.GameObjects.Text;
 
   constructor() {
     super(LobbyScene.KEY);
@@ -54,7 +55,7 @@ export class LobbyScene extends Phaser.Scene {
       this.slots.push(this.add.container(x, y));
     }
 
-    text(this, WIDTH / 2, 880, 'Pick a game (click here, or the VIP can start it from their phone)', 30, COLORS.muted);
+    this.hintText = text(this, WIDTH / 2, 880, '', 30, COLORS.muted);
 
     listen(this, 'room', (s: RoomState) => this.render(s));
     if (net.room) this.render(net.room);
@@ -66,7 +67,55 @@ export class LobbyScene extends Phaser.Scene {
     this.urlText.setText(state.joinUrl.replace(/^https?:\/\//, ''));
     this.renderQr(`${state.joinUrl}/?code=${state.code}`);
     this.renderPlayers(state);
-    this.renderGames(state.games, state.players.filter((p) => p.connected).length);
+    const playerCount = state.players.filter((p) => p.connected).length;
+    if (state.debugMode) {
+      this.hintText.setText('DEBUG MODE: pick a game (click here, or the VIP can start it from their phone)');
+      this.renderGames(state.games, playerCount);
+    } else {
+      this.hintText.setText('The VIP picks the games and rounds on their phone. Then spin the wheel!');
+      this.renderWheelPanel(state, playerCount);
+    }
+  }
+
+  /** Normal mode: what's on the wheel, how many rounds, and a button to spin. */
+  private renderWheelPanel(state: RoomState, playerCount: number) {
+    for (const c of this.gameCards) c.destroy();
+    const cardW = 1240;
+    const cardH = 150;
+    const card = this.add.container(WIDTH / 2, 985);
+    const bg = this.add.graphics();
+    bg.fillStyle(COLORS.panelLight, 1);
+    bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 24);
+    card.add(bg);
+
+    const labels = state.wheelEntries.filter((e) => state.settings.enabled.includes(e.id)).map((e) => e.label);
+    const rounds = state.settings.rounds;
+    card.add(
+      text(this, -210, -28, `On the wheel: ${labels.join(',  ')}`, 28, COLORS.text, {
+        wordWrap: { width: 760 },
+        align: 'center',
+      }),
+    );
+    card.add(text(this, -210, 38, `${rounds} ${rounds === 1 ? 'round' : 'rounds'}`, 34, COLORS.accent, { fontStyle: '700' }));
+
+    const ready = playerCount > 0;
+    const button = this.add.container(cardW / 2 - 200, 0);
+    const fill = this.add.graphics();
+    fill.fillStyle(ready ? 0xff5d73 : 0x5f57a0, 1);
+    fill.fillRoundedRect(-170, -50, 340, 100, 22);
+    button.add([fill, text(this, 0, 0, ready ? 'SPIN!' : 'Need players', ready ? 52 : 32, COLORS.text, { fontStyle: '700' })]);
+    if (ready) {
+      button.setSize(340, 100).setInteractive({ useHandCursor: true });
+      button.on('pointerover', () => this.tweens.add({ targets: button, scale: 1.06, duration: 120 }));
+      button.on('pointerout', () => this.tweens.add({ targets: button, scale: 1, duration: 120 }));
+      button.on('pointerdown', () =>
+        socket.emit('room:startSession', (res) => {
+          if (!res.ok) toast(this, res.error);
+        }),
+      );
+    }
+    card.add(button);
+    this.gameCards = [card];
   }
 
   private renderQr(url: string) {

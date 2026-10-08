@@ -1,13 +1,19 @@
 import type { Server, Socket } from 'socket.io';
 import {
+  DEFAULT_ROUNDS,
   MAX_NAME_LENGTH,
   MAX_PLAYERS,
+  MAX_ROUNDS,
+  MIN_ROUNDS,
   PLAYER_COLORS,
   type ClientToServerEvents,
   type PlayerInfo,
   type RoomState,
   type ServerToClientEvents,
+  type SessionSettings,
+  type WheelEntry,
 } from '../shared/protocol';
+import { config } from './config';
 import { GAMES, findGame } from './games';
 import type { MiniGame } from './games/MiniGame';
 
@@ -29,11 +35,38 @@ interface Player extends PlayerInfo {
 const EMPTY_ROOM_TTL_MS = 10 * 60 * 1000;
 const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I or O, they look like 1 and 0
 
+/** How long the wheel spins, then how long it shows the chosen game before starting it. */
+const SPIN_MS = 6_000;
+const SPIN_RESULT_MS = 3_000;
+/** Final results screen at the end of a session. */
+const RESULTS_MS = 15_000;
+
+/** Every game/mode combination, each a possible slice on the wheel. */
+const WHEEL_ENTRIES: WheelEntry[] = GAMES.flatMap((g) =>
+  g.info.modes.map((m) => ({
+    id: `${g.info.id}:${m.id}`,
+    gameId: g.info.id,
+    modeId: m.id,
+    label: g.info.modes.length > 1 ? `${g.info.name} · ${m.name}` : g.info.name,
+  })),
+);
+
+interface Session {
+  round: number;
+  totalRounds: number;
+  pool: WheelEntry[];
+}
+
 export class Room {
   readonly players = new Map<string, Player>();
   hostSocketId: string | null = null;
   game: MiniGame | null = null;
   gameId: string | null = null;
+  settings: SessionSettings = { enabled: WHEEL_ENTRIES.map((e) => e.id), rounds: DEFAULT_ROUNDS };
+  private session: Session | null = null;
+  private spin: { entries: WheelEntry[]; targetIndex: number; endsAt: number } | null = null;
+  private resultsEndAt = 0;
+  private phaseTimer: NodeJS.Timeout | null = null;
   private nextPlayerId = 1;
   private cleanupTimer: NodeJS.Timeout | null = null;
 
@@ -52,14 +85,40 @@ export class Room {
     return `${this.code}:players`;
   }
 
+  private get phase(): RoomState['phase'] {
+    if (this.game) return 'game';
+    if (this.spin) return 'spinning';
+    if (this.resultsEndAt > Date.now()) return 'results';
+    return 'lobby';
+  }
+
+  /** True while anything other than the lobby is showing. */
+  private get busy() {
+    return this.phase !== 'lobby';
+  }
+
   state(): RoomState {
     return {
       code: this.code,
       joinUrl: this.joinUrl,
-      phase: this.game ? 'game' : 'lobby',
+      phase: this.phase,
       gameId: this.gameId,
       players: [...this.players.values()].map(publicPlayer),
       games: GAMES.map((g) => g.info),
+      debugMode: config.debugMode,
+      wheelEntries: WHEEL_ENTRIES,
+      settings: this.settings,
+      session: this.session ? { round: this.session.round, totalRounds: this.session.totalRounds } : null,
+      spin: this.spin
+        ? {
+            entries: this.spin.entries,
+            targetIndex: this.spin.targetIndex,
+            spinMs: SPIN_MS,
+            stopsInMs: Math.max(0, this.spin.endsAt - SPIN_RESULT_MS - Date.now()),
+            msLeft: Math.max(0, this.spin.endsAt - Date.now()),
+          }
+        : null,
+      resultsMsLeft: Math.max(0, this.resultsEndAt - Date.now()),
     };
   }
 
@@ -85,7 +144,7 @@ export class Room {
       const name = rawName.trim().toUpperCase().slice(0, MAX_NAME_LENGTH);
       if (!name) return 'Enter a name.';
       if (this.players.size >= MAX_PLAYERS) return 'This room is full.';
-      if (this.game) return 'A game is in progress. Wait for it to finish.';
+      if (this.busy) return 'A game is in progress. Wait for it to finish.';
       if ([...this.players.values()].some((p) => p.name === name)) return 'That name is taken.';
 
       const usedColors = new Set([...this.players.values()].map((p) => p.color));
@@ -127,7 +186,7 @@ export class Room {
       player.connected = false;
       player.socketId = null;
       // In the lobby, a player who leaves is simply removed.
-      if (!this.game) this.players.delete(player.id);
+      if (!this.busy) this.players.delete(player.id);
       this.assignVip();
       this.broadcastState();
     }
@@ -136,7 +195,7 @@ export class Room {
     }
   }
 
-  /** The VIP (first connected player) can start games from their phone. */
+  /** The VIP (first connected player) controls the lobby from their phone. */
   private assignVip() {
     const players = [...this.players.values()];
     const current = players.find((p) => p.isVip && p.connected);
@@ -151,44 +210,133 @@ export class Room {
     return !!player?.isVip;
   }
 
+  private connectedCount() {
+    return [...this.players.values()].filter((p) => p.connected).length;
+  }
+
+  // ---- Settings and sessions -------------------------------------------------
+
+  updateSettings(next: SessionSettings): string | null {
+    if (this.busy) return 'A game is in progress.';
+    const validIds = new Set(WHEEL_ENTRIES.map((e) => e.id));
+    const enabled = Array.isArray(next?.enabled) ? next.enabled.filter((id) => validIds.has(id)) : [];
+    const rounds = Math.round(Number(next?.rounds));
+    if (enabled.length === 0) return 'Pick at least one game.';
+    if (!(rounds >= MIN_ROUNDS && rounds <= MAX_ROUNDS)) return `Rounds must be ${MIN_ROUNDS}-${MAX_ROUNDS}.`;
+    this.settings = { enabled: [...new Set(enabled)], rounds };
+    this.broadcastState();
+    return null;
+  }
+
+  startSession(): string | null {
+    if (config.debugMode) return 'Debug mode is on: pick a game instead.';
+    if (this.busy) return 'A game is already running.';
+    const players = this.connectedCount();
+    // Only games that suit this many players can go on the wheel.
+    const pool = WHEEL_ENTRIES.filter((e) => {
+      if (!this.settings.enabled.includes(e.id)) return false;
+      const info = findGame(e.gameId)!.info;
+      return players >= info.minPlayers && players <= info.maxPlayers;
+    });
+    if (players === 0) return 'Need at least 1 player.';
+    if (pool.length === 0) return 'None of the chosen games work with this many players.';
+
+    for (const p of this.players.values()) p.score = 0;
+    this.session = { round: 0, totalRounds: this.settings.rounds, pool };
+    this.nextRound();
+    return null;
+  }
+
+  /** Spins the wheel for the next round, then starts whichever game it lands on. */
+  private nextRound() {
+    const session = this.session!;
+    session.round++;
+    const targetIndex = Math.floor(Math.random() * session.pool.length);
+    this.spin = { entries: session.pool, targetIndex, endsAt: Date.now() + SPIN_MS + SPIN_RESULT_MS };
+    this.setPhaseTimer(SPIN_MS + SPIN_RESULT_MS, () => {
+      const entry = this.spin!.entries[targetIndex];
+      this.spin = null;
+      const error = this.launchGame(entry.gameId, entry.modeId);
+      // E.g. players left during the spin so the game no longer fits: end the session.
+      if (error) this.returnToLobby();
+    });
+    this.broadcastState();
+  }
+
+  /** Debug mode only: play one specific game. */
   startGame(gameId: string, modeId?: string): string | null {
-    if (this.game) return 'A game is already running.';
+    if (!config.debugMode) return 'Spin the wheel to pick a game.';
+    if (this.busy) return 'A game is already running.';
+    for (const p of this.players.values()) p.score = 0;
+    return this.launchGame(gameId, modeId);
+  }
+
+  private launchGame(gameId: string, modeId?: string): string | null {
     const def = findGame(gameId);
     if (!def) return 'Unknown game.';
     const mode = modeId ? def.info.modes.find((m) => m.id === modeId) : def.info.modes[0];
     if (!mode) return 'Unknown game mode.';
-    const count = [...this.players.values()].filter((p) => p.connected).length;
+    const count = this.connectedCount();
     if (count < def.info.minPlayers) return `Need at least ${def.info.minPlayers} player(s).`;
     if (count > def.info.maxPlayers) return `${def.info.name} allows at most ${def.info.maxPlayers} players.`;
 
-    for (const p of this.players.values()) p.score = 0;
     this.gameId = gameId;
-    const game = def.create({
-      players: () => [...this.players.values()].map(publicPlayer),
-      sendHost: (view) => this.io.to(this.hostChannel).emit('game:host', view),
-      sendPlayer: (playerId, view) => {
-        const socketId = this.players.get(playerId)?.socketId;
-        if (socketId) this.io.to(socketId).emit('game:player', view);
+    const game = def.create(
+      {
+        players: () => [...this.players.values()].map(publicPlayer),
+        sendHost: (view) => this.io.to(this.hostChannel).emit('game:host', view),
+        sendPlayer: (playerId, view) => {
+          const socketId = this.players.get(playerId)?.socketId;
+          if (socketId) this.io.to(socketId).emit('game:player', view);
+        },
+        // Scores carry across every game in a session.
+        addScore: (playerId, points) => {
+          const p = this.players.get(playerId);
+          if (p) p.score += points;
+        },
+        finish: () => {
+          // Only end the game that is still current, in case it already ended.
+          if (this.game === game) this.gameFinished();
+        },
       },
-      addScore: (playerId, points) => {
-        const p = this.players.get(playerId);
-        if (p) p.score += points;
-      },
-      finish: () => {
-        // Only end the game that is still current, in case it already ended.
-        if (this.game === game) this.endGame();
-      },
-    }, mode.id);
+      mode.id,
+    );
     this.game = game;
     this.broadcastState();
     game.start();
     return null;
   }
 
-  endGame() {
+  private gameFinished() {
     this.game?.dispose();
     this.game = null;
     this.gameId = null;
+    const session = this.session;
+    if (session && session.round < session.totalRounds && this.connectedCount() > 0) {
+      this.nextRound();
+    } else if (session) {
+      this.showResults();
+    } else {
+      this.returnToLobby();
+    }
+  }
+
+  private showResults() {
+    this.session = null;
+    this.resultsEndAt = Date.now() + RESULTS_MS;
+    this.setPhaseTimer(RESULTS_MS, () => this.returnToLobby());
+    this.broadcastState();
+  }
+
+  /** Abandons whatever is running (game, spin, session) and goes back to the lobby. */
+  returnToLobby() {
+    this.clearPhaseTimer();
+    this.game?.dispose();
+    this.game = null;
+    this.gameId = null;
+    this.session = null;
+    this.spin = null;
+    this.resultsEndAt = 0;
     // Drop players who left mid-game now that we're back in the lobby.
     for (const p of [...this.players.values()]) if (!p.connected) this.players.delete(p.id);
     this.assignVip();
@@ -198,6 +346,16 @@ export class Room {
   handleInput(socket: ClientSocket, input: unknown) {
     const playerId = socket.data.playerId;
     if (this.game && playerId && this.players.has(playerId)) this.game.onInput(playerId, input);
+  }
+
+  private setPhaseTimer(ms: number, fn: () => void) {
+    this.clearPhaseTimer();
+    this.phaseTimer = setTimeout(fn, ms);
+  }
+
+  private clearPhaseTimer() {
+    if (this.phaseTimer) clearTimeout(this.phaseTimer);
+    this.phaseTimer = null;
   }
 
   private scheduleCleanup() {
@@ -212,6 +370,7 @@ export class Room {
 
   close(reason: string) {
     this.cancelCleanup();
+    this.clearPhaseTimer();
     this.game?.dispose();
     this.io.to(this.hostChannel).to(this.playerChannel).emit('room:closed', reason);
   }

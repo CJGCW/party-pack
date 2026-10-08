@@ -226,3 +226,34 @@ button.secondary { background: var(--panel-light); }
 .tu-input { font-size: 22px; }
 .tu-timer { text-align: center; font-size: 40px; color: var(--text); }
 .tu-timer.low { color: var(--danger); }
+
+/* ---------- Wheel settings, spin and results ---------- */
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  font-size: 20px;
+  padding: 12px 14px;
+  background: var(--panel-light);
+  opacity: 0.7;
+}
+.toggle.on { background: var(--correct); opacity: 1; }
+.toggle:disabled { cursor: default; }
+.toggle .check {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+}
+.stepper { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.stepper button { width: 56px; height: 56px; padding: 0; font-size: 30px; }
+.stepper-value { min-width: 120px; text-align: center; font-size: 24px; }
+.spin-button { width: 100%; font-size: 28px; padding: 20px; }
+.spin-emoji { font-size: 72px; }
+.big-place { font-size: 44px; color: var(--accent); }

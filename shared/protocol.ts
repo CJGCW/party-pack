@@ -33,7 +33,40 @@ export interface PlayerInfo {
   isVip: boolean;
 }
 
-export type RoomPhase = 'lobby' | 'game';
+export type RoomPhase = 'lobby' | 'spinning' | 'game' | 'results';
+
+export const MIN_ROUNDS = 1;
+export const MAX_ROUNDS = 10;
+export const DEFAULT_ROUNDS = 3;
+
+/** One slice of the game wheel: a game played in a particular mode. */
+export interface WheelEntry {
+  /** "gameId:modeId" */
+  id: string;
+  gameId: string;
+  modeId: string;
+  label: string;
+}
+
+/** What the VIP has chosen for the next session. */
+export interface SessionSettings {
+  /** Wheel entry ids that can come up. */
+  enabled: string[];
+  rounds: number;
+}
+
+export interface SpinState {
+  /** The slices on the wheel, in order. */
+  entries: WheelEntry[];
+  /** Index into `entries` the wheel will stop on. */
+  targetIndex: number;
+  /** How long the wheel spins for. */
+  spinMs: number;
+  /** Milliseconds until the wheel stops (0 once it has stopped). */
+  stopsInMs: number;
+  /** Milliseconds until the chosen game starts (spin plus a pause to show it). */
+  msLeft: number;
+}
 
 export interface RoomState {
   code: string;
@@ -42,6 +75,17 @@ export interface RoomState {
   gameId: string | null;
   players: PlayerInfo[];
   games: GameInfo[];
+  /** Debug mode: the VIP picks a specific game instead of spinning the wheel. */
+  debugMode: boolean;
+  /** Every game/mode that can go on the wheel. */
+  wheelEntries: WheelEntry[];
+  settings: SessionSettings;
+  /** Present while a multi-round session is running. */
+  session: { round: number; totalRounds: number } | null;
+  /** Present during the 'spinning' phase. */
+  spin: SpinState | null;
+  /** Milliseconds left on the final results screen, during 'results'. */
+  resultsMsLeft: number;
 }
 
 export type Ack<T = object> = (res: ({ ok: true } & T) | { ok: false; error: string }) => void;
@@ -52,9 +96,13 @@ export interface ClientToServerEvents {
     req: { code: string; name: string; sessionId: string },
     ack: Ack<{ playerId: string }>,
   ) => void;
-  /** Host screen or VIP phone asks to start a mini game. */
+  /** VIP (or host) changes which games are on the wheel and how many rounds. */
+  'room:updateSettings': (settings: SessionSettings, ack: Ack) => void;
+  /** VIP (or host) starts a session: spin the wheel, play, repeat for each round. */
+  'room:startSession': (ack: Ack) => void;
+  /** Debug mode only: VIP (or host) starts one specific mini game. */
   'room:startGame': (req: { gameId: string; modeId?: string }, ack: Ack) => void;
-  /** Host screen or VIP phone asks to abandon the current game. */
+  /** Host screen or VIP phone abandons the current game or session. */
   'room:backToLobby': () => void;
   /** Mini-game specific input from a phone. */
   'game:input': (input: unknown) => void;

@@ -3,7 +3,8 @@ import { createServer } from 'node:http';
 import { networkInterfaces } from 'node:os';
 import { resolve } from 'node:path';
 import { Server } from 'socket.io';
-import { RoomManager, type IO } from './rooms';
+import { config } from './config';
+import { Room, RoomManager, type IO } from './rooms';
 
 const PORT = Number(process.env.PORT ?? 3000);
 const isProd = process.env.NODE_ENV === 'production';
@@ -61,16 +62,21 @@ io.on('connection', (socket) => {
     ack({ ok: true, playerId: result.id });
   });
 
-  socket.on('room:startGame', ({ gameId, modeId }, ack) => {
+  /** Runs a VIP/host-only room action and reports any error back to the caller. */
+  const controlled = (ack: (res: { ok: true } | { ok: false; error: string }) => void, action: (room: Room) => string | null) => {
     const room = roomOf();
-    if (!room || !room.canControl(socket)) return ack({ ok: false, error: 'Only the host or VIP can start games.' });
-    const error = room.startGame(gameId, modeId);
+    if (!room || !room.canControl(socket)) return ack({ ok: false, error: 'Only the host or VIP can do that.' });
+    const error = action(room);
     ack(error ? { ok: false, error } : { ok: true });
-  });
+  };
+
+  socket.on('room:updateSettings', (settings, ack) => controlled(ack, (room) => room.updateSettings(settings)));
+  socket.on('room:startSession', (ack) => controlled(ack, (room) => room.startSession()));
+  socket.on('room:startGame', ({ gameId, modeId }, ack) => controlled(ack, (room) => room.startGame(gameId, modeId)));
 
   socket.on('room:backToLobby', () => {
     const room = roomOf();
-    if (room?.canControl(socket)) room.endGame();
+    if (room?.canControl(socket)) room.returnToLobby();
   });
 
   socket.on('game:input', (input) => roomOf()?.handleInput(socket, input));
@@ -82,4 +88,5 @@ httpServer.listen(PORT, '0.0.0.0', () => {
   console.log('\n  Party Pack is running!\n');
   console.log(`  Host screen (open on the TV/laptop): http://localhost:${PORT}/host`);
   console.log(`  Players join on their phones at:     ${joinUrl}\n`);
+  if (config.debugMode) console.log('  DEBUG MODE: the VIP picks each game directly (no wheel).\n');
 });
