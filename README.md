@@ -84,8 +84,9 @@ W: Jeremy Irons
 ```
 
 `A` is the right answer and the three `W`s are wrong ones; answer order is shuffled each time. The
-Disney & Pixar bank covers every theatrical Disney and Pixar animated feature except direct-to-video
-or streaming sequels, live action, and Song of the South; its facts were checked against Wikipedia.
+Disney & Pixar bank covers the theatrical Disney and Pixar animated features except direct-to-video
+or streaming sequels, live action, Song of the South, Toy Story 4 and Lightyear, plus Hook (1991) as a
+house exception; its facts were checked against Wikipedia.
 To add a new bank, add a `.txt` file and a matching mode in `shared/games/trivia.ts`.
 
 ### Word Rush word list

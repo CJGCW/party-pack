@@ -2064,40 +2064,6 @@ W: A squirrel
 W: A skunk
 W: An opossum
 
-FILM: Toy Story 4 (2019)
-
-Q: What is Forky made from?
-A: A spork
-W: A plastic fork
-W: A pencil
-W: A popsicle stick
-
-Q: Who voiced Duke Caboom?
-A: Keanu Reeves
-W: Ryan Reynolds
-W: Will Arnett
-W: Tony Hale
-
-Q: Which doll lives in the antique store and wants Woody's voice box?
-A: Gabby Gabby
-W: Bo Peep
-W: Giggle McDimples
-W: Jessie
-
-FILM: Lightyear (2022)
-
-Q: Who voiced Buzz Lightyear in Lightyear?
-A: Chris Evans
-W: Tim Allen
-W: Chris Pratt
-W: Ryan Gosling
-
-Q: What is Sox?
-A: A robot cat
-W: A robot dog
-W: A space hamster
-W: A talking spaceship
-
 FILM: Elio (2025)
 
 Q: Where is Elio beamed up to?
@@ -2223,3 +2189,50 @@ A: Sparky
 W: Zero
 W: Scraps
 W: Persephone
+
+# ===== House exceptions =====
+# Not Disney or animated, but included by request.
+
+FILM: Hook (1991)
+
+Q: Who played Captain Hook?
+A: Dustin Hoffman
+W: Robin Williams
+W: Bob Hoskins
+W: Jack Nicholson
+
+Q: Who played the grown-up Peter Pan, Peter Banning?
+A: Robin Williams
+W: Kevin Kline
+W: Tom Hanks
+W: Steve Martin
+
+Q: Who played Tinker Bell?
+A: Julia Roberts
+W: Meg Ryan
+W: Sandra Bullock
+W: Michelle Pfeiffer
+
+Q: What is the name of the Lost Boys' leader?
+A: Rufio
+W: Thud Butt
+W: Pockets
+W: Ace
+
+Q: What is grown-up Peter's job?
+A: A lawyer
+W: A banker
+W: A doctor
+W: A teacher
+
+Q: What happy memory finally lets Peter fly again?
+A: The birth of his son, Jack
+W: His first flight with Wendy
+W: Beating Captain Hook
+W: His wedding day
+
+Q: Who played Smee?
+A: Bob Hoskins
+W: Danny DeVito
+W: Dustin Hoffman
+W: Christopher Lloyd
