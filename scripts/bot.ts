@@ -66,7 +66,7 @@ function runBot(name: string, isStarter: boolean) {
         socket.emit('room:startGame', { gameId: WORDLE_RACE.id, modeId }, (r) => {
           if (r.ok) return console.log('start:', r);
           const enabled = [`${WORDLE_RACE.id}:${modeId}`];
-          socket.emit('room:updateSettings', { enabled, rounds: 1 }, () =>
+          socket.emit('room:updateSettings', { enabled, rounds: 1, puzzlesPerRound: 3 }, () =>
             socket.emit('room:startSession', (s) => console.log('start session:', s)),
           );
         });

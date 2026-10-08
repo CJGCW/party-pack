@@ -86,7 +86,7 @@ export class WordleRaceScene extends Phaser.Scene {
   private applyView(view: WordleHostView) {
     this.view = view;
     this.phaseEndsAt = performance.now() + view.msLeft;
-    this.roundText.setText(`Round ${view.round} of ${view.totalRounds}${view.mode === 'hard' ? '  ·  HARD MODE' : ''}`);
+    this.roundText.setText(`Word ${view.round} of ${view.totalRounds}${view.mode === 'hard' ? '  ·  HARD MODE' : ''}`);
 
     // Rebuild boards whenever a new round starts or the player list changes.
     const layoutKey = `${view.round}|${view.players.map((p) => p.id).join(',')}`;
@@ -224,7 +224,7 @@ export class WordleRaceScene extends Phaser.Scene {
 
     if (view.phase === 'countdown') {
       this.dim(0.6);
-      this.overlay.add(text(this, WIDTH / 2, HEIGHT / 2 - 160, `Round ${view.round}`, 72, COLORS.accent, { fontStyle: '700' }));
+      this.overlay.add(text(this, WIDTH / 2, HEIGHT / 2 - 160, `Word ${view.round} of ${view.totalRounds}`, 72, COLORS.accent, { fontStyle: '700' }));
       this.overlay.add(text(this, WIDTH / 2, HEIGHT / 2 - 80, 'Find the word on your phone!', 40, COLORS.muted));
       this.overlay.add(text(this, WIDTH / 2, HEIGHT / 2 - 25, describeScoring(view.guessCostSeconds), 34, COLORS.accent));
       this.countdownText = text(this, WIDTH / 2, HEIGHT / 2 + 140, '', 200, COLORS.text, { fontStyle: '700' });

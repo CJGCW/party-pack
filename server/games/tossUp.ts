@@ -13,8 +13,13 @@ import {
 } from '../../shared/games/tossUp';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 
-/** Points for each puzzle, in order. Its length is the number of puzzles per game. */
-const PUZZLE_VALUES = [1000, 1000, 2000, 2000, 3000];
+/**
+ * Points for puzzle `index` of `total`: the first third are worth 1,000, the middle
+ * third 2,000 and the last third 3,000 (so 5 puzzles go 1k, 1k, 2k, 2k, 3k).
+ */
+function puzzleValue(index: number, total: number): number {
+  return 1000 * (1 + Math.floor((index * 3) / total));
+}
 
 const INTRO_MS = 4_000;
 /** Time between letters appearing. */
@@ -84,14 +89,17 @@ class TossUp implements MiniGame {
   private phaseEndsAt = 0;
   private timer: NodeJS.Timeout | null = null;
 
-  constructor(private readonly ctx: GameContext) {}
+  constructor(
+    private readonly ctx: GameContext,
+    private readonly totalPuzzles: number,
+  ) {}
 
   start() {
     this.startPuzzle(0);
   }
 
   private get value() {
-    return PUZZLE_VALUES[this.puzzleIndex];
+    return puzzleValue(this.puzzleIndex, this.totalPuzzles);
   }
 
   private schedule(ms: number, next: () => void) {
@@ -197,7 +205,7 @@ class TossUp implements MiniGame {
     this.hiddenOrder = [];
     this.phase = solvedBy ? 'solved' : 'unsolved';
 
-    const isLast = this.puzzleIndex >= PUZZLE_VALUES.length - 1;
+    const isLast = this.puzzleIndex >= this.totalPuzzles - 1;
     this.schedule(RESULT_MS, () => {
       if (!isLast) return this.startPuzzle(this.puzzleIndex + 1);
       this.phase = 'gameEnd';
@@ -226,7 +234,7 @@ class TossUp implements MiniGame {
     const view: TossUpHostView = {
       phase: this.phase,
       puzzleNumber: this.puzzleIndex + 1,
-      totalPuzzles: PUZZLE_VALUES.length,
+      totalPuzzles: this.totalPuzzles,
       value: this.value,
       category: this.puzzle.category,
       lines: this.maskedLines(),
@@ -252,7 +260,7 @@ class TossUp implements MiniGame {
     const view: TossUpPlayerView = {
       phase: this.phase,
       puzzleNumber: this.puzzleIndex + 1,
-      totalPuzzles: PUZZLE_VALUES.length,
+      totalPuzzles: this.totalPuzzles,
       value: this.value,
       category: this.puzzle.category,
       lines: this.maskedLines(),
@@ -281,7 +289,7 @@ class TossUp implements MiniGame {
 
 export const tossUp: MiniGameDefinition = {
   info: TOSS_UP,
-  create: (ctx) => new TossUp(ctx),
+  create: (ctx, _modeId, options) => new TossUp(ctx, options.puzzles),
 };
 
 /** For tests and tooling. */

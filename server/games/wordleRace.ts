@@ -13,7 +13,6 @@ import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 import { define } from './definitions';
 import { isValidGuess, pickAnswers } from './words';
 
-const TOTAL_ROUNDS = 3;
 const COUNTDOWN_MS = 4_000;
 /** Round length per mode. Hard words are obscure, so players get longer. */
 const ROUND_MS: Record<WordleModeId, number> = { normal: 150_000, hard: 240_000 };
@@ -54,8 +53,10 @@ class WordleRace implements MiniGame {
   constructor(
     private readonly ctx: GameContext,
     private readonly mode: WordleModeId,
+    /** Words to play this game (each one is a "round" inside Word Rush). */
+    private readonly totalWords: number,
   ) {
-    this.answers = pickAnswers(TOTAL_ROUNDS, mode);
+    this.answers = pickAnswers(totalWords, mode);
   }
 
   private get answer() {
@@ -85,7 +86,7 @@ class WordleRace implements MiniGame {
   }
 
   private endRound() {
-    if (this.round >= TOTAL_ROUNDS) {
+    if (this.round >= this.totalWords) {
       this.setPhase('gameEnd', GAME_END_MS, () => this.ctx.finish());
     } else {
       this.setPhase('roundEnd', ROUND_END_MS, () => this.startRound(this.round + 1));
@@ -150,7 +151,7 @@ class WordleRace implements MiniGame {
       mode: this.mode,
       guessCostSeconds: this.guessCostSeconds(),
       round: this.round,
-      totalRounds: TOTAL_ROUNDS,
+      totalRounds: this.totalWords,
       msLeft: this.msLeft(),
       answer: this.revealedAnswer(),
       definition: this.revealedDefinition(),
@@ -183,7 +184,7 @@ class WordleRace implements MiniGame {
       mode: this.mode,
       guessCostSeconds: this.guessCostSeconds(),
       round: this.round,
-      totalRounds: TOTAL_ROUNDS,
+      totalRounds: this.totalWords,
       msLeft: this.msLeft(),
       guesses: prog.guesses,
       solved: prog.solved,
@@ -211,5 +212,5 @@ class WordleRace implements MiniGame {
 
 export const wordleRace: MiniGameDefinition = {
   info: WORDLE_RACE,
-  create: (ctx, modeId) => new WordleRace(ctx, modeId as WordleModeId),
+  create: (ctx, modeId, options) => new WordleRace(ctx, modeId as WordleModeId, options.puzzles),
 };

@@ -96,7 +96,9 @@ export class LobbyScene extends Phaser.Scene {
         align: 'center',
       }),
     );
-    card.add(text(this, -210, 38, `${rounds} ${rounds === 1 ? 'round' : 'rounds'}`, 34, COLORS.accent, { fontStyle: '700' }));
+    const puzzles = state.settings.puzzlesPerRound;
+    const summary = `${rounds} ${rounds === 1 ? 'round' : 'rounds'}  ·  ${puzzles} ${puzzles === 1 ? 'puzzle' : 'puzzles'} each`;
+    card.add(text(this, -210, 38, summary, 34, COLORS.accent, { fontStyle: '700' }));
 
     const ready = playerCount > 0;
     const button = this.add.container(cardW / 2 - 200, 0);

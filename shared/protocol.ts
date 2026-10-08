@@ -39,6 +39,11 @@ export const MIN_ROUNDS = 1;
 export const MAX_ROUNDS = 10;
 export const DEFAULT_ROUNDS = 3;
 
+/** Puzzles (Letter Drop puzzles, Word Rush words) in each game. */
+export const MIN_PUZZLES = 1;
+export const MAX_PUZZLES = 10;
+export const DEFAULT_PUZZLES = 3;
+
 /** One slice of the game wheel: a game played in a particular mode. */
 export interface WheelEntry {
   /** "gameId:modeId" */
@@ -53,6 +58,8 @@ export interface SessionSettings {
   /** Wheel entry ids that can come up. */
   enabled: string[];
   rounds: number;
+  /** How many puzzles each game has, whichever game the wheel picks. */
+  puzzlesPerRound: number;
 }
 
 export interface SpinState {

@@ -1,5 +1,5 @@
 import { io, type Socket } from 'socket.io-client';
-import { MAX_NAME_LENGTH, MAX_ROUNDS, MIN_ROUNDS, type ClientToServerEvents, type RoomState, type ServerToClientEvents } from '../../shared/protocol';
+import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type RoomState, type ServerToClientEvents } from '../../shared/protocol';
 import { TOSS_UP } from '../../shared/games/tossUp';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { h } from './dom';
@@ -220,14 +220,15 @@ function wheelSettings(isVip: boolean): Node[] {
     );
   });
 
-  const rounds = settings.rounds;
-  const stepper = h(
-    'div',
-    { class: 'stepper' },
-    h('button', { class: 'secondary', disabled: !isVip || rounds <= MIN_ROUNDS, onclick: () => save({ ...settings, rounds: rounds - 1 }) }, '−'),
-    h('div', { class: 'stepper-value' }, `${rounds} ${rounds === 1 ? 'round' : 'rounds'}`),
-    h('button', { class: 'secondary', disabled: !isVip || rounds >= MAX_ROUNDS, onclick: () => save({ ...settings, rounds: rounds + 1 }) }, '+'),
-  );
+  /** − value + control; only the VIP can press it. */
+  const stepper = (value: number, min: number, max: number, unit: string, set: (n: number) => void) =>
+    h(
+      'div',
+      { class: 'stepper' },
+      h('button', { class: 'secondary', disabled: !isVip || value <= min, onclick: () => set(value - 1) }, '−'),
+      h('div', { class: 'stepper-value' }, `${value} ${value === 1 ? unit : `${unit}s`}`),
+      h('button', { class: 'secondary', disabled: !isVip || value >= max, onclick: () => set(value + 1) }, '+'),
+    );
 
   const card = h(
     'div',
@@ -235,7 +236,13 @@ function wheelSettings(isVip: boolean): Node[] {
     h('h2', {}, 'Games on the wheel'),
     ...toggles,
     h('h2', {}, 'Rounds'),
-    stepper,
+    h('div', { class: 'muted' }, 'The wheel spins once per round.'),
+    stepper(settings.rounds, MIN_ROUNDS, MAX_ROUNDS, 'round', (rounds) => save({ ...settings, rounds })),
+    h('h2', {}, 'Puzzles per round'),
+    h('div', { class: 'muted' }, 'Puzzles in Letter Drop, words in Word Rush.'),
+    stepper(settings.puzzlesPerRound, MIN_PUZZLES, MAX_PUZZLES, 'puzzle', (puzzlesPerRound) =>
+      save({ ...settings, puzzlesPerRound }),
+    ),
   );
 
   if (!isVip) return [card, h('p', {}, 'Waiting for the VIP to spin the wheel…')];

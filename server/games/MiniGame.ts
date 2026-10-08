@@ -21,8 +21,14 @@ export interface MiniGame {
   dispose(): void;
 }
 
+/** Settings that apply to whichever game is played. */
+export interface GameOptions {
+  /** How many puzzles to play (Letter Drop puzzles, Word Rush words). */
+  puzzles: number;
+}
+
 export interface MiniGameDefinition {
   info: GameInfo;
   /** `modeId` is always one of `info.modes`. */
-  create(ctx: GameContext, modeId: string): MiniGame;
+  create(ctx: GameContext, modeId: string, options: GameOptions): MiniGame;
 }

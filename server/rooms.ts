@@ -1,9 +1,12 @@
 import type { Server, Socket } from 'socket.io';
 import {
+  DEFAULT_PUZZLES,
   DEFAULT_ROUNDS,
   MAX_NAME_LENGTH,
   MAX_PLAYERS,
+  MAX_PUZZLES,
   MAX_ROUNDS,
+  MIN_PUZZLES,
   MIN_ROUNDS,
   PLAYER_COLORS,
   type ClientToServerEvents,
@@ -62,7 +65,11 @@ export class Room {
   hostSocketId: string | null = null;
   game: MiniGame | null = null;
   gameId: string | null = null;
-  settings: SessionSettings = { enabled: WHEEL_ENTRIES.map((e) => e.id), rounds: DEFAULT_ROUNDS };
+  settings: SessionSettings = {
+    enabled: WHEEL_ENTRIES.map((e) => e.id),
+    rounds: DEFAULT_ROUNDS,
+    puzzlesPerRound: DEFAULT_PUZZLES,
+  };
   private session: Session | null = null;
   private spin: { entries: WheelEntry[]; targetIndex: number; endsAt: number } | null = null;
   private resultsEndAt = 0;
@@ -223,7 +230,10 @@ export class Room {
     const rounds = Math.round(Number(next?.rounds));
     if (enabled.length === 0) return 'Pick at least one game.';
     if (!(rounds >= MIN_ROUNDS && rounds <= MAX_ROUNDS)) return `Rounds must be ${MIN_ROUNDS}-${MAX_ROUNDS}.`;
-    this.settings = { enabled: [...new Set(enabled)], rounds };
+    // Older clients may not send this; keep the current value then.
+    const puzzles = next?.puzzlesPerRound === undefined ? this.settings.puzzlesPerRound : Math.round(Number(next.puzzlesPerRound));
+    if (!(puzzles >= MIN_PUZZLES && puzzles <= MAX_PUZZLES)) return `Puzzles must be ${MIN_PUZZLES}-${MAX_PUZZLES}.`;
+    this.settings = { enabled: [...new Set(enabled)], rounds, puzzlesPerRound: puzzles };
     this.broadcastState();
     return null;
   }
@@ -300,6 +310,7 @@ export class Room {
         },
       },
       mode.id,
+      { puzzles: this.settings.puzzlesPerRound },
     );
     this.game = game;
     this.broadcastState();

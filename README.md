@@ -24,7 +24,8 @@ Phones must be on the same Wi-Fi as the host computer. The first time it runs, W
 asks whether Node may accept connections. Allow it on **private** networks.
 
 The first player to join is the **VIP**. On their phone they choose which games go on the
-**wheel** and how many **rounds** to play (1–10), then spin it (the host screen has a SPIN!
+**wheel**, how many **rounds** to play (1–10), and how many **puzzles per round** (1–10: puzzles in
+Letter Drop, words in Word Rush; it applies to every game), then spin it (the host screen has a SPIN!
 button too). Each round the wheel picks a game at random; scores add up across rounds, and a
 final results screen ends the session. Press **Esc** on the host screen to abandon a session.
 
@@ -41,8 +42,8 @@ a click on the host screen) starts one chosen game. Turn it on with either:
 
 | Game | Players | How it plays |
 | --- | --- | --- |
-| **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Each solve scores (seconds left − 8s per guess) × 10, minimum 100. Guesses don't take time off the clock; they only lower your score. Three rounds. **Normal** (2½-minute rounds) uses words with a dictionary definition, shown at the reveal; **Hard** (4-minute rounds) uses obscure words with none. |
-| **Letter Drop** | 1–8 | A puzzle board fills in one letter at a time. Buzz in on your phone and type the answer: right scores the puzzle's points (1,000, 1,000, 2,000, 2,000, 3,000); wrong locks you out of that puzzle. Five puzzles. |
+| **Word Rush** | 1–8 | Everyone races to solve the same Wordle-style word with unlimited guesses before the timer runs out. Each solve scores (seconds left − 8s per guess) × 10, minimum 100. Guesses don't take time off the clock; they only lower your score. One word per puzzle. **Normal** (2½-minute rounds) uses words with a dictionary definition, shown at the reveal; **Hard** (4-minute rounds) uses obscure words with none. |
+| **Letter Drop** | 1–8 | A puzzle board fills in one letter at a time. Buzz in on your phone and type the answer: right scores the puzzle's points (1,000 for the first third of the puzzles, 2,000 for the middle third, 3,000 for the last); wrong locks you out of that puzzle. |
 
 ### Testing with bots
 

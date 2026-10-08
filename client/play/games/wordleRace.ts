@@ -173,7 +173,7 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
 
     if (view.phase === 'countdown') {
       overlay.replaceChildren(
-        h('h2', {}, `Round ${view.round} of ${view.totalRounds}`),
+        h('h2', {}, `Word ${view.round} of ${view.totalRounds}`),
         h('div', { class: 'big' }, 'Get ready!'),
         h('p', {}, 'Guess the 5-letter word. Be quick, and make every guess count!'),
         h('p', { class: 'wr-scoring' }, describeScoring(view.guessCostSeconds)),
@@ -188,7 +188,7 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
         h('h2', {}, view.solved ? `You scored +${view.roundPoints}` : 'No points this round'),
         ...(view.solved ? [h('p', {}, describeSolve(view.guesses.length, view.solvedMsLeft))] : []),
         h('div', { class: 'big' }, String(view.score)),
-        h('p', {}, view.phase === 'gameEnd' ? 'Final score. Look at the TV!' : 'Next round coming up…'),
+        h('p', {}, view.phase === 'gameEnd' ? 'Final score. Look at the TV!' : 'Next word coming up…'),
       );
       overlay.hidden = false;
     } else {
@@ -219,7 +219,7 @@ export function createWordleRace(root: HTMLElement, send: (input: unknown) => vo
       }
       view = next;
       phaseEndsAt = performance.now() + next.msLeft;
-      roundEl.textContent = `Round ${next.round}/${next.totalRounds}${next.mode === 'hard' ? ' · HARD' : ''}`;
+      roundEl.textContent = `Word ${next.round}/${next.totalRounds}${next.mode === 'hard' ? ' · HARD' : ''}`;
       scoreEl.textContent = `${next.score} pts`;
 
       if (replyArrived) {
