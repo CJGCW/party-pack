@@ -202,7 +202,8 @@ export const pour: MicrogameImpl = {
         // Drink.
         const fill = Math.min(level, 1.05);
         roundRect(g, glass.x + 6, glass.y + glass.h * (1 - fill), glass.w - 12, glass.h * fill - 6, 8, '#f4a640');
-        if (fill > 0.02) roundRect(g, glass.x + 6, glass.y + glass.h * (1 - fill) - 10, glass.w - 12, 16, 8, '#fff6dc');
+        // A thin froth line right on the true level, so what you see is what's scored.
+        if (fill > 0.02) roundRect(g, glass.x + 6, glass.y + glass.h * (1 - fill) - 2, glass.w - 12, 4, 2, '#fff6dc');
         // Glass.
         g.strokeStyle = 'rgba(255,255,255,0.8)';
         g.lineWidth = 6;
@@ -228,7 +229,8 @@ export const pour: MicrogameImpl = {
       down() {
         if (!pouring) return;
         pouring = false;
-        if (level >= lo) {
+        // A hair of leeway on the bottom line.
+        if (level >= lo - 0.006) {
           verdict = 'perfect';
           ctx.win();
         } else {
