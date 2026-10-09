@@ -358,6 +358,41 @@ export class MicroRunner {
   }
 }
 
+// ---- Line-art sprites ------------------------------------------------------------
+
+const sprites = new Map<string, HTMLCanvasElement | null>();
+
+/**
+ * A black-on-white line drawing as a transparent sprite: the white goes see-through
+ * and the ink keeps its darkness, so it can be drawn over other things. Loads once;
+ * returns null until it's ready (call it at module load to start loading early).
+ */
+export function inkSprite(url: string, size = 720): HTMLCanvasElement | null {
+  if (sprites.has(url)) return sprites.get(url)!;
+  sprites.set(url, null);
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    const k = Math.min(1, size / Math.max(img.width, img.height));
+    c.width = Math.round(img.width * k);
+    c.height = Math.round(img.height * k);
+    const g = c.getContext('2d')!;
+    g.drawImage(img, 0, 0, c.width, c.height);
+    const data = g.getImageData(0, 0, c.width, c.height);
+    const d = data.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const lum = (d[i] + d[i + 1] + d[i + 2]) / 3;
+      const alpha = ((255 - lum) * d[i + 3]) / 255;
+      d[i] = d[i + 1] = d[i + 2] = 20;
+      d[i + 3] = Math.min(255, alpha * 1.15);
+    }
+    g.putImageData(data, 0, 0);
+    sprites.set(url, c);
+  };
+  img.src = url;
+  return null;
+}
+
 // ---- Helpers for microgames ---------------------------------------------------
 
 export const PALETTE = {

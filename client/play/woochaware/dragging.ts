@@ -16,9 +16,11 @@ import {
   rand,
   randInt,
   roundRect,
+  inkSprite,
   type MicrogameImpl,
   type Pointer,
 } from './engine';
+import noseUrl from './img/nose.png';
 
 /** Drag the carrot up out of the ground. It sinks back if you let go. */
 export const pull: MicrogameImpl = {
@@ -849,29 +851,51 @@ function inkLabel(g: CanvasRenderingContext2D, s: string, x: number, y: number, 
   g.restore();
 }
 
+/** Line-art nose (black on white), loaded early so it's ready by the first round. */
+inkSprite(noseUrl);
+
 /** Get your fingertip into a nostril. The nose won't keep still. */
 export const pickNose: MicrogameImpl = {
   create(ctx) {
-    const sway = byLevel(ctx, [0, 55, 80]);
-    const bob = byLevel(ctx, [0, 0, 30]);
-    // Nostril size: half-width and half-height.
-    const rx = byLevel(ctx, [19, 16, 13]);
-    const ry = rx * 0.5;
+    const sway = byLevel(ctx, [0, 30, 45]);
+    const bob = byLevel(ctx, [0, 0, 24]);
+    /** How much of a nostril counts as a hit: smaller at higher levels. */
+    const hitScale = byLevel(ctx, [1, 0.8, 0.65]);
     const phase = ctx.rng() * Math.PI * 2;
     /** Where the fingertip rests before you touch the screen. */
-    const REST = { x: 180, y: 430 };
+    const REST = { x: 180, y: 440 };
     /** The fingertip sits this far above your touch, so your own finger doesn't hide it. */
     const LIFT = 60;
-    let nose = { x: 180, y: 190 };
+    const NOSE_Y = 255;
+    // Positions within nose.png, as fractions of its width and height.
+    const IMG_NOSE_WIDTH = 1110 / 1920;
+    const IMG_ANCHOR = { x: 0.5, y: 1470 / 1920 };
+    const IMG_NOSTRILS = [
+      { x: 660 / 1920, y: 1475 / 1920 },
+      { x: 1265 / 1920, y: 1470 / 1920 },
+    ];
+    const IMG_NOSTRIL_HALF = { x: 95 / 1920, y: 50 / 1920 };
+    /** The nose is drawn this wide on the card. */
+    const NOSE_WIDTH = 290;
+    let nose = { x: 180, y: NOSE_Y };
     let tip: Pointer = { ...REST };
     let inside = false;
     let winT = 0;
-    const nostrils = () => [
-      { x: nose.x - 25, y: nose.y + 50, rot: -0.25 },
-      { x: nose.x + 25, y: nose.y + 50, rot: 0.25 },
-    ];
+    /** The image's drawn size (it's square unless the file says otherwise). */
+    const drawnSize = () => {
+      const sprite = inkSprite(noseUrl);
+      const w = NOSE_WIDTH / IMG_NOSE_WIDTH;
+      return { w, h: sprite ? (w * sprite.height) / sprite.width : w };
+    };
+    const nostrils = () => {
+      const { w, h } = drawnSize();
+      return IMG_NOSTRILS.map((n) => ({ x: nose.x + (n.x - IMG_ANCHOR.x) * w, y: nose.y + (n.y - IMG_ANCHOR.y) * h }));
+    };
     const touch = (p: Pointer) => {
       tip = { x: clamp(p.x, 40, W - 40), y: clamp(p.y - LIFT, 60, H - 60) };
+      const { w, h } = drawnSize();
+      const rx = IMG_NOSTRIL_HALF.x * w * hitScale;
+      const ry = IMG_NOSTRIL_HALF.y * h * hitScale;
       const hit = nostrils().find((n) => ((tip.x - n.x) / (rx + 4)) ** 2 + ((tip.y - n.y) / (ry + 8)) ** 2 <= 1);
       if (hit) {
         inside = true;
@@ -879,38 +903,16 @@ export const pickNose: MicrogameImpl = {
         ctx.win();
       }
     };
-    /** The nose: a bridge running up off the card, rounded wings and the bit between the nostrils. */
     const drawNose = (g: CanvasRenderingContext2D) => {
+      const sprite = inkSprite(noseUrl);
+      if (!sprite) return;
+      const { w, h } = drawnSize();
       g.save();
       g.beginPath();
       g.roundRect(22, 22, W - 44, H - 44, 14);
       g.clip();
-      g.translate(nose.x, nose.y);
-      g.strokeStyle = INK;
-      g.lineWidth = 5;
-      g.lineCap = 'round';
-      g.lineJoin = 'round';
-      for (const side of [-1, 1]) {
-        g.beginPath();
-        g.moveTo(side * 16, -nose.y);
-        g.quadraticCurveTo(side * 18, -70, side * 30, -12);
-        g.bezierCurveTo(side * 78, 2, side * 84, 50, side * 50, 54);
-        g.stroke();
-      }
-      g.beginPath();
-      g.moveTo(-50, 54);
-      g.quadraticCurveTo(-24, 74, 0, 60);
-      g.quadraticCurveTo(24, 74, 50, 54);
-      g.stroke();
+      g.drawImage(sprite, nose.x - IMG_ANCHOR.x * w, nose.y - IMG_ANCHOR.y * h, w, h);
       g.restore();
-    };
-    const drawNostrils = (g: CanvasRenderingContext2D) => {
-      for (const n of nostrils()) {
-        g.beginPath();
-        g.ellipse(n.x, n.y, rx, ry, n.rot, 0, Math.PI * 2);
-        g.fillStyle = INK;
-        g.fill();
-      }
     };
     /** An upright finger from the bottom of the card, its tip at (x, y). */
     const drawFinger = (g: CanvasRenderingContext2D, x: number, y: number) => {
@@ -953,7 +955,7 @@ export const pickNose: MicrogameImpl = {
       update(dt, t) {
         if (inside) winT += dt;
         if (ctx.over) return;
-        nose = { x: 180 + Math.sin(t * 2.2 + phase) * sway, y: 190 + Math.sin(t * 3.1) * bob };
+        nose = { x: 180 + Math.sin(t * 2.2 + phase) * sway, y: NOSE_Y + Math.sin(t * 3.1) * bob };
       },
       draw(g, t) {
         sketchCard(g);
@@ -967,13 +969,11 @@ export const pickNose: MicrogameImpl = {
           g.clip();
           drawFinger(g, tip.x, tip.y - 34);
           g.restore();
-          drawNostrils(g);
           drawNose(g);
           const shake = Math.sin(t * 40) * 3;
-          inkLabel(g, '!!', nose.x + 92 + shake, nose.y - 30, 44);
+          inkLabel(g, '!!', nose.x + 118 + shake, nose.y - 120, 44);
           if (winT > 0.1) inkLabel(g, 'GOT IT!', tip.x < 180 ? 262 : 98, 360, 40);
         } else {
-          drawNostrils(g);
           drawFinger(g, tip.x, tip.y);
         }
       },
