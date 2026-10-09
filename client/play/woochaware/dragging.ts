@@ -822,64 +822,163 @@ export const scan: MicrogameImpl = {
   },
 };
 
-/** Get your fingertip into a nostril. The face won't keep still. */
+/** Black-outline drawing on a white card, like a quick sketch. */
+const INK = '#141414';
+const PAPER = '#ffffff';
+const FRAME = '#3a7bd5';
+
+/** The blue frame and white card the line-art microgames are drawn on. */
+function sketchCard(g: CanvasRenderingContext2D) {
+  fillBg(g, FRAME);
+  roundRect(g, 14, 14, W - 28, H - 28, 18, '#9cc0ee');
+  roundRect(g, 22, 22, W - 44, H - 44, 14, PAPER);
+}
+
+/** Text in ink, with a white edge so it reads over the drawing. */
+function inkLabel(g: CanvasRenderingContext2D, s: string, x: number, y: number, size: number, color = INK) {
+  g.save();
+  g.font = `700 ${size}px Fredoka, system-ui, sans-serif`;
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.lineWidth = size / 5;
+  g.lineJoin = 'round';
+  g.strokeStyle = PAPER;
+  g.strokeText(s, x, y);
+  g.fillStyle = color;
+  g.fillText(s, x, y);
+  g.restore();
+}
+
+/** Get your fingertip into a nostril. The nose won't keep still. */
 export const pickNose: MicrogameImpl = {
   create(ctx) {
-    const sway = byLevel(ctx, [0, 60, 90]);
-    const bob = byLevel(ctx, [0, 0, 40]);
-    const holeR = byLevel(ctx, [17, 14, 12]);
+    const sway = byLevel(ctx, [0, 55, 80]);
+    const bob = byLevel(ctx, [0, 0, 30]);
+    // Nostril size: half-width and half-height.
+    const rx = byLevel(ctx, [19, 16, 13]);
+    const ry = rx * 0.5;
     const phase = ctx.rng() * Math.PI * 2;
-    let face = { x: 180, y: 250 };
-    let finger: Pointer | null = null;
+    /** Where the fingertip rests before you touch the screen. */
+    const REST = { x: 180, y: 430 };
+    /** The fingertip sits this far above your touch, so your own finger doesn't hide it. */
+    const LIFT = 60;
+    let nose = { x: 180, y: 190 };
+    let tip: Pointer = { ...REST };
     let inside = false;
+    let winT = 0;
+    const nostrils = () => [
+      { x: nose.x - 25, y: nose.y + 50, rot: -0.25 },
+      { x: nose.x + 25, y: nose.y + 50, rot: 0.25 },
+    ];
     const touch = (p: Pointer) => {
-      finger = p;
-      const tip = { x: p.x, y: p.y - 48 };
-      if (nostrils().some((n) => dist(tip.x, tip.y, n.x, n.y) < holeR)) {
+      tip = { x: clamp(p.x, 40, W - 40), y: clamp(p.y - LIFT, 60, H - 60) };
+      const hit = nostrils().find((n) => ((tip.x - n.x) / (rx + 4)) ** 2 + ((tip.y - n.y) / (ry + 8)) ** 2 <= 1);
+      if (hit) {
         inside = true;
+        tip = { x: hit.x, y: hit.y };
         ctx.win();
       }
     };
-    const nostrils = () => [
-      { x: face.x - 20, y: face.y + 40 },
-      { x: face.x + 20, y: face.y + 40 },
-    ];
-    return {
-      update(_dt, t) {
-        if (!ctx.over) face = { x: 180 + Math.sin(t * 2.2 + phase) * sway, y: 250 + Math.sin(t * 3.1) * bob };
-      },
-      draw(g) {
-        fillBg(g, '#5ec8f2', '#2b7fa8');
-        circle(g, face.x, face.y, 140, '#f5c9a0');
-        circle(g, face.x - 50, face.y - 40, 16, '#222');
-        circle(g, face.x + 50, face.y - 40, 16, '#222');
-        // Nose.
+    /** The nose: a bridge running up off the card, rounded wings and the bit between the nostrils. */
+    const drawNose = (g: CanvasRenderingContext2D) => {
+      g.save();
+      g.beginPath();
+      g.roundRect(22, 22, W - 44, H - 44, 14);
+      g.clip();
+      g.translate(nose.x, nose.y);
+      g.strokeStyle = INK;
+      g.lineWidth = 5;
+      g.lineCap = 'round';
+      g.lineJoin = 'round';
+      for (const side of [-1, 1]) {
         g.beginPath();
-        g.ellipse(face.x, face.y + 20, 46, 40, 0, 0, Math.PI * 2);
-        g.fillStyle = '#eab38a';
-        g.fill();
-        for (const n of nostrils()) {
-          g.beginPath();
-          g.ellipse(n.x, n.y, holeR, holeR * 0.8, 0, 0, Math.PI * 2);
-          g.fillStyle = '#5a2e1a';
-          g.fill();
-        }
-        // Mouth.
-        g.strokeStyle = '#7a1f3a';
-        g.lineWidth = 6;
-        g.beginPath();
-        if (inside) g.arc(face.x, face.y + 85, 30, 0.1 * Math.PI, 0.9 * Math.PI);
-        else g.arc(face.x, face.y + 110, 30, 1.15 * Math.PI, 1.85 * Math.PI);
+        g.moveTo(side * 16, -nose.y);
+        g.quadraticCurveTo(side * 18, -70, side * 30, -12);
+        g.bezierCurveTo(side * 78, 2, side * 84, 50, side * 50, 54);
         g.stroke();
-        // Finger pointing up, its tip a little above the touch.
-        if (finger) emoji(g, '👆', finger.x, finger.y - 10, 90);
-        if (inside) label(g, 'GOT IT!', 180, 470, 48, PALETTE.accent);
+      }
+      g.beginPath();
+      g.moveTo(-50, 54);
+      g.quadraticCurveTo(-24, 74, 0, 60);
+      g.quadraticCurveTo(24, 74, 50, 54);
+      g.stroke();
+      g.restore();
+    };
+    const drawNostrils = (g: CanvasRenderingContext2D) => {
+      for (const n of nostrils()) {
+        g.beginPath();
+        g.ellipse(n.x, n.y, rx, ry, n.rot, 0, Math.PI * 2);
+        g.fillStyle = INK;
+        g.fill();
+      }
+    };
+    /** An upright finger from the bottom of the card, its tip at (x, y). */
+    const drawFinger = (g: CanvasRenderingContext2D, x: number, y: number) => {
+      const r = 22;
+      const bottom = H;
+      g.save();
+      g.beginPath();
+      g.roundRect(22, 22, W - 44, H - 44, 14);
+      g.clip();
+      g.beginPath();
+      g.moveTo(x - r, bottom);
+      g.lineTo(x - r, y + r);
+      g.arc(x, y + r, r, Math.PI, 0);
+      g.lineTo(x + r, bottom);
+      g.fillStyle = PAPER;
+      g.fill();
+      g.strokeStyle = INK;
+      g.lineWidth = 5;
+      g.lineJoin = 'round';
+      g.stroke();
+      // Fingernail.
+      g.lineWidth = 3;
+      g.beginPath();
+      g.roundRect(x - 11, y + 8, 22, 26, 9);
+      g.stroke();
+      // Knuckle creases.
+      g.lineCap = 'round';
+      g.beginPath();
+      g.moveTo(x - 7, y + 66);
+      g.lineTo(x + 7, y + 66);
+      g.moveTo(x - 5, y + 74);
+      g.lineTo(x + 5, y + 74);
+      g.stroke();
+      g.beginPath();
+      g.arc(x, y + 116, 9, 0.15 * Math.PI, 0.85 * Math.PI);
+      g.stroke();
+      g.restore();
+    };
+    return {
+      update(dt, t) {
+        if (inside) winT += dt;
+        if (ctx.over) return;
+        nose = { x: 180 + Math.sin(t * 2.2 + phase) * sway, y: 190 + Math.sin(t * 3.1) * bob };
+      },
+      draw(g, t) {
+        sketchCard(g);
+        drawNose(g);
+        if (inside) {
+          // The finger goes up the nostril: only the part below the nostril shows,
+          // with the nostril and the nose's outline drawn back over it.
+          g.save();
+          g.beginPath();
+          g.rect(0, tip.y, W, H);
+          g.clip();
+          drawFinger(g, tip.x, tip.y - 34);
+          g.restore();
+          drawNostrils(g);
+          drawNose(g);
+          const shake = Math.sin(t * 40) * 3;
+          inkLabel(g, '!!', nose.x + 92 + shake, nose.y - 30, 44);
+          if (winT > 0.1) inkLabel(g, 'GOT IT!', tip.x < 180 ? 262 : 98, 360, 40);
+        } else {
+          drawNostrils(g);
+          drawFinger(g, tip.x, tip.y);
+        }
       },
       down: touch,
       move: touch,
-      up() {
-        finger = null;
-      },
     };
   },
 };
