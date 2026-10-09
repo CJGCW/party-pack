@@ -332,3 +332,61 @@ button.secondary { background: var(--panel-light); }
 }
 .ww-banner.good { background: var(--correct); }
 .ww-banner.bad { background: var(--danger); }
+
+/* ---------- Rack Attack ---------- */
+
+.ra { min-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 10px; user-select: none; -webkit-user-select: none; }
+.ra-board {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--empty);
+  width: 100%;
+  aspect-ratio: 1;
+  touch-action: manipulation;
+}
+.ra-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--panel);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 9px;
+  font-weight: 700;
+}
+.ra-cell.ra-tw { background: #a83250; }
+.ra-cell.ra-dw { background: #8a3f86; }
+.ra-cell.ra-tl { background: #2f6db5; }
+.ra-cell.ra-dl { background: #3d5a99; }
+.ra-cell.ra-star { background: #8a3f86; color: var(--accent); font-size: 14px; }
+.ra-cell.target { outline: 2px dashed rgba(255, 209, 102, 0.5); outline-offset: -2px; }
+.ra-cell.filled, .ra-tile { background: #f6e7b8; color: var(--bg); }
+.ra-cell.pending { background: var(--accent); color: var(--bg); box-shadow: 0 0 0 2px #ffffff inset; }
+.ra-cell.best { background: rgba(110, 231, 183, 0.85); color: var(--bg); }
+.ra-cell .ra-letter { font-size: 17px; line-height: 1; }
+.ra-cell .ra-value { position: absolute; right: 2px; bottom: 1px; font-size: 7px; }
+.ra-status { text-align: center; min-height: 2.6em; font-size: 17px; color: var(--muted); }
+.ra-status.good { color: var(--accent); }
+.ra-status.bad { color: var(--danger); }
+.ra-rack { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.ra-tile {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 0 #c9b27a;
+  cursor: pointer;
+}
+.ra-tile .ra-letter { font-size: 26px; }
+.ra-tile .ra-value { position: absolute; right: 4px; bottom: 2px; font-size: 11px; }
+.ra-tile.selected { background: var(--accent); transform: translateY(-4px); box-shadow: 0 6px 0 #c99a2e; }
+.ra-tile.used { opacity: 0.2; }
+.ra-buttons { display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 8px; margin-top: auto; padding-bottom: 8px; }
+.ra-buttons button { font-size: 20px; padding: 14px 6px; }
+.ra-submit { background: var(--correct); }

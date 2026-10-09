@@ -1,11 +1,13 @@
 import { io, type Socket } from 'socket.io-client';
 import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type RoomState, type ServerToClientEvents } from '../../shared/protocol';
+import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
 import { TRIVIA } from '../../shared/games/trivia';
 import { WOOCHAWARE } from '../../shared/games/woochaware';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { h } from './dom';
 import { needsMotionPermission, requestMotionPermission } from './motion';
+import { createRackAttack } from './games/rackAttack';
 import { createTossUp } from './games/tossUp';
 import { createTrivia } from './games/trivia';
 import { createWoochaWare } from './games/woochaware';
@@ -23,6 +25,7 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [WORDLE_RACE.id]: createWordleRace,
   [TOSS_UP.id]: createTossUp,
   [TRIVIA.id]: createTrivia,
+  [RACK_ATTACK.id]: createRackAttack,
   [WOOCHAWARE.id]: createWoochaWare,
 };
 

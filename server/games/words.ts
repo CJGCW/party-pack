@@ -29,7 +29,7 @@ const naughtyForms = new Set(
     .flatMap((w) => [w, `${w}s`, `${w}es`, `${w}ed`]),
 );
 
-function isOffensive(word: string): boolean {
+export function isOffensive(word: string): boolean {
   if (ALLOWED.has(word)) return false;
   return EXTRA_BLOCKED.has(word) || naughtyForms.has(word) || obscenity.hasMatch(word);
 }
