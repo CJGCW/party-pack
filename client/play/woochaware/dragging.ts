@@ -102,7 +102,7 @@ export const pull: MicrogameImpl = {
 
 const FRUITS = ['🍉', '🍊', '🍎', '🍍', '🥝', '🍋', '🍑'];
 
-/** Fruit is tossed up; swipe through every piece before it falls. */
+/** Fruit is tossed up; swipe through every piece before it falls. Each press of the screen is one slash. */
 export const slice: MicrogameImpl = {
   create(ctx) {
     const count = byLevel(ctx, [2, 3, 4]);
@@ -118,6 +118,8 @@ export const slice: MicrogameImpl = {
       cut: -1,
     }));
     let last: Pointer | null = null;
+    /** This press has already cut something: lift and swipe again for the next. */
+    let spent = false;
     const trail: { x: number; y: number; age: number }[] = [];
     return {
       update(dt, t) {
@@ -147,7 +149,7 @@ export const slice: MicrogameImpl = {
           }
         }
         if (trail.length > 1) {
-          g.strokeStyle = '#ffffff';
+          g.strokeStyle = spent ? 'rgba(255,255,255,0.35)' : '#ffffff';
           g.lineWidth = 6;
           g.lineCap = 'round';
           g.beginPath();
@@ -158,11 +160,17 @@ export const slice: MicrogameImpl = {
       },
       down(p) {
         last = p;
+        spent = false;
+        trail.length = 0;
       },
       move(p) {
-        if (last) {
+        if (last && !spent) {
+          // Everything this stroke passes through is cut (a lucky line can get two), then the press is spent.
           for (const f of fruits) {
-            if (f.launched && f.cut < 0 && distToSegment({ x: f.x, y: f.y }, last, p) < 38) f.cut = 0;
+            if (f.launched && f.cut < 0 && distToSegment({ x: f.x, y: f.y }, last, p) < 38) {
+              f.cut = 0;
+              spent = true;
+            }
           }
           if (fruits.every((f) => f.cut >= 0)) ctx.win();
         }
@@ -427,13 +435,20 @@ export const scrub: MicrogameImpl = {
 /** Circle your finger around the pizza to spin it. */
 export const twirl: MicrogameImpl = {
   create(ctx) {
-    const turns = byLevel(ctx, [2.5, 3.5, 4.5]);
+    const turns = byLevel(ctx, [1.5, 2, 2.5]);
+    /** Each press can turn the pizza this far, then you let go and grab it again. */
+    const QUARTER = Math.PI / 2;
     const cx = 180;
     const cy = 290;
     let total = 0;
     let lastAngle: number | null = null;
+    /** How far this press has turned it. */
+    let pressTurn = 0;
+    let pressing = false;
+    const spent = () => Math.abs(pressTurn) >= QUARTER - 0.001;
     const toppings = Array.from({ length: 9 }, () => ({ a: ctx.rng() * Math.PI * 2, d: rand(ctx.rng, 0.2, 0.75) }));
-    const progress = () => Math.min(1, Math.abs(total) / (turns * Math.PI * 2));
+    // A hair of tolerance: quarter turns added up in floating point land just short of a whole number.
+    const progress = () => Math.min(1, Math.abs(total) / (turns * Math.PI * 2) + 1e-6);
     return {
       draw(g) {
         fillBg(g, '#2c2366', '#140f2e');
@@ -453,25 +468,40 @@ export const twirl: MicrogameImpl = {
         circle(g, 0, 0, r * 0.75, '#ffd98a');
         for (const tp of toppings) circle(g, Math.cos(tp.a) * tp.d * r, Math.sin(tp.a) * tp.d * r, r * 0.11, '#a3202a');
         g.restore();
+        // How much of this press's quarter turn is used.
+        if (pressing && !ctx.over) {
+          g.strokeStyle = spent() ? PALETTE.danger : PALETTE.accent;
+          g.lineWidth = 8;
+          g.lineCap = 'round';
+          g.beginPath();
+          g.arc(cx, cy, 160, -Math.PI / 2, -Math.PI / 2 + (Math.abs(pressTurn) / QUARTER) * (Math.PI / 2));
+          g.stroke();
+        }
         label(g, `${Math.round(progress() * 100)}%`, 180, 500, 30);
-        if (!ctx.over) label(g, 'Draw circles around it!', 180, 70, 24, PALETTE.muted);
+        if (!ctx.over) label(g, pressing && spent() ? 'Let go and grab it again!' : 'Spin it a quarter turn at a time!', 180, 70, 22, PALETTE.muted);
       },
       down(p) {
+        pressing = true;
+        pressTurn = 0;
         lastAngle = dist(p.x, p.y, cx, cy) > 25 ? Math.atan2(p.y - cy, p.x - cx) : null;
       },
       move(p) {
         if (dist(p.x, p.y, cx, cy) < 25) return;
         const a = Math.atan2(p.y - cy, p.x - cx);
-        if (lastAngle !== null) {
+        if (lastAngle !== null && !spent()) {
           let d = a - lastAngle;
           if (d > Math.PI) d -= Math.PI * 2;
           if (d < -Math.PI) d += Math.PI * 2;
+          // Never past a quarter turn in one press.
+          d = clamp(pressTurn + d, -QUARTER, QUARTER) - pressTurn;
+          pressTurn += d;
           total += d;
         }
         lastAngle = a;
         if (progress() >= 1) ctx.win();
       },
       up() {
+        pressing = false;
         lastAngle = null;
       },
     };
