@@ -437,3 +437,182 @@ W: Anjou
 W: Concord
 W: Valencia
 W: Cavendish
+
+# ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
+
+TOPIC: Books and Plays
+
+Q: Name everyone who dies in Romeo and Juliet.
+L: Romeo | Romeo Montague
+L: Juliet | Juliet Capulet
+L: Mercutio
+L: Tybalt
+L: Paris | Count Paris
+L: Lady Montague | Romeo's mother | Romeo's mom | Romeo's mum
+
+Q: Name the four Hogwarts houses.
+L: Gryffindor
+L: Slytherin
+L: Ravenclaw
+L: Hufflepuff
+
+Q: Name the members of the Fellowship of the Ring.
+L: Frodo | Frodo Baggins
+L: Sam | Samwise | Samwise Gamgee | Sam Gamgee
+L: Merry | Meriadoc | Meriadoc Brandybuck
+L: Pippin | Peregrin | Peregrin Took
+L: Gandalf
+L: Aragorn | Strider
+L: Legolas
+L: Gimli
+L: Boromir
+
+Q: Name the seven Harry Potter books (just the part after "Harry Potter and the").
+L: Philosopher's Stone | Sorcerer's Stone
+L: Chamber of Secrets
+L: Prisoner of Azkaban
+L: Goblet of Fire
+L: Order of the Phoenix
+L: Half-Blood Prince
+L: Deathly Hallows
+
+Q: Name Santa's eight reindeer from "A Visit from St. Nicholas" (not Rudolph).
+L: Dasher
+L: Dancer
+L: Prancer
+L: Vixen
+L: Comet
+L: Cupid
+L: Donner | Donder | Dunder
+L: Blitzen | Blixem
+
+TOPIC: Film and Music
+
+Q: Name the Seven Dwarfs from Disney's Snow White.
+L: Doc
+L: Grumpy
+L: Happy
+L: Sleepy
+L: Bashful
+L: Sneezy
+L: Dopey
+
+Q: Name the four Teenage Mutant Ninja Turtles.
+L: Leonardo | Leo
+L: Donatello | Donnie | Donny
+L: Michelangelo | Mikey
+L: Raphael | Raph
+
+Q: Name the four Beatles.
+L: John Lennon | John | Lennon
+L: Paul McCartney | Paul | McCartney
+L: George Harrison | George | Harrison
+L: Ringo Starr | Ringo | Starr
+
+Q: Name the five Spice Girls (nicknames or real names).
+L: Scary Spice | Scary | Mel B | Melanie Brown
+L: Sporty Spice | Sporty | Mel C | Melanie Chisholm
+L: Baby Spice | Baby | Emma Bunton | Emma
+L: Ginger Spice | Ginger | Geri Halliwell | Geri
+L: Posh Spice | Posh | Victoria Beckham | Victoria Adams | Victoria
+
+TOPIC: Geography
+
+Q: Name the seven continents.
+L: Africa
+L: Antarctica
+L: Asia
+L: Australia | Oceania | Australasia
+L: Europe
+L: North America
+L: South America
+
+Q: Name the five Great Lakes.
+L: Superior | Lake Superior
+L: Michigan | Lake Michigan
+L: Huron | Lake Huron
+L: Erie | Lake Erie
+L: Ontario | Lake Ontario
+
+Q: Name the five oceans.
+L: Pacific | Pacific Ocean
+L: Atlantic | Atlantic Ocean
+L: Indian | Indian Ocean
+L: Southern | Southern Ocean | Antarctic Ocean
+L: Arctic | Arctic Ocean
+
+Q: Name the four countries of the United Kingdom.
+L: England
+L: Scotland
+L: Wales
+L: Northern Ireland
+
+Q: Name the four US states whose names begin with "New".
+L: New York
+L: New Jersey
+L: New Mexico
+L: New Hampshire
+
+Q: Name the countries that share a land border with mainland France.
+L: Belgium
+L: Luxembourg
+L: Germany
+L: Switzerland
+L: Italy
+L: Monaco
+L: Spain
+L: Andorra
+
+TOPIC: Science and Space
+
+Q: Name the eight planets of our solar system.
+L: Mercury
+L: Venus
+L: Earth
+L: Mars
+L: Jupiter
+L: Saturn
+L: Uranus
+L: Neptune
+
+Q: Name the noble gases.
+L: Helium
+L: Neon
+L: Argon
+L: Krypton
+L: Xenon
+L: Radon
+L: Oganesson
+
+Q: Name the colours of the rainbow (as Newton named them).
+L: Red
+L: Orange
+L: Yellow
+L: Green
+L: Blue
+L: Indigo
+L: Violet
+
+TOPIC: Odds and Ends
+
+Q: Name the twelve signs of the zodiac.
+L: Aries
+L: Taurus
+L: Gemini
+L: Cancer
+L: Leo
+L: Virgo
+L: Libra
+L: Scorpio
+L: Sagittarius
+L: Capricorn
+L: Aquarius
+L: Pisces
+
+Q: Name the six kinds of chess piece.
+L: King
+L: Queen
+L: Rook | Castle
+L: Bishop
+L: Knight | Horse
+L: Pawn

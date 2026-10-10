@@ -419,3 +419,14 @@ button.secondary { background: var(--panel-light); }
 .pe-option.wrong { background: var(--danger); }
 .pe-option.dimmed { opacity: 0.3; }
 .tv-lock[hidden] { display: none; }
+
+.pe-typed { display: flex; flex-direction: column; gap: 10px; }
+.pe-typed[hidden], .pe-form[hidden], .pe-typed button[hidden] { display: none; }
+.pe-form { display: flex; gap: 8px; }
+.pe-input { flex: 1; font-size: 20px; padding: 12px 14px; text-transform: none; }
+.pe-form button { padding: 12px 16px; font-size: 20px; background: var(--correct); }
+.pe-found-title { color: var(--muted); font-size: 16px; text-align: center; }
+.pe-found { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.pe-chip { padding: 6px 12px; border-radius: 999px; font-size: 16px; background: var(--panel-light); }
+.pe-chip.mine { background: var(--correct); }
+.pe-chip.missed { background: var(--panel); color: var(--muted); }

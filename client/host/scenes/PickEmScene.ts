@@ -99,7 +99,12 @@ export class PickEmScene extends Phaser.Scene {
     this.topicText.setText(view.topic.toUpperCase());
     this.questionText.setText(view.question);
     this.hintText.setVisible(view.phase !== 'gameEnd');
-    this.renderPlayers(view.players, view.phase);
+    this.hintText.setText(
+      view.kind === 'typed'
+        ? `TYPE AS MANY AS YOU CAN  ·  +${PICK_POINTS} EACH  ·  ${view.slots} TO FIND`
+        : `PICK ALL THAT APPLY  ·  +${PICK_POINTS} RIGHT  ·  −${PICK_POINTS} WRONG`,
+    );
+    this.renderPlayers(view.players, view.phase, view.kind);
 
     const key = `${view.questionNumber}|${view.phase}`;
     if (key === this.phaseKey) return;
@@ -110,6 +115,29 @@ export class PickEmScene extends Phaser.Scene {
       for (const t of this.tiles) t.container.setAlpha(0);
       this.questionText.setScale(0.85).setAlpha(0);
       this.tweens.add({ targets: this.questionText, scale: 1, alpha: 1, duration: 350, ease: 'Back.easeOut' });
+    } else if (view.phase === 'answering' && view.kind === 'typed') {
+      // Blank, numbered slots: answers stay secret until the reveal so nobody copies.
+      this.tiles.forEach((tile, i) => {
+        if (i >= view.slots) {
+          tile.container.setAlpha(0);
+          return;
+        }
+        this.drawTile(i, 'normal');
+        tile.label.setText(`${i + 1}`).setAlpha(0.35);
+        tile.count.setText('');
+        tile.container.setScale(0.7).setAlpha(0);
+        this.tweens.add({ targets: tile.container, scale: 1, alpha: 1, duration: 260, delay: i * 45, ease: 'Back.easeOut' });
+      });
+    } else if (view.phase === 'reveal' && view.kind === 'typed') {
+      (view.answers ?? []).forEach((answer, i) => {
+        const tile = this.tiles[i];
+        const n = view.foundBy?.[i]?.length ?? 0;
+        tile.container.setAlpha(1).setScale(1);
+        this.drawTile(i, n > 0 ? 'right' : 'wrong');
+        tile.label.setText(answer).setAlpha(n > 0 ? 1 : 0.6);
+        tile.count.setText(n > 0 ? `${n}` : '');
+        if (n > 0) this.tweens.add({ targets: tile.container, scale: 1.05, duration: 180, yoyo: true, delay: i * 30 });
+      });
     } else if (view.phase === 'answering') {
       this.tiles.forEach((tile, i) => {
         const option = view.options[i];
@@ -140,7 +168,7 @@ export class PickEmScene extends Phaser.Scene {
   }
 
   /** Players along the bottom: a tick once they've locked in, then their haul at the reveal. */
-  private renderPlayers(players: PickHostPlayer[], phase: PickHostView['phase']) {
+  private renderPlayers(players: PickHostPlayer[], phase: PickHostView['phase'], kind: PickHostView['kind']) {
     this.playersRow.removeAll(true);
     const w = 210;
     const gap = 16;
@@ -152,7 +180,10 @@ export class PickEmScene extends Phaser.Scene {
       g.fillRoundedRect(x - w / 2, -45, w, 90, 18);
       const name = text(this, x, -14, p.name, 28, '#140f2e', { fontStyle: '700' });
       let status = p.score.toLocaleString();
-      if (phase === 'answering') status = p.answered ? '✓ locked in' : 'picking…';
+      if (kind === 'typed') {
+        if (phase === 'answering') status = `${p.found} found${p.answered ? ' ✓' : ''}`;
+        else if (phase === 'reveal') status = `${p.right} found  +${p.points}`;
+      } else if (phase === 'answering') status = p.answered ? '✓ locked in' : 'picking…';
       else if (phase === 'reveal') status = p.answered ? `${p.right}✓ ${p.wrong}✗  +${p.points}` : 'no picks';
       const sub = text(this, x, 20, status, 24, '#140f2e', { fontStyle: '700' });
       this.playersRow.add([g, name, sub]);

@@ -3,8 +3,10 @@ import { join } from 'node:path';
 import {
   PICK_EM,
   PICK_POINTS,
+  type PickGuessResult,
   type PickHostView,
   type PickInput,
+  type PickKind,
   type PickPhase,
   type PickPlayerView,
 } from '../../shared/games/pickEm';
@@ -12,24 +14,26 @@ import { PUZZLE_RESULT_MS, ROUND_SCORES_MS } from '../../shared/timing';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 import { loadQuestionFile, shuffle, type Question } from './trivia';
 
-/** The question alone, before the options appear. */
+/** The question alone, before the options (or the text box) appear. */
 const READ_MS = 3_000;
-/** Time to make picks once the options are up. */
-const ANSWER_MS = 30_000;
+/** Time to pick from a tap list. */
+const CHOICE_MS = 30_000;
+/** Time to type answers to a typed list. */
+const TYPED_MS = 60_000;
 
-/** Each file in ./pickem is a bank (a mode), in the trivia format with 8 to 12 options. */
+/** A tap list has 8 to 12 options with at least two right and two wrong; a typed list has at least three answers. */
+function validList(q: Question) {
+  const options = q.correct.length + q.wrong.length;
+  if (q.list.length > 0) return options === 0 && q.list.length >= 3;
+  return q.correct.length >= 2 && q.wrong.length >= 2 && options >= 8 && options <= 12;
+}
+
+/** Each file in ./pickem is a bank (a mode), in the trivia format. */
 const BANK_DIR = join(import.meta.dirname, 'pickem');
 const BANKS = new Map<string, Question[]>(
   readdirSync(BANK_DIR)
     .filter((f) => f.endsWith('.txt'))
-    .map((f) => [
-      f.replace(/\.txt$/, ''),
-      loadQuestionFile(
-        join(BANK_DIR, f),
-        (q) => q.correct.length >= 2 && q.wrong.length >= 2 && q.correct.length + q.wrong.length >= 8 && q.correct.length + q.wrong.length <= 12,
-        'pickem',
-      ),
-    ]),
+    .map((f) => [f.replace(/\.txt$/, ''), loadQuestionFile(join(BANK_DIR, f), validList, 'pickem')]),
 );
 
 /** Dealt from a shuffled deck per bank, so lists don't repeat until all are used. */
@@ -50,13 +54,72 @@ export function pickPoints(picks: number[], correct: number[]) {
   return { right, wrong, points: Math.max(0, (right - wrong) * PICK_POINTS) };
 }
 
+// ---- Matching typed answers ---------------------------------------------------------
+
+/** Lowercase letters and digits only, ignoring accents, punctuation, spaces and "the/a/an". */
+export function normalise(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\b(the|a|an)\b/g, ' ')
+    .replace(/\s+/g, '');
+}
+
+/** Edits to turn one string into the other, counting a swap of two neighbouring letters as one. */
+function editDistance(a: string, b: string): number {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)));
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+    }
+  }
+  return d[a.length][b.length];
+}
+
+/**
+ * Which answer a guess matches (-1 for none): exactly, after normalising, or with a
+ * typo or two in longer answers. A guess near two answers matches the closer one.
+ */
+export function matchAnswer(text: string, list: string[][]): number {
+  const guess = normalise(text);
+  if (!guess) return -1;
+  const exact = list.findIndex((forms) => forms.some((f) => normalise(f) === guess));
+  if (exact >= 0) return exact;
+  let best = -1;
+  let bestDistance = Infinity;
+  list.forEach((forms, i) => {
+    for (const f of forms) {
+      const target = normalise(f);
+      const allowed = target.length >= 9 ? 2 : target.length >= 5 ? 1 : 0;
+      const d = editDistance(guess, target);
+      if (d <= allowed && d < bestDistance) {
+        best = i;
+        bestDistance = d;
+      }
+    }
+  });
+  return best;
+}
+
+// ---- Game ---------------------------------------------------------------------------------
+
 class PickEm implements MiniGame {
   private phase: PickPhase = 'question';
   private questionIndex = 0;
   private question!: Question;
   private options: string[] = [];
   private correctIndices: number[] = [];
+  /** Tap lists: each player's locked-in picks. */
   private picks = new Map<string, number[]>();
+  /** Typed lists: answers each player has found (in the order found), their last guess, and who's done. */
+  private found = new Map<string, number[]>();
+  private lastGuess = new Map<string, PickGuessResult>();
+  private done = new Set<string>();
   private results = new Map<string, { right: number; wrong: number; points: number }>();
   private gamePoints = new Map<string, number>();
   private phaseEndsAt = 0;
@@ -67,6 +130,10 @@ class PickEm implements MiniGame {
     private readonly bankId: string,
     private readonly totalQuestions: number,
   ) {}
+
+  private get kind(): PickKind {
+    return this.question.list.length > 0 ? 'typed' : 'choice';
+  }
 
   start() {
     this.startQuestion(0);
@@ -86,29 +153,71 @@ class PickEm implements MiniGame {
     this.options = shuffle([...this.question.correct, ...this.question.wrong]);
     this.correctIndices = this.options.flatMap((o, i) => (this.question.correct.includes(o) ? [i] : []));
     this.picks.clear();
+    this.found.clear();
+    this.lastGuess.clear();
+    this.done.clear();
     this.results.clear();
-    this.setPhase('question', READ_MS, () => this.setPhase('answering', ANSWER_MS, () => this.reveal()));
+    const answerMs = this.kind === 'typed' ? TYPED_MS : CHOICE_MS;
+    this.setPhase('question', READ_MS, () => this.setPhase('answering', answerMs, () => this.reveal()));
   }
 
   onInput(playerId: string, raw: unknown) {
     const input = raw as PickInput;
-    if (this.phase !== 'answering' || input?.type !== 'answer' || !Array.isArray(input.indices)) return;
-    if (this.picks.has(playerId)) return; // picks are final
-    const indices = [...new Set(input.indices)].filter((i) => Number.isInteger(i) && i >= 0 && i < this.options.length);
-    if (indices.length === 0) return;
-    this.picks.set(playerId, indices);
+    if (this.phase !== 'answering' || !input) return;
+
+    if (this.kind === 'choice') {
+      if (input.type !== 'answer' || !Array.isArray(input.indices) || this.picks.has(playerId)) return;
+      const indices = [...new Set(input.indices)].filter((i) => Number.isInteger(i) && i >= 0 && i < this.options.length);
+      if (indices.length === 0) return;
+      this.picks.set(playerId, indices);
+      this.revealIfAllDone();
+      return;
+    }
+
+    if (this.done.has(playerId)) return;
+    if (input.type === 'done') {
+      this.done.add(playerId);
+      this.revealIfAllDone();
+      return;
+    }
+    if (input.type !== 'guess' || typeof input.text !== 'string') return;
+    const text = input.text.slice(0, 60);
+    const i = matchAnswer(text, this.question.list);
+    const mine = this.found.get(playerId) ?? [];
+    let result: PickGuessResult['result'] = 'wrong';
+    if (i >= 0 && mine.includes(i)) result = 'repeat';
+    else if (i >= 0) {
+      result = 'right';
+      this.found.set(playerId, [...mine, i]);
+    }
+    this.lastGuess.set(playerId, { seq: Number(input.seq) || 0, text, result, answer: i >= 0 ? this.question.list[i][0] : null });
+    // Everyone has found everything: no need to wait.
+    if (result === 'right' && this.found.get(playerId)!.length === this.question.list.length) this.done.add(playerId);
+    this.revealIfAllDone();
+  }
+
+  private revealIfAllDone() {
     const connected = this.ctx.players().filter((p) => p.connected);
-    if (connected.every((p) => this.picks.has(p.id))) this.reveal();
+    const finished = (id: string) => (this.kind === 'choice' ? this.picks.has(id) : this.done.has(id));
+    if (connected.every((p) => finished(p.id))) this.reveal();
     else this.syncAll();
   }
 
   private reveal() {
-    for (const [playerId, picks] of this.picks) {
-      const result = pickPoints(picks, this.correctIndices);
-      this.results.set(playerId, result);
+    for (const p of this.ctx.players()) {
+      let result: { right: number; wrong: number; points: number } | null = null;
+      if (this.kind === 'choice') {
+        const picks = this.picks.get(p.id);
+        if (picks) result = pickPoints(picks, this.correctIndices);
+      } else {
+        const right = this.found.get(p.id)?.length ?? 0;
+        result = { right, wrong: 0, points: right * PICK_POINTS };
+      }
+      if (!result) continue;
+      this.results.set(p.id, result);
       if (result.points === 0) continue;
-      this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + result.points);
-      this.ctx.addScore(playerId, result.points);
+      this.gamePoints.set(p.id, (this.gamePoints.get(p.id) ?? 0) + result.points);
+      this.ctx.addScore(p.id, result.points);
     }
     const isLast = this.questionIndex >= this.totalQuestions - 1;
     this.setPhase('reveal', PUZZLE_RESULT_MS, () => {
@@ -131,18 +240,31 @@ class PickEm implements MiniGame {
     return this.phase === 'question' ? [] : this.options;
   }
 
+  private answerNames() {
+    return this.question.list.map((forms) => forms[0]);
+  }
+
   syncHost() {
     const counts = this.options.map((_, i) => [...this.picks.values()].filter((p) => p.includes(i)).length);
+    const typed = this.kind === 'typed';
     const view: PickHostView = {
       phase: this.phase,
+      kind: this.kind,
       packName: PICK_EM.modes.find((m) => m.id === this.bankId)?.name ?? '',
       questionNumber: this.questionIndex + 1,
       totalQuestions: this.totalQuestions,
       topic: this.question.film,
       question: this.question.question,
       options: this.visibleOptions(),
-      correctIndices: this.revealing ? this.correctIndices : null,
-      counts: this.revealing ? counts : null,
+      correctIndices: this.revealing && !typed ? this.correctIndices : null,
+      counts: this.revealing && !typed ? counts : null,
+      slots: this.question.list.length,
+      // Typed answers stay hidden on the TV until the reveal, so nobody copies anyone.
+      answers: this.revealing && typed ? this.answerNames() : null,
+      foundBy:
+        this.revealing && typed
+          ? this.question.list.map((_, i) => [...this.found].filter(([, f]) => f.includes(i)).map(([id]) => id))
+          : null,
       msLeft: this.msLeft(),
       players: this.ctx.players().map((p) => {
         const r = this.results.get(p.id);
@@ -152,7 +274,8 @@ class PickEm implements MiniGame {
           color: p.color,
           score: p.score,
           gamePoints: this.gamePoints.get(p.id) ?? 0,
-          answered: this.picks.has(p.id),
+          answered: typed ? this.done.has(p.id) : this.picks.has(p.id),
+          found: this.found.get(p.id)?.length ?? 0,
           right: r?.right ?? 0,
           wrong: r?.wrong ?? 0,
           points: r?.points ?? 0,
@@ -166,15 +289,22 @@ class PickEm implements MiniGame {
     const player = this.ctx.players().find((p) => p.id === playerId);
     if (!player) return;
     const r = this.results.get(playerId);
+    const typed = this.kind === 'typed';
     const view: PickPlayerView = {
       phase: this.phase,
+      kind: this.kind,
       questionNumber: this.questionIndex + 1,
       totalQuestions: this.totalQuestions,
       topic: this.question.film,
       question: this.question.question,
       options: this.visibleOptions(),
       myPicks: this.picks.get(playerId) ?? [],
-      correctIndices: this.revealing ? this.correctIndices : null,
+      correctIndices: this.revealing && !typed ? this.correctIndices : null,
+      slots: this.question.list.length,
+      found: (this.found.get(playerId) ?? []).map((i) => this.question.list[i][0]),
+      lastGuess: this.lastGuess.get(playerId) ?? null,
+      done: this.done.has(playerId),
+      answers: this.revealing && typed ? this.answerNames() : null,
       right: r?.right ?? 0,
       wrong: r?.wrong ?? 0,
       points: r?.points ?? 0,
@@ -201,5 +331,8 @@ export const pickEm: MiniGameDefinition = {
   create: (ctx, modeId, options) => new PickEm(ctx, modeId, options.puzzles),
 };
 
-/** For tooling: list count per bank. */
-export const pickBankSizes = () => Object.fromEntries([...BANKS].map(([id, qs]) => [id, qs.length]));
+/** For tooling: list count per bank, split into tap and typed lists. */
+export const pickBankSizes = () =>
+  Object.fromEntries(
+    [...BANKS].map(([id, qs]) => [id, { choice: qs.filter((q) => q.list.length === 0).length, typed: qs.filter((q) => q.list.length > 0).length }]),
+  );

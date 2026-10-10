@@ -60,12 +60,17 @@ export function answerShare(picked: number[], correct: number[]): number {
 // A "FILM:" (or "TOPIC:") line is the banner for every question after it. A is a right answer and
 // each W is a wrong one; there are always four in total. More than one A makes
 // it a select-all-that-apply question. Lines starting with # are comments.
+//
+// Pick 'Em also has typed lists: no A/W lines, but an L line per answer, with other
+// accepted ways to write it after | (e.g. "L: Paris | Count Paris").
 
 export interface Question {
   film: string;
   question: string;
   correct: string[];
   wrong: string[];
+  /** Typed lists (Pick 'Em): each answer's accepted forms, the first being how it's shown. */
+  list: string[][];
 }
 
 const BANK_DIR = join(import.meta.dirname, 'trivia');
@@ -80,7 +85,7 @@ export function loadQuestionFile(path: string, valid: (q: Question) => boolean, 
   let current: Question | null = null;
   const finish = () => {
     if (!current) return;
-    if (current.correct.length === 0 || !valid(current)) {
+    if (!valid(current)) {
       console.warn(`[${tag}] Skipping malformed question in ${path}: ${current.question}`);
     } else {
       questions.push(current);
@@ -91,7 +96,7 @@ export function loadQuestionFile(path: string, valid: (q: Question) => boolean, 
   for (const raw of readFileSync(path, 'utf8').split(/\r?\n/)) {
     const line = raw.trim();
     if (!line || line.startsWith('#')) continue;
-    const match = /^(FILM|TOPIC|Q|A|W):\s*(.+)$/.exec(line);
+    const match = /^(FILM|TOPIC|Q|A|W|L):\s*(.+)$/.exec(line);
     if (!match) {
       console.warn(`[${tag}] Ignoring line in ${path}: ${line}`);
       continue;
@@ -103,11 +108,14 @@ export function loadQuestionFile(path: string, valid: (q: Question) => boolean, 
       film = value;
     } else if (key === 'Q') {
       finish();
-      current = { film, question: value, correct: [], wrong: [] };
+      current = { film, question: value, correct: [], wrong: [], list: [] };
     } else if (current && key === 'A') {
       current.correct.push(value);
     } else if (current && key === 'W') {
       current.wrong.push(value);
+    } else if (current && key === 'L') {
+      // "L: Paris | Count Paris": one answer to a typed list, with other ways to write it.
+      current.list.push(value.split('|').map((form) => form.trim()).filter(Boolean));
     }
   }
   finish();
@@ -115,7 +123,10 @@ export function loadQuestionFile(path: string, valid: (q: Question) => boolean, 
 }
 
 function loadBank(file: string): Question[] {
-  return loadQuestionFile(join(BANK_DIR, file), (q) => q.correct.length + q.wrong.length === ANSWER_COUNT);
+  return loadQuestionFile(
+    join(BANK_DIR, file),
+    (q) => q.correct.length > 0 && q.correct.length + q.wrong.length === ANSWER_COUNT && q.list.length === 0,
+  );
 }
 
 /** Bank file for each mode id, e.g. disney-pixar -> disney-pixar.txt */

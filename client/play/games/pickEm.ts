@@ -21,8 +21,48 @@ export function createPickEm(root: HTMLElement, send: (input: unknown) => void):
   const statusEl = h('div', { class: 'tu-status' });
   const lockBtn = h('button', { class: 'tv-lock', type: 'button' }, 'Lock in');
 
+  // Typed lists: a text box, the answers you've found so far, and "I'm done".
+  let seq = 0;
+  const inputEl = h('input', { class: 'pe-input', type: 'text', autocomplete: 'off', autocapitalize: 'words', enterkeyhint: 'send', placeholder: 'Type an answer', maxlength: '60' });
+  const enterBtn = h('button', { type: 'submit' }, 'Enter');
+  const formEl = h(
+    'form',
+    {
+      class: 'pe-form',
+      onsubmit: (e) => {
+        e.preventDefault();
+        const text = inputEl.value.trim();
+        if (!text || view?.phase !== 'answering' || view.done) return;
+        seq++;
+        send({ type: 'guess', seq, text } satisfies PickInput);
+        inputEl.value = '';
+        inputEl.focus();
+      },
+    },
+    inputEl,
+    enterBtn,
+  );
+  const foundTitleEl = h('div', { class: 'pe-found-title' });
+  const foundEl = h('div', { class: 'pe-found' });
+  const doneBtn = h('button', { class: 'secondary', type: 'button' }, "I'm done");
+  doneBtn.addEventListener('click', () => {
+    if (view?.phase === 'answering' && !view.done) send({ type: 'done' } satisfies PickInput);
+  });
+  const typedEl = h('div', { class: 'pe-typed' }, formEl, foundTitleEl, foundEl, doneBtn);
+
   root.append(
-    h('div', { class: 'tv' }, h('div', { class: 'wr-top' }, headerEl, timerEl, scoreEl), topicEl, questionEl, hintEl, gridEl, statusEl, lockBtn),
+    h(
+      'div',
+      { class: 'tv' },
+      h('div', { class: 'wr-top' }, headerEl, timerEl, scoreEl),
+      topicEl,
+      questionEl,
+      hintEl,
+      gridEl,
+      typedEl,
+      statusEl,
+      lockBtn,
+    ),
   );
 
   const locked = () => (view && view.myPicks.length > 0 ? view.myPicks : (pendingLock ?? []));
@@ -66,6 +106,12 @@ export function createPickEm(root: HTMLElement, send: (input: unknown) => void):
     questionEl.textContent = v.question;
     hintEl.hidden = v.phase === 'gameEnd';
 
+    if (v.kind === 'typed') {
+      renderTyped(v);
+      return;
+    }
+    typedEl.hidden = true;
+    hintEl.textContent = `Pick all that apply · ±${PICK_POINTS} each`;
     const mine = locked();
     const picked = mine.length > 0 ? mine : [...selected];
     const revealing = v.phase === 'reveal' || v.phase === 'gameEnd';
@@ -109,6 +155,50 @@ export function createPickEm(root: HTMLElement, send: (input: unknown) => void):
         setStatus(`Round scores: you got +${v.gamePoints.toLocaleString()} this round. Look at the TV!`, 'good');
         break;
     }
+  }
+
+  /** Typed lists: your answers stay on your phone; the TV only shows how many you have. */
+  function renderTyped(v: PickPlayerView) {
+    gridEl.hidden = true;
+    lockBtn.hidden = true;
+    const playing = v.phase === 'answering' && !v.done;
+    typedEl.hidden = v.phase === 'question' || v.phase === 'gameEnd';
+    formEl.hidden = !playing;
+    doneBtn.hidden = !playing;
+    hintEl.textContent = `Type as many as you can · +${PICK_POINTS} each`;
+    foundTitleEl.textContent = v.phase === 'reveal' ? `You found ${v.found.length} of ${v.slots}` : `Found ${v.found.length} of ${v.slots}`;
+
+    const chips =
+      v.phase === 'reveal' && v.answers
+        ? v.answers.map((a) => h('span', { class: `pe-chip ${v.found.includes(a) ? 'mine' : 'missed'}` }, a))
+        : v.found.map((a) => h('span', { class: 'pe-chip mine' }, a));
+    foundEl.replaceChildren(...chips);
+
+    switch (v.phase) {
+      case 'question':
+        setStatus('Read the question… get ready to type!');
+        break;
+      case 'answering': {
+        if (v.done) {
+          setStatus("You're done! Waiting for everyone…", 'good');
+          break;
+        }
+        const g = v.lastGuess;
+        if (!g || g.seq !== seq) setStatus('Type an answer and press Enter.');
+        else if (g.result === 'right') setStatus(`✓ ${g.answer}!`, 'good');
+        else if (g.result === 'repeat') setStatus(`You already have ${g.answer}.`);
+        else setStatus(`"${g.text}" isn't on the list.`, 'bad');
+        break;
+      }
+      case 'reveal':
+        setStatus(v.points > 0 ? `+${v.points}` : 'No points this time.', v.points > 0 ? 'good' : 'bad');
+        break;
+      case 'gameEnd':
+        setStatus(`Round scores: you got +${v.gamePoints.toLocaleString()} this round. Look at the TV!`, 'good');
+        break;
+    }
+    // Keep the keyboard up while typing.
+    if (playing && document.activeElement !== inputEl) inputEl.focus();
   }
 
   function tick() {
