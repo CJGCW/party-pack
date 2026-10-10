@@ -70,10 +70,13 @@ function showSceneFor(state: RoomState) {
             ? ResultsScene.KEY
             : LobbyScene.KEY;
   if (!key) return;
-  const active = game.scene.getScenes(true)[0];
-  if (active?.scene.key === key) return;
-  for (const s of game.scene.getScenes(true)) game.scene.stop(s.scene.key);
-  game.scene.start(key);
+  // Stop every other scene that's anywhere past idle, including one stuck part way
+  // through starting (which still draws and listens but isn't "active").
+  const idle = [Phaser.Scenes.PENDING, Phaser.Scenes.SHUTDOWN, Phaser.Scenes.DESTROYED];
+  for (const s of game.scene.getScenes(false)) {
+    if (s.scene.key !== key && !idle.includes(s.sys.settings.status)) game.scene.stop(s.scene.key);
+  }
+  if (!game.scene.getScene(key)?.sys.isActive()) game.scene.start(key);
 }
 
 net.events.on('room', (state: RoomState) => {

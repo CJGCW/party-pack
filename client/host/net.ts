@@ -25,7 +25,9 @@ socket.on('connect', () => {
 });
 
 socket.on('room:state', (state) => {
-  if (state.phase === 'lobby') net.gameView = null;
+  // Between games, forget the last game's view: the next game's scene starts before its
+  // first view arrives, and must not be handed a different game's view.
+  if (state.phase !== 'game') net.gameView = null;
   net.room = state;
   net.events.emit('room', state);
 });
@@ -40,8 +42,18 @@ socket.on('room:closed', () => {
   location.reload();
 });
 
-/** Subscribes for the lifetime of a scene. */
+/**
+ * Subscribes for the lifetime of a scene. A view the scene can't handle is logged
+ * rather than thrown, so one bad message can't leave the TV stuck.
+ */
 export function listen(scene: Phaser.Scene, event: 'room' | 'gameView', fn: (data: any) => void) {
-  net.events.on(event, fn, scene);
-  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => net.events.off(event, fn, scene));
+  const safe = (data: unknown) => {
+    try {
+      fn(data);
+    } catch (err) {
+      console.error(`[${scene.scene.key}] couldn't show ${event}:`, err);
+    }
+  };
+  net.events.on(event, safe, scene);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => net.events.off(event, safe, scene));
 }

@@ -49,7 +49,13 @@ export class WoochaWareScene extends Phaser.Scene {
     this.overlay = this.add.container(0, 0).setDepth(50);
 
     listen(this, 'gameView', (v: WoochaHostView) => this.applyView(v));
-    if (net.gameView) this.applyView(net.gameView as WoochaHostView);
+    if (net.gameView) {
+      try {
+        this.applyView(net.gameView as WoochaHostView);
+      } catch (err) {
+        console.error(`[${this.scene.key}] couldn't show the current view:`, err);
+      }
+    }
   }
 
   update() {
