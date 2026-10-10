@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { RoomState } from '../../shared/protocol';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
-import { TRIVIA } from '../../shared/games/trivia';
+import { TRIVIA, TRIVIA_QUEST } from '../../shared/games/trivia';
 import { WOOCHAWARE } from '../../shared/games/woochaware';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { net, socket } from './net';
@@ -22,6 +22,7 @@ const GAME_SCENES: Record<string, string> = {
   [WORDLE_RACE.id]: WordleRaceScene.KEY,
   [TOSS_UP.id]: TossUpScene.KEY,
   [TRIVIA.id]: TriviaScene.KEY,
+  [TRIVIA_QUEST.id]: TriviaScene.KEY,
   [RACK_ATTACK.id]: RackAttackScene.KEY,
   [WOOCHAWARE.id]: WoochaWareScene.KEY,
 };

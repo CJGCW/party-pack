@@ -2,7 +2,12 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   ANSWER_COUNT,
+  MAX_HEARTS,
   TRIVIA,
+  TRIVIA_QUEST,
+  type QuestMonster,
+  type QuestResult,
+  type QuestState,
   type TriviaHostView,
   type TriviaInput,
   type TriviaPhase,
@@ -27,12 +32,17 @@ const SPEED_BONUS = 500;
  * below 0). Picking every option therefore scores nothing unless they're all right.
  */
 export function questionPoints(msLeft: number, picked: number[], correct: number[]): number {
+  const share = answerShare(picked, correct);
+  const full = BASE_POINTS + (SPEED_BONUS * Math.max(0, msLeft)) / ANSWER_MS;
+  return Math.round(share * full);
+}
+
+/** How right an answer is, 0 to 1 (1 only when it's exactly the right answers). */
+export function answerShare(picked: number[], correct: number[]): number {
   const right = picked.filter((i) => correct.includes(i)).length;
   const wrong = picked.length - right;
   const wrongOptions = ANSWER_COUNT - correct.length;
-  const share = Math.max(0, right / correct.length - (wrongOptions > 0 ? wrong / wrongOptions : 0));
-  const full = BASE_POINTS + (SPEED_BONUS * Math.max(0, msLeft)) / ANSWER_MS;
-  return Math.round(share * full);
+  return Math.max(0, right / correct.length - (wrongOptions > 0 ? wrong / wrongOptions : 0));
 }
 
 // ---- Question banks -----------------------------------------------------------
@@ -129,30 +139,31 @@ function shuffle<T>(items: T[]): T[] {
 // ---- Game -----------------------------------------------------------------------
 
 class Trivia implements MiniGame {
-  private phase: TriviaPhase = 'question';
-  private questionIndex = 0;
-  private question!: Question;
+  protected phase: TriviaPhase = 'question';
+  protected questionIndex = 0;
+  protected question!: Question;
   /** Answers in the order shown, and which of them are right. */
-  private answers: string[] = [];
-  private correctIndices: number[] = [];
+  protected answers: string[] = [];
+  protected correctIndices: number[] = [];
   /** Player id -> the answers they locked in and the time left when they did. */
-  private picks = new Map<string, { indices: number[]; msLeft: number }>();
-  private lastPoints = new Map<string, number>();
-  private gamePoints = new Map<string, number>();
-  private phaseEndsAt = 0;
-  private timer: NodeJS.Timeout | null = null;
+  protected picks = new Map<string, { indices: number[]; msLeft: number }>();
+  protected lastPoints = new Map<string, number>();
+  protected gamePoints = new Map<string, number>();
+  protected phaseEndsAt = 0;
+  protected timer: NodeJS.Timeout | null = null;
 
   constructor(
-    private readonly ctx: GameContext,
-    private readonly bankId: string,
-    private readonly totalQuestions: number,
+    protected readonly ctx: GameContext,
+    protected readonly bankId: string,
+    /** Questions in the game (0 when open-ended, as in a quest). */
+    protected readonly totalQuestions: number,
   ) {}
 
   start() {
     this.startQuestion(0);
   }
 
-  private setPhase(phase: TriviaPhase, ms: number, next: () => void) {
+  protected setPhase(phase: TriviaPhase, ms: number, next: () => void) {
     this.phase = phase;
     this.phaseEndsAt = Date.now() + ms;
     if (this.timer) clearTimeout(this.timer);
@@ -160,7 +171,7 @@ class Trivia implements MiniGame {
     this.syncAll();
   }
 
-  private startQuestion(index: number) {
+  protected startQuestion(index: number) {
     this.questionIndex = index;
     this.question = dealQuestion(this.bankId);
     this.answers = shuffle([...this.question.correct, ...this.question.wrong]);
@@ -186,23 +197,39 @@ class Trivia implements MiniGame {
   }
 
   private reveal() {
+    this.scoreAnswers();
+    this.setPhase('reveal', PUZZLE_RESULT_MS, () => this.afterReveal());
+  }
+
+  protected award(playerId: string, points: number) {
+    this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + points);
+    this.ctx.addScore(playerId, points);
+  }
+
+  /** Scores everyone's answer to the question just revealed. */
+  protected scoreAnswers() {
     for (const [playerId, pick] of this.picks) {
       const points = questionPoints(pick.msLeft, pick.indices, this.correctIndices);
       if (points === 0) continue;
       this.lastPoints.set(playerId, points);
-      this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + points);
-      this.ctx.addScore(playerId, points);
+      this.award(playerId, points);
     }
-    const isLast = this.questionIndex >= this.totalQuestions - 1;
-    this.setPhase('reveal', PUZZLE_RESULT_MS, () => {
-      if (!isLast) this.startQuestion(this.questionIndex + 1);
-      // With a single question, round scores would just repeat the reveal, so skip them.
-      else if (this.totalQuestions === 1) this.ctx.finish();
-      else this.setPhase('gameEnd', ROUND_SCORES_MS, () => this.ctx.finish());
-    });
   }
 
-  private msLeft() {
+  /** After the reveal: the next question, or the end of the game. */
+  protected afterReveal() {
+    const isLast = this.questionIndex >= this.totalQuestions - 1;
+    if (!isLast) this.startQuestion(this.questionIndex + 1);
+    // With a single question, round scores would just repeat the reveal, so skip them.
+    else if (this.totalQuestions === 1) this.ctx.finish();
+    else this.setPhase('gameEnd', ROUND_SCORES_MS, () => this.ctx.finish());
+  }
+
+  /** Extra fields for the host and player views (Trivia Quest adds its state). */
+  protected decorateHost(_view: TriviaHostView) {}
+  protected decoratePlayer(_view: TriviaPlayerView, _playerId: string) {}
+
+  protected msLeft() {
     return Math.max(0, this.phaseEndsAt - Date.now());
   }
 
@@ -210,7 +237,7 @@ class Trivia implements MiniGame {
     return this.question.correct.length > 1;
   }
 
-  private get revealing() {
+  protected get revealing() {
     return this.phase === 'reveal' || this.phase === 'gameEnd';
   }
 
@@ -244,6 +271,7 @@ class Trivia implements MiniGame {
         questionPoints: this.lastPoints.get(p.id) ?? 0,
       })),
     };
+    this.decorateHost(view);
     this.ctx.sendHost(view);
   }
 
@@ -265,10 +293,11 @@ class Trivia implements MiniGame {
       score: player.score,
       msLeft: this.msLeft(),
     };
+    this.decoratePlayer(view, playerId);
     this.ctx.sendPlayer(playerId, view);
   }
 
-  private syncAll() {
+  protected syncAll() {
     this.syncHost();
     for (const p of this.ctx.players()) this.syncPlayer(p.id);
   }
@@ -282,6 +311,155 @@ class Trivia implements MiniGame {
 export const trivia: MiniGameDefinition = {
   info: TRIVIA,
   create: (ctx, modeId, options) => new Trivia(ctx, modeId, options.puzzles),
+};
+
+// ---- Trivia Quest (co-op) ---------------------------------------------------------------
+
+/** Points for landing a hit, and for everyone when a monster falls or the quest is won. */
+const HIT_POINTS = 150;
+const MONSTER_BONUS = 300;
+const VICTORY_BONUS = 500;
+/** If a monster outlasts this many extra questions beyond its health, it wins (keeps quests from dragging on). */
+const MONSTER_PATIENCE = 8;
+
+const MONSTERS: { name: string; emoji: string }[] = [
+  { name: 'Grumbling Goblin', emoji: '👺' },
+  { name: 'Dire Wolf', emoji: '🐺' },
+  { name: 'Giant Scorpion', emoji: '🦂' },
+  { name: 'Vampire Bat', emoji: '🦇' },
+  { name: 'Hungry Ogre', emoji: '👹' },
+  { name: 'Skeleton King', emoji: '💀' },
+  { name: 'Spider Queen', emoji: '🕷️' },
+  { name: 'Kraken', emoji: '🐙' },
+  { name: 'Haunted Pumpkin', emoji: '🎃' },
+  { name: 'Robo-Knight', emoji: '🤖' },
+];
+const BOSSES: { name: string; emoji: string }[] = [
+  { name: 'Ancient Dragon', emoji: '🐉' },
+  { name: 'Tyrant Lizard', emoji: '🦖' },
+  { name: 'Lord of the Deep', emoji: '🦈' },
+];
+
+/**
+ * Everyone against a string of monsters (one per puzzle; the last is a boss). Every
+ * fully right answer is a hit; wrong answers cost hearts. Out of hearts, a player is
+ * a ghost until they answer one right. If the whole party are ghosts, the quest fails.
+ */
+class TriviaQuest extends Trivia {
+  private hearts = new Map<string, number>();
+  private results = new Map<string, QuestResult>();
+  private monsters: Omit<QuestMonster, 'hp' | 'number' | 'total'>[] = [];
+  private monsterIndex = 0;
+  private hp = 0;
+  private questionsOnMonster = 0;
+  private outcome: QuestState['outcome'] = null;
+  private defeatedNow = false;
+  private hitsNow = 0;
+
+  constructor(ctx: GameContext, bankId: string, private readonly monsterCount: number) {
+    super(ctx, bankId, 0);
+  }
+
+  start() {
+    const party = this.ctx.players().filter((p) => p.connected).length || 1;
+    for (const p of this.ctx.players()) this.hearts.set(p.id, MAX_HEARTS);
+    // About one and a half hits per player for each monster, half again for the boss.
+    const health = Math.max(3, Math.ceil(party * 1.5));
+    const pool = shuffle([...MONSTERS]);
+    this.monsters = Array.from({ length: this.monsterCount }, (_, i) => {
+      const boss = this.monsterCount > 1 && i === this.monsterCount - 1;
+      const kind = boss ? BOSSES[Math.floor(Math.random() * BOSSES.length)] : pool[i % pool.length];
+      return { ...kind, maxHp: boss ? Math.ceil(health * 1.5) : health, boss };
+    });
+    this.hp = this.monsters[0].maxHp;
+    super.start();
+  }
+
+  protected scoreAnswers() {
+    this.results.clear();
+    this.defeatedNow = false;
+    this.hitsNow = 0;
+    for (const p of this.ctx.players()) {
+      const pick = this.picks.get(p.id);
+      const share = pick ? answerShare(pick.indices, this.correctIndices) : 0;
+      const hearts = this.hearts.get(p.id) ?? MAX_HEARTS;
+      let result: QuestResult;
+      if (hearts === 0) {
+        result = share === 1 ? 'revived' : 'ghost';
+        if (result === 'revived') this.hearts.set(p.id, 1);
+      } else if (share === 1) {
+        result = 'hit';
+        this.hitsNow++;
+        this.lastPoints.set(p.id, HIT_POINTS);
+        this.award(p.id, HIT_POINTS);
+      } else if (share > 0) {
+        result = 'glance';
+      } else {
+        result = 'hurt';
+        this.hearts.set(p.id, hearts - 1);
+      }
+      this.results.set(p.id, result);
+    }
+
+    this.hp = Math.max(0, this.hp - this.hitsNow);
+    this.questionsOnMonster++;
+    const everyone = this.ctx.players();
+    if (this.hp === 0) {
+      this.defeatedNow = true;
+      for (const p of everyone) this.award(p.id, MONSTER_BONUS);
+      if (this.monsterIndex === this.monsters.length - 1) {
+        this.outcome = 'victory';
+        for (const p of everyone) this.award(p.id, VICTORY_BONUS);
+      }
+    } else {
+      const standing = everyone.filter((p) => p.connected && (this.hearts.get(p.id) ?? 0) > 0);
+      const worn = this.questionsOnMonster >= this.monsters[this.monsterIndex].maxHp + MONSTER_PATIENCE;
+      if (standing.length === 0 || worn) this.outcome = 'defeat';
+    }
+  }
+
+  protected afterReveal() {
+    if (this.outcome) {
+      this.setPhase('gameEnd', ROUND_SCORES_MS, () => this.ctx.finish());
+      return;
+    }
+    if (this.defeatedNow) {
+      this.monsterIndex++;
+      this.hp = this.monsters[this.monsterIndex].maxHp;
+      this.questionsOnMonster = 0;
+    }
+    this.startQuestion(this.questionIndex + 1);
+  }
+
+  private questState(): QuestState {
+    const m = this.monsters[this.monsterIndex];
+    return {
+      monster: { ...m, hp: this.hp, number: this.monsterIndex + 1, total: this.monsters.length },
+      outcome: this.phase === 'gameEnd' ? this.outcome : null,
+      defeatedNow: this.revealing && this.defeatedNow,
+      hitsNow: this.revealing ? this.hitsNow : 0,
+    };
+  }
+
+  protected decorateHost(view: TriviaHostView) {
+    view.packName = `Trivia Quest · ${view.packName}`;
+    view.quest = this.questState();
+    for (const p of view.players) {
+      p.hearts = this.hearts.get(p.id) ?? MAX_HEARTS;
+      p.questResult = this.revealing ? (this.results.get(p.id) ?? null) : null;
+    }
+  }
+
+  protected decoratePlayer(view: TriviaPlayerView, playerId: string) {
+    view.quest = this.questState();
+    view.hearts = this.hearts.get(playerId) ?? MAX_HEARTS;
+    view.questResult = this.revealing ? (this.results.get(playerId) ?? null) : null;
+  }
+}
+
+export const triviaQuest: MiniGameDefinition = {
+  info: TRIVIA_QUEST,
+  create: (ctx, modeId, options) => new TriviaQuest(ctx, modeId, options.puzzles),
 };
 
 /** For tooling: question count per bank. */

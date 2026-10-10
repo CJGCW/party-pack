@@ -19,6 +19,49 @@ export const TRIVIA: GameInfo = {
   ],
 };
 
+/** Co-op trivia: the party fights monsters together, with the same question banks as modes. */
+export const TRIVIA_QUEST: GameInfo = {
+  id: 'trivia-quest',
+  name: 'Trivia Quest',
+  description: 'Co-op! Right answers hit the monster; wrong ones cost you a heart. Beat every monster before the whole party falls.',
+  minPlayers: 1,
+  maxPlayers: 8,
+  modes: TRIVIA.modes,
+};
+
+/** Hearts each player starts a quest with. */
+export const MAX_HEARTS = 3;
+
+/**
+ * What one answer did in a quest: a hit on the monster (all right), a glancing blow
+ * (partly right on select-all: no hit, no harm), hurt (wrong or no answer: lose a
+ * heart), revived (a ghost answered right and is back with one heart) or ghost
+ * (a ghost answered wrong, which costs nothing).
+ */
+export type QuestResult = 'hit' | 'glance' | 'hurt' | 'revived' | 'ghost';
+
+export interface QuestMonster {
+  name: string;
+  emoji: string;
+  /** Hits still needed, and the total. */
+  hp: number;
+  maxHp: number;
+  /** Which monster this is (from 1), of how many. */
+  number: number;
+  total: number;
+  boss: boolean;
+}
+
+export interface QuestState {
+  monster: QuestMonster;
+  /** Set when the quest is over. */
+  outcome: 'victory' | 'defeat' | null;
+  /** At the reveal: this question finished the monster off. */
+  defeatedNow: boolean;
+  /** Hits the party landed this question (at the reveal). */
+  hitsNow: number;
+}
+
 export const ANSWER_COUNT = 4;
 
 /**
@@ -45,6 +88,9 @@ export interface TriviaHostPlayer {
   /** At the reveal: did they score anything, and what did it earn. */
   correct: boolean | null;
   questionPoints: number;
+  /** Trivia Quest only: hearts left (0 is a ghost), and what their answer did at the reveal. */
+  hearts?: number;
+  questResult?: QuestResult | null;
 }
 
 export interface TriviaHostView {
@@ -65,6 +111,8 @@ export interface TriviaHostView {
   counts: number[] | null;
   msLeft: number;
   players: TriviaHostPlayer[];
+  /** Trivia Quest only. */
+  quest?: QuestState;
 }
 
 export interface TriviaPlayerView {
@@ -82,6 +130,10 @@ export interface TriviaPlayerView {
   gamePoints: number;
   score: number;
   msLeft: number;
+  /** Trivia Quest only. */
+  quest?: QuestState;
+  hearts?: number;
+  questResult?: QuestResult | null;
 }
 
 /** The chosen answers: exactly one for a normal question, one or more for select-all. */

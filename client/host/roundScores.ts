@@ -13,9 +13,15 @@ export interface RoundScore {
  * player earned this round, counting up, best first. Running totals come next,
  * on the standings screen.
  */
-export function showRoundScores(scene: Phaser.Scene, overlay: Phaser.GameObjects.Container, scores: RoundScore[]) {
+export function showRoundScores(
+  scene: Phaser.Scene,
+  overlay: Phaser.GameObjects.Container,
+  scores: RoundScore[],
+  title = 'ROUND SCORES',
+  titleColor: string = COLORS.accent,
+) {
   overlay.add(scene.add.rectangle(0, 0, WIDTH, HEIGHT, 0x0a0720, 0.88).setOrigin(0));
-  overlay.add(text(scene, WIDTH / 2, 170, 'ROUND SCORES', 80, COLORS.accent, { fontStyle: '700' }));
+  overlay.add(text(scene, WIDTH / 2, 170, title, 80, titleColor, { fontStyle: '700' }));
 
   const sorted = [...scores].sort((a, b) => b.points - a.points);
   const rowH = 78;

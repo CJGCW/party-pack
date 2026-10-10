@@ -1,4 +1,4 @@
-import { ANSWER_STYLES, type TriviaInput, type TriviaPlayerView } from '../../../shared/games/trivia';
+import { ANSWER_STYLES, MAX_HEARTS, type TriviaInput, type TriviaPlayerView } from '../../../shared/games/trivia';
 import { h } from '../dom';
 import type { Controller } from '../main';
 
@@ -15,6 +15,10 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
   const timerEl = h('span', { class: 'wr-timer' });
   const scoreEl = h('span');
   const filmEl = h('div', { class: 'tu-category' });
+  /** Trivia Quest: your hearts and the monster's health. */
+  const heartsEl = h('span', { class: 'tq-hearts' });
+  const monsterEl = h('span', { class: 'tq-monster' });
+  const questEl = h('div', { class: 'tq-bar' }, heartsEl, monsterEl);
   const questionEl = h('div', { class: 'tv-question' });
   const multiEl = h('div', { class: 'tv-multi' }, 'Select all that apply');
   const statusEl = h('div', { class: 'tu-status' });
@@ -58,6 +62,7 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
       'div',
       { class: 'tv' },
       h('div', { class: 'wr-top' }, headerEl, timerEl, scoreEl),
+      questEl,
       filmEl,
       questionEl,
       multiEl,
@@ -94,7 +99,16 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
       pendingLock = null;
     }
 
-    headerEl.textContent = `Question ${view.questionNumber}/${view.totalQuestions}`;
+    headerEl.textContent = view.totalQuestions > 0 ? `Question ${view.questionNumber}/${view.totalQuestions}` : `Question ${view.questionNumber}`;
+    const quest = view.quest;
+    questEl.hidden = !quest;
+    if (quest) {
+      const hearts = view.hearts ?? MAX_HEARTS;
+      heartsEl.textContent = hearts > 0 ? '♥'.repeat(hearts) + '♡'.repeat(MAX_HEARTS - hearts) : '👻 ghost';
+      heartsEl.classList.toggle('ghost', hearts === 0);
+      const m = quest.monster;
+      monsterEl.textContent = `${m.emoji} ${m.name} ${m.hp}/${m.maxHp}`;
+    }
     scoreEl.textContent = `${view.score.toLocaleString()} pts`;
     filmEl.textContent = view.film;
     questionEl.textContent = view.question;
@@ -119,6 +133,8 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
     lockButton.hidden = !view.multi || view.phase !== 'answering' || mine.length > 0;
     lockButton.disabled = selected.size === 0;
 
+    if (quest && questStatus(view, correct)) return;
+
     switch (view.phase) {
       case 'question':
         setStatus('Read the question… answers coming up!');
@@ -140,6 +156,42 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
         setStatus(`Round scores: you got +${view.gamePoints.toLocaleString()} this round. Look at the TV!`, 'good');
         break;
     }
+  }
+
+  /** Trivia Quest messages; returns false to fall back to the usual ones. */
+  function questStatus(v: TriviaPlayerView, correct: number[]): boolean {
+    const quest = v.quest!;
+    const name = quest.monster.name;
+    const answerText = v.multi ? `The answers were ${listAnswers(correct)}.` : `It was ${listAnswers(correct)}.`;
+    const ghost = (v.hearts ?? MAX_HEARTS) === 0;
+    if (v.phase === 'question' || v.phase === 'answering') {
+      if (!ghost || locked().length > 0) return false;
+      setStatus("You're a ghost 👻 Answer right to come back!", 'bad');
+      return true;
+    }
+    if (v.phase === 'gameEnd') {
+      if (quest.outcome === 'victory') setStatus(`VICTORY! The party beat every monster. +${v.gamePoints.toLocaleString()} this round`, 'good');
+      else setStatus(`The party has fallen... +${v.gamePoints.toLocaleString()} this round`, 'bad');
+      return true;
+    }
+    const defeated = quest.defeatedNow ? ` The ${name} is defeated!` : '';
+    switch (v.questResult) {
+      case 'hit':
+        setStatus(`HIT! +${v.questionPoints}.${defeated}`, 'good');
+        break;
+      case 'glance':
+        setStatus(`Glancing blow: partly right, no harm done. ${answerText}${defeated}`);
+        break;
+      case 'hurt':
+        setStatus(`${ghost ? "Ouch! You're out of hearts: you're a ghost now." : 'Ouch! -1 ♥.'} ${answerText}${defeated}`, 'bad');
+        break;
+      case 'revived':
+        setStatus(`Back from the dead with 1 ♥!${defeated}`, 'good');
+        break;
+      default:
+        setStatus(`Still a ghost. ${answerText}${defeated}`, 'bad');
+    }
+    return true;
   }
 
   function tick() {
