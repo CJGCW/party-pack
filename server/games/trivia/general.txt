@@ -1,0 +1,671 @@
+# General knowledge trivia. Same format as disney-pixar.txt; TOPIC: lines are the
+# banner shown above each question. Kept to settled, well-documented facts; anything
+# disputed or likely to change (records, "most populous", recent tournaments) is left out.
+
+TOPIC: Geography
+
+Q: What is the capital of Australia?
+A: Canberra
+W: Sydney
+W: Melbourne
+W: Perth
+
+Q: What is the capital of Canada?
+A: Ottawa
+W: Toronto
+W: Vancouver
+W: Montreal
+
+Q: What is the capital of Brazil?
+A: Brasília
+W: Rio de Janeiro
+W: São Paulo
+W: Salvador
+
+Q: What is the capital of Turkey?
+A: Ankara
+W: Istanbul
+W: Izmir
+W: Antalya
+
+Q: What is the capital of New Zealand?
+A: Wellington
+W: Auckland
+W: Christchurch
+W: Queenstown
+
+Q: What is the capital of Japan?
+A: Tokyo
+W: Kyoto
+W: Osaka
+W: Hiroshima
+
+Q: What is the capital of Egypt?
+A: Cairo
+W: Alexandria
+W: Giza
+W: Luxor
+
+Q: What is the capital of South Korea?
+A: Seoul
+W: Busan
+W: Incheon
+W: Pyongyang
+
+Q: What is the capital of Spain?
+A: Madrid
+W: Barcelona
+W: Seville
+W: Valencia
+
+Q: Which is the largest ocean?
+A: The Pacific
+W: The Atlantic
+W: The Indian
+W: The Arctic
+
+Q: Which is the tallest mountain above sea level?
+A: Mount Everest
+W: K2
+W: Kilimanjaro
+W: Denali
+
+Q: Which is the largest country by area?
+A: Russia
+W: Canada
+W: China
+W: The United States
+
+Q: Which is the largest US state by area?
+A: Alaska
+W: Texas
+W: California
+W: Montana
+
+Q: Which country is home to the Great Barrier Reef?
+A: Australia
+W: Indonesia
+W: The Philippines
+W: Fiji
+
+Q: In which country is Machu Picchu?
+A: Peru
+W: Bolivia
+W: Chile
+W: Ecuador
+
+Q: Which river flows through Paris?
+A: The Seine
+W: The Loire
+W: The Rhône
+W: The Thames
+
+Q: Which city is nicknamed "the Big Apple"?
+A: New York City
+W: Chicago
+W: Boston
+W: Los Angeles
+
+Q: Which is the largest hot desert in the world?
+A: The Sahara
+W: The Gobi
+W: The Kalahari
+W: The Mojave
+
+Q: Which country is shaped like a boot?
+A: Italy
+W: Greece
+W: Spain
+W: Portugal
+
+Q: In which country is Mount Kilimanjaro?
+A: Tanzania
+W: Kenya
+W: Uganda
+W: Ethiopia
+
+Q: Which of these countries are in Africa?
+A: Kenya
+A: Morocco
+A: Ghana
+W: Peru
+
+Q: Which of these countries use the euro?
+A: Germany
+A: Italy
+A: Ireland
+W: Sweden
+
+Q: "Big Ben" is the nickname of a bell in which city?
+A: London
+W: Paris
+W: Edinburgh
+W: Dublin
+
+TOPIC: Science
+
+Q: What is the chemical symbol for gold?
+A: Au
+W: Ag
+W: Go
+W: Gd
+
+Q: Which element has the symbol Na?
+A: Sodium
+W: Nitrogen
+W: Nickel
+W: Neon
+
+Q: Which element has atomic number 1?
+A: Hydrogen
+W: Helium
+W: Oxygen
+W: Carbon
+
+Q: What is the most abundant gas in Earth's atmosphere?
+A: Nitrogen
+W: Oxygen
+W: Carbon dioxide
+W: Argon
+
+Q: Which gas do plants take in from the air for photosynthesis?
+A: Carbon dioxide
+W: Oxygen
+W: Nitrogen
+W: Hydrogen
+
+Q: At sea level, water boils at what temperature?
+A: 100 °C
+W: 90 °C
+W: 110 °C
+W: 120 °C
+
+Q: What is the freezing point of water in Fahrenheit?
+A: 32 °F
+W: 0 °F
+W: 100 °F
+W: 212 °F
+
+Q: How many bones are in the adult human body?
+A: 206
+W: 186
+W: 226
+W: 256
+
+Q: What is the largest organ of the human body?
+A: The skin
+W: The liver
+W: The brain
+W: The lungs
+
+Q: Which organ produces insulin?
+A: The pancreas
+W: The liver
+W: The kidneys
+W: The stomach
+
+Q: Which part of a cell is known as its "powerhouse"?
+A: The mitochondria
+W: The nucleus
+W: The ribosome
+W: The cell wall
+
+Q: How many chromosomes are in a typical human body cell?
+A: 46
+W: 23
+W: 44
+W: 48
+
+Q: Which blood type is the universal donor for red blood cells?
+A: O negative
+W: AB positive
+W: A negative
+W: B positive
+
+Q: What is the hardest natural substance?
+A: Diamond
+W: Quartz
+W: Granite
+W: Topaz
+
+Q: Roughly how fast does light travel?
+A: 300,000 km per second
+W: 30,000 km per second
+W: 3,000,000 km per second
+W: 150,000 km per second
+
+Q: Who developed the theory of general relativity?
+A: Albert Einstein
+W: Isaac Newton
+W: Niels Bohr
+W: Stephen Hawking
+
+Q: Who discovered penicillin?
+A: Alexander Fleming
+W: Louis Pasteur
+W: Marie Curie
+W: Joseph Lister
+
+Q: Who developed the polio vaccine introduced in 1955?
+A: Jonas Salk
+W: Louis Pasteur
+W: Alexander Fleming
+W: Edward Jenner
+
+Q: Which of these are noble gases?
+A: Helium
+A: Neon
+A: Argon
+W: Oxygen
+
+Q: Which of these are the primary colours of light?
+A: Red
+A: Green
+A: Blue
+W: Yellow
+
+TOPIC: Space
+
+Q: Which planet is known as the Red Planet?
+A: Mars
+W: Jupiter
+W: Venus
+W: Mercury
+
+Q: Which is the largest planet in our solar system?
+A: Jupiter
+W: Saturn
+W: Neptune
+W: Uranus
+
+Q: Which planet is closest to the Sun?
+A: Mercury
+W: Venus
+W: Mars
+W: Earth
+
+Q: Which planet is famous for its bright, wide rings?
+A: Saturn
+W: Mars
+W: Mercury
+W: Venus
+
+Q: Which planet has the Great Red Spot, a giant storm?
+A: Jupiter
+W: Mars
+W: Saturn
+W: Neptune
+
+Q: Which planet spins tipped almost onto its side?
+A: Uranus
+W: Neptune
+W: Saturn
+W: Venus
+
+Q: What force keeps the planets in orbit around the Sun?
+A: Gravity
+W: Magnetism
+W: Friction
+W: Inertia
+
+Q: Who was the first person to walk on the Moon?
+A: Neil Armstrong
+W: Buzz Aldrin
+W: Yuri Gagarin
+W: John Glenn
+
+Q: Who was the first human in space?
+A: Yuri Gagarin
+W: Neil Armstrong
+W: Alan Shepard
+W: John Glenn
+
+TOPIC: History
+
+Q: In which year did the Titanic sink?
+A: 1912
+W: 1905
+W: 1915
+W: 1921
+
+Q: In which year did World War II end?
+A: 1945
+W: 1944
+W: 1946
+W: 1939
+
+Q: In which year did the Berlin Wall fall?
+A: 1989
+W: 1979
+W: 1991
+W: 1985
+
+Q: Who was the first President of the United States?
+A: George Washington
+W: John Adams
+W: Thomas Jefferson
+W: Abraham Lincoln
+
+Q: Which ancient civilisation built the pyramids of Giza?
+A: The ancient Egyptians
+W: The Romans
+W: The Greeks
+W: The Maya
+
+Q: Which ship carried the Pilgrims to America in 1620?
+A: The Mayflower
+W: The Santa Maria
+W: The Endeavour
+W: The Beagle
+
+Q: In which city were the first modern Olympic Games held, in 1896?
+A: Athens
+W: Paris
+W: London
+W: Rome
+
+Q: Which of these were US presidents?
+A: Abraham Lincoln
+A: Theodore Roosevelt
+A: Ulysses S. Grant
+W: Benjamin Franklin
+
+TOPIC: Animals
+
+Q: What is the largest animal known to have lived?
+A: The blue whale
+W: The African elephant
+W: The whale shark
+W: The giraffe
+
+Q: What is the fastest land animal?
+A: The cheetah
+W: The lion
+W: The pronghorn
+W: The greyhound
+
+Q: How many legs does a spider have?
+A: Eight
+W: Six
+W: Ten
+W: Twelve
+
+Q: What is a baby kangaroo called?
+A: A joey
+W: A kit
+W: A cub
+W: A calf
+
+Q: Which of these mammals can truly fly?
+A: The bat
+W: The flying squirrel
+W: The sugar glider
+W: The colugo
+
+Q: What is a group of crows called?
+A: A murder
+W: A parliament
+W: A pride
+W: A gaggle
+
+Q: What is the largest living bird?
+A: The ostrich
+W: The emu
+W: The albatross
+W: The condor
+
+Q: How many hearts does an octopus have?
+A: Three
+W: One
+W: Two
+W: Eight
+
+Q: What do giant pandas mostly eat?
+A: Bamboo
+W: Eucalyptus
+W: Fish
+W: Berries
+
+Q: Which of these are mammals?
+A: Dolphin
+A: Bat
+A: Platypus
+W: Penguin
+
+TOPIC: Food and Drink
+
+Q: What is the main ingredient in guacamole?
+A: Avocado
+W: Tomato
+W: Lime
+W: Peas
+
+Q: What is the main ingredient in hummus?
+A: Chickpeas
+W: Lentils
+W: Black beans
+W: Peas
+
+Q: Which nut is used to make marzipan?
+A: Almonds
+W: Cashews
+W: Peanuts
+W: Hazelnuts
+
+Q: The spice saffron comes from which flower?
+A: The crocus
+W: The rose
+W: The tulip
+W: The lily
+
+Q: What is tofu made from?
+A: Soybeans
+W: Rice
+W: Wheat
+W: Chickpeas
+
+Q: Which of these are citrus fruits?
+A: Lemon
+A: Grapefruit
+A: Lime
+W: Kiwi
+
+TOPIC: Books and Art
+
+Q: Who wrote Romeo and Juliet?
+A: William Shakespeare
+W: Charles Dickens
+W: Jane Austen
+W: Christopher Marlowe
+
+Q: Who wrote Pride and Prejudice?
+A: Jane Austen
+W: Charlotte Brontë
+W: Emily Brontë
+W: Mary Shelley
+
+Q: Who wrote the novel 1984?
+A: George Orwell
+W: Aldous Huxley
+W: Ray Bradbury
+W: H. G. Wells
+
+Q: Who wrote The Hobbit?
+A: J. R. R. Tolkien
+W: C. S. Lewis
+W: J. K. Rowling
+W: George R. R. Martin
+
+Q: In the Harry Potter books, which house is Harry sorted into?
+A: Gryffindor
+W: Slytherin
+W: Ravenclaw
+W: Hufflepuff
+
+Q: Who painted the Mona Lisa?
+A: Leonardo da Vinci
+W: Michelangelo
+W: Raphael
+W: Vincent van Gogh
+
+Q: Who painted The Starry Night?
+A: Vincent van Gogh
+W: Claude Monet
+W: Pablo Picasso
+W: Salvador Dalí
+
+Q: Which composer's Fifth Symphony opens with the famous "da-da-da-DUM"?
+A: Ludwig van Beethoven
+W: Wolfgang Amadeus Mozart
+W: Johann Sebastian Bach
+W: Pyotr Tchaikovsky
+
+Q: Which language has the most native speakers?
+A: Mandarin Chinese
+W: English
+W: Spanish
+W: Hindi
+
+Q: How many strings does a standard guitar have?
+A: Six
+W: Four
+W: Five
+W: Seven
+
+TOPIC: Sports
+
+Q: How many players does each team have on the field in soccer?
+A: 11
+W: 9
+W: 10
+W: 12
+
+Q: In golf, what is a score of one under par on a hole?
+A: A birdie
+W: An eagle
+W: A bogey
+W: An albatross
+
+Q: How many rings are on the Olympic flag?
+A: Five
+W: Four
+W: Six
+W: Seven
+
+Q: What is a perfect score in ten-pin bowling?
+A: 300
+W: 200
+W: 250
+W: 350
+
+Q: How long is a marathon?
+A: About 26.2 miles
+W: About 24.2 miles
+W: About 22.4 miles
+W: About 30 miles
+
+Q: In basketball, how many points is a shot from beyond the arc?
+A: Three
+W: Two
+W: Four
+W: One
+
+Q: Which sport is played at Wimbledon?
+A: Tennis
+W: Cricket
+W: Golf
+W: Rugby
+
+Q: Which of these are played with a racket?
+A: Tennis
+A: Badminton
+A: Squash
+W: Cricket
+
+TOPIC: Numbers and Words
+
+Q: How many sides does a hexagon have?
+A: Six
+W: Five
+W: Seven
+W: Eight
+
+Q: What is 50 in Roman numerals?
+A: L
+W: C
+W: D
+W: V
+
+Q: What is the square root of 144?
+A: 12
+W: 14
+W: 11
+W: 16
+
+Q: How many minutes are in a day?
+A: 1,440
+W: 1,240
+W: 1,400
+W: 2,400
+
+Q: How many days are in a leap year?
+A: 366
+W: 365
+W: 364
+W: 367
+
+Q: How many letters are in the English alphabet?
+A: 26
+W: 24
+W: 25
+W: 28
+
+Q: Mixing blue and yellow paint makes which colour?
+A: Green
+W: Purple
+W: Orange
+W: Brown
+
+Q: Which of these are prime numbers?
+A: 2
+A: 13
+A: 29
+W: 21
+
+TOPIC: Around the World
+
+Q: What currency is used in Japan?
+A: The yen
+W: The won
+W: The yuan
+W: The ringgit
+
+Q: What currency is used in the United Kingdom?
+A: The pound sterling
+W: The euro
+W: The franc
+W: The krona
+
+Q: In which city is the Eiffel Tower?
+A: Paris
+W: Lyon
+W: Brussels
+W: Marseille
+
+Q: In which country is the ancient city of Petra?
+A: Jordan
+W: Egypt
+W: Syria
+W: Lebanon
+
+Q: The Taj Mahal is in which country?
+A: India
+W: Pakistan
+W: Bangladesh
+W: Nepal
+
+Q: Which country gave the Statue of Liberty to the United States?
+A: France
+W: The United Kingdom
+W: Spain
+W: Italy

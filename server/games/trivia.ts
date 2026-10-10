@@ -61,7 +61,7 @@ export function answerShare(picked: number[], correct: number[]): number {
 // each W is a wrong one; there are always four in total. More than one A makes
 // it a select-all-that-apply question. Lines starting with # are comments.
 
-interface Question {
+export interface Question {
   film: string;
   question: string;
   correct: string[];
@@ -70,26 +70,30 @@ interface Question {
 
 const BANK_DIR = join(import.meta.dirname, 'trivia');
 
-function loadBank(file: string): Question[] {
+/**
+ * Reads a question file in the format above. `valid` decides which questions to keep
+ * (trivia wants exactly four options; Pick 'Em wants long lists).
+ */
+export function loadQuestionFile(path: string, valid: (q: Question) => boolean, tag = 'trivia'): Question[] {
   const questions: Question[] = [];
   let film = '';
   let current: Question | null = null;
   const finish = () => {
     if (!current) return;
-    if (current.correct.length === 0 || current.correct.length + current.wrong.length !== ANSWER_COUNT) {
-      console.warn(`[trivia] Skipping malformed question in ${file}: ${current.question}`);
+    if (current.correct.length === 0 || !valid(current)) {
+      console.warn(`[${tag}] Skipping malformed question in ${path}: ${current.question}`);
     } else {
       questions.push(current);
     }
     current = null;
   };
 
-  for (const raw of readFileSync(join(BANK_DIR, file), 'utf8').split(/\r?\n/)) {
+  for (const raw of readFileSync(path, 'utf8').split(/\r?\n/)) {
     const line = raw.trim();
     if (!line || line.startsWith('#')) continue;
     const match = /^(FILM|TOPIC|Q|A|W):\s*(.+)$/.exec(line);
     if (!match) {
-      console.warn(`[trivia] Ignoring line in ${file}: ${line}`);
+      console.warn(`[${tag}] Ignoring line in ${path}: ${line}`);
       continue;
     }
     const [, key, value] = match;
@@ -110,6 +114,10 @@ function loadBank(file: string): Question[] {
   return questions;
 }
 
+function loadBank(file: string): Question[] {
+  return loadQuestionFile(join(BANK_DIR, file), (q) => q.correct.length + q.wrong.length === ANSWER_COUNT);
+}
+
 /** Bank file for each mode id, e.g. disney-pixar -> disney-pixar.txt */
 const BANKS = new Map<string, Question[]>(
   readdirSync(BANK_DIR)
@@ -128,7 +136,7 @@ function dealQuestion(bankId: string): Question {
   return deck.pop()!;
 }
 
-function shuffle<T>(items: T[]): T[] {
+export function shuffle<T>(items: T[]): T[] {
   for (let i = items.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [items[i], items[j]] = [items[j], items[i]];

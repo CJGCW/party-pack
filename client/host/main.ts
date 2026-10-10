@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { RoomState } from '../../shared/protocol';
+import { PICK_EM } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
 import { TRIVIA, TRIVIA_QUEST } from '../../shared/games/trivia';
@@ -7,6 +8,7 @@ import { WOOCHAWARE } from '../../shared/games/woochaware';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { net, socket } from './net';
 import { LobbyScene } from './scenes/LobbyScene';
+import { PickEmScene } from './scenes/PickEmScene';
 import { RackAttackScene } from './scenes/RackAttackScene';
 import { ResultsScene } from './scenes/ResultsScene';
 import { SpinnerScene } from './scenes/SpinnerScene';
@@ -23,6 +25,7 @@ const GAME_SCENES: Record<string, string> = {
   [TOSS_UP.id]: TossUpScene.KEY,
   [TRIVIA.id]: TriviaScene.KEY,
   [TRIVIA_QUEST.id]: TriviaScene.KEY,
+  [PICK_EM.id]: PickEmScene.KEY,
   [RACK_ATTACK.id]: RackAttackScene.KEY,
   [WOOCHAWARE.id]: WoochaWareScene.KEY,
 };
@@ -46,6 +49,7 @@ game.scene.add(StandingsScene.KEY, StandingsScene, false);
 game.scene.add(WordleRaceScene.KEY, WordleRaceScene, false);
 game.scene.add(TossUpScene.KEY, TossUpScene, false);
 game.scene.add(TriviaScene.KEY, TriviaScene, false);
+game.scene.add(PickEmScene.KEY, PickEmScene, false);
 game.scene.add(RackAttackScene.KEY, RackAttackScene, false);
 game.scene.add(WoochaWareScene.KEY, WoochaWareScene, false);
 game.events.once(Phaser.Core.Events.READY, () => {

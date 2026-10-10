@@ -8,6 +8,7 @@ export const TRIVIA: GameInfo = {
   minPlayers: 1,
   maxPlayers: 8,
   modes: [
+    { id: 'general', name: 'General Knowledge', description: 'Geography, science, history, nature, sport and more.' },
     {
       id: 'disney-pixar',
       name: 'Disney & Pixar',

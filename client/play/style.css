@@ -398,3 +398,24 @@ button.secondary { background: var(--panel-light); }
 .tq-hearts { color: var(--danger); font-size: 22px; letter-spacing: 2px; }
 .tq-hearts.ghost { color: var(--muted); font-size: 18px; letter-spacing: 0; }
 .tq-monster { color: var(--accent); text-align: right; }
+
+/* ---------- Pick 'Em ---------- */
+
+.pe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pe-grid[hidden] { display: none; }
+.pe-option {
+  font-size: 16px;
+  padding: 12px 8px;
+  min-height: 52px;
+  border-radius: 12px;
+  background: var(--panel-light);
+  border: 3px solid transparent;
+  line-height: 1.15;
+}
+.pe-option:disabled { opacity: 1; }
+.pe-option.picked { border-color: var(--accent); background: #4d3f9a; }
+.pe-option.right { background: var(--correct); border-color: #ffffff; }
+.pe-option.missed { border-color: var(--correct); background: var(--panel); }
+.pe-option.wrong { background: var(--danger); }
+.pe-option.dimmed { opacity: 0.3; }
+.tv-lock[hidden] { display: none; }

@@ -1,0 +1,439 @@
+# Pick 'Em lists: pick every right answer from a long list. Same format as the trivia
+# banks (TOPIC:, Q:, then A: for each right answer and W: for each wrong one), with
+# 8 to 12 options and at least two of each. Lines starting with # are comments.
+
+TOPIC: Space
+
+Q: Which of these are planets in our solar system?
+A: Mercury
+A: Venus
+A: Mars
+A: Saturn
+A: Uranus
+A: Neptune
+W: Pluto
+W: Ceres
+W: Titan
+W: Ganymede
+W: Europa
+W: The Moon
+
+Q: Which of these are moons of Jupiter?
+A: Io
+A: Europa
+A: Ganymede
+A: Callisto
+W: Titan
+W: Triton
+W: Phobos
+W: Deimos
+W: Charon
+W: Enceladus
+W: Oberon
+W: Miranda
+
+TOPIC: Nature
+
+Q: Which of these are mammals?
+A: Dolphin
+A: Bat
+A: Platypus
+A: Whale
+A: Walrus
+A: Hedgehog
+W: Penguin
+W: Shark
+W: Crocodile
+W: Salamander
+W: Ostrich
+W: Octopus
+
+Q: Which of these animals are marsupials?
+A: Kangaroo
+A: Koala
+A: Wombat
+A: Opossum
+A: Tasmanian devil
+A: Wallaby
+W: Platypus
+W: Sloth
+W: Raccoon
+W: Lemur
+W: Armadillo
+W: Meerkat
+
+Q: Which of these are dinosaurs?
+A: Triceratops
+A: Stegosaurus
+A: Velociraptor
+A: Brachiosaurus
+A: Ankylosaurus
+A: Spinosaurus
+W: Pterodactyl
+W: Mosasaurus
+W: Plesiosaurus
+W: Ichthyosaurus
+W: Dimetrodon
+W: Woolly mammoth
+
+Q: Which of these are dog breeds?
+A: Beagle
+A: Dachshund
+A: Corgi
+A: Poodle
+A: Shih Tzu
+A: Whippet
+W: Siamese
+W: Persian
+W: Maine Coon
+W: Ragdoll
+W: Bengal
+W: Sphynx
+
+Q: Which of these are fruits, botanically speaking?
+A: Tomato
+A: Cucumber
+A: Pumpkin
+A: Avocado
+A: Eggplant
+A: Bell pepper
+W: Carrot
+W: Potato
+W: Celery
+W: Onion
+W: Lettuce
+W: Broccoli
+
+TOPIC: Science
+
+Q: Which of these are noble gases?
+A: Helium
+A: Neon
+A: Argon
+A: Krypton
+A: Xenon
+A: Radon
+W: Oxygen
+W: Nitrogen
+W: Hydrogen
+W: Chlorine
+W: Fluorine
+W: Carbon
+
+Q: Which of these are real elements on the periodic table?
+A: Cobalt
+A: Tungsten
+A: Krypton
+A: Bismuth
+A: Gallium
+A: Osmium
+W: Adamantium
+W: Kryptonite
+W: Vibranium
+W: Mithril
+W: Unobtainium
+W: Brass
+
+Q: Which of these are bones in the human body?
+A: Femur
+A: Tibia
+A: Patella
+A: Clavicle
+A: Sternum
+A: Scapula
+W: Aorta
+W: Cornea
+W: Pancreas
+W: Biceps
+W: Larynx
+W: Retina
+
+Q: Which of these are colours of the rainbow (as Newton named them)?
+A: Red
+A: Orange
+A: Yellow
+A: Green
+A: Blue
+A: Indigo
+A: Violet
+W: Pink
+W: Brown
+W: Magenta
+W: Black
+W: White
+
+TOPIC: Numbers and Words
+
+Q: Which of these are prime numbers?
+A: 2
+A: 3
+A: 13
+A: 29
+A: 37
+A: 41
+A: 53
+W: 1
+W: 9
+W: 21
+W: 27
+W: 51
+
+Q: Which of these are perfect squares?
+A: 16
+A: 49
+A: 81
+A: 121
+A: 144
+A: 169
+W: 24
+W: 50
+W: 72
+W: 99
+W: 125
+W: 150
+
+Q: Which of these words are palindromes (the same backwards)?
+A: Racecar
+A: Level
+A: Kayak
+A: Civic
+A: Radar
+A: Refer
+W: Banana
+W: Rocket
+W: Kettle
+W: Canal
+W: Pepper
+W: Tomato
+
+Q: Which of these are chess pieces?
+A: King
+A: Queen
+A: Rook
+A: Bishop
+A: Knight
+A: Pawn
+W: Jack
+W: Ace
+W: Joker
+W: Duke
+W: Archer
+W: Prince
+
+TOPIC: Geography
+
+Q: Which of these countries are in Africa?
+A: Kenya
+A: Morocco
+A: Ghana
+A: Nigeria
+A: Ethiopia
+A: Madagascar
+A: Senegal
+W: Peru
+W: Nepal
+W: Portugal
+W: Jamaica
+W: Oman
+
+Q: Which of these countries are in South America?
+A: Chile
+A: Peru
+A: Ecuador
+A: Uruguay
+A: Paraguay
+A: Bolivia
+A: Colombia
+W: Panama
+W: Honduras
+W: Cuba
+W: Mexico
+W: Costa Rica
+
+Q: Which of these countries share a border with Germany?
+A: France
+A: Poland
+A: Austria
+A: Switzerland
+A: Denmark
+A: The Netherlands
+A: The Czech Republic
+W: Italy
+W: Hungary
+W: Sweden
+W: Spain
+W: Slovakia
+
+Q: Which of these are capital cities?
+A: Canberra
+A: Ottawa
+A: Nairobi
+A: Lima
+A: Oslo
+A: Hanoi
+W: Sydney
+W: Toronto
+W: Mumbai
+W: Istanbul
+W: Zurich
+W: Rio de Janeiro
+
+Q: Which of these are US states?
+A: Vermont
+A: Idaho
+A: Nevada
+A: Oregon
+A: Delaware
+A: Wyoming
+W: Puerto Rico
+W: Ontario
+W: Manitoba
+W: Yukon
+W: Guam
+W: Washington, D.C.
+
+Q: Which of these countries have a coastline?
+A: Norway
+A: Chile
+A: Kenya
+A: Portugal
+A: Vietnam
+A: Croatia
+W: Switzerland
+W: Bolivia
+W: Mongolia
+W: Chad
+W: Nepal
+W: Austria
+
+TOPIC: History and Myth
+
+Q: Which of these people were US presidents?
+A: Abraham Lincoln
+A: Theodore Roosevelt
+A: Ulysses S. Grant
+A: James Madison
+A: Herbert Hoover
+A: Calvin Coolidge
+W: Benjamin Franklin
+W: Alexander Hamilton
+W: Robert E. Lee
+W: John Hancock
+W: Paul Revere
+W: Daniel Webster
+
+Q: Which of these are Greek gods?
+A: Zeus
+A: Hera
+A: Athena
+A: Apollo
+A: Poseidon
+A: Hermes
+W: Thor
+W: Odin
+W: Ra
+W: Jupiter
+W: Anubis
+W: Loki
+
+TOPIC: Arts and Entertainment
+
+Q: Which of these are plays by William Shakespeare?
+A: Hamlet
+A: Macbeth
+A: Othello
+A: The Tempest
+A: Twelfth Night
+A: King Lear
+W: Doctor Faustus
+W: The Duchess of Malfi
+W: Volpone
+W: The Rivals
+W: Cyrano de Bergerac
+W: Paradise Lost
+
+Q: Which of these are songs by the Beatles?
+A: Hey Jude
+A: Let It Be
+A: Yesterday
+A: Help!
+A: Penny Lane
+A: Come Together
+W: Bohemian Rhapsody
+W: Imagine
+W: My Generation
+W: Paint It Black
+W: Good Vibrations
+W: Satisfaction
+
+Q: Which of these are woodwind instruments?
+A: Flute
+A: Clarinet
+A: Oboe
+A: Bassoon
+A: Saxophone
+A: Piccolo
+W: Trumpet
+W: Trombone
+W: Tuba
+W: French horn
+W: Violin
+W: Timpani
+
+Q: Which of these films were made by Pixar?
+A: Toy Story
+A: Up
+A: Coco
+A: Ratatouille
+A: WALL-E
+A: Inside Out
+W: Shrek
+W: Frozen
+W: Ice Age
+W: Despicable Me
+W: Moana
+W: The Lego Movie
+
+TOPIC: Food
+
+Q: Which of these toppings go on a classic Margherita pizza?
+A: Tomato
+A: Mozzarella
+A: Basil
+W: Pepperoni
+W: Pineapple
+W: Mushrooms
+W: Olives
+W: Ham
+W: Anchovies
+W: Onion
+W: Peppers
+W: Sausage
+
+Q: Which of these are types of pasta?
+A: Penne
+A: Fusilli
+A: Rigatoni
+A: Farfalle
+A: Orzo
+A: Linguine
+W: Risotto
+W: Arancini
+W: Polenta
+W: Bruschetta
+W: Focaccia
+W: Ciabatta
+
+Q: Which of these are varieties of apple?
+A: Granny Smith
+A: Fuji
+A: Gala
+A: Honeycrisp
+A: Braeburn
+A: Pink Lady
+W: Bartlett
+W: Bosc
+W: Anjou
+W: Concord
+W: Valencia
+W: Cavendish
