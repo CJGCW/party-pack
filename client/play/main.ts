@@ -206,8 +206,8 @@ function renderLobby() {
     h('div', { class: 'badge' }, player.name),
     h('h2', {}, "You're in!"),
   ];
-  // After a refresh the permission has to be asked for again, from a tap.
-  if (needsMotionPermission()) {
+  // After a refresh the permission has to be asked for again, from a tap (only WoochaWare uses it).
+  if (needsMotionPermission() && room!.games.some((g) => g.id === WOOCHAWARE.id)) {
     children.push(
       h(
         'button',

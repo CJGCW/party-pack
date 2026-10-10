@@ -29,8 +29,9 @@ need them. The certificate is self-signed, so each phone warns once that the con
 private: tap **Advanced**, then **Proceed** (Android) or **Visit this website** (iPhone). iPhones
 also ask to allow motion access when you tap Play (or tap **Turn on motion controls** in the lobby
 after a refresh). The certificate is kept in `.certs/` and remade if the computer's address changes.
-To serve phones over plain HTTP instead, set `"https": false` in `party-pack.config.json` (or
-`PARTY_PACK_HTTPS=0`); motion games then fall back to dragging on the screen.
+HTTPS is only needed for WoochaWare. Setting `"woochaware": false` in `party-pack.config.json` (or
+`PARTY_PACK_WOOCHAWARE=0`) turns WoochaWare off: it leaves the wheel and the debug picker, phones
+join over plain HTTP with no certificate warning, and WoochaWare debug mode is ignored even if it's on.
 
 The first player to join is the **VIP**. On their phone they choose which games go on the
 **wheel**, how many **rounds** to play (1–10), and how many **puzzles per round** (1–10: puzzles in
@@ -55,7 +56,7 @@ a click on the host screen) starts one chosen game. Turn it on with either:
 To test WoochaWare's microgames one at a time, turn on WoochaWare debug with `npm run dev:woocha`
 or `"woochaDebug": true` in `party-pack.config.json` (`PARTY_PACK_WOOCHA_DEBUG=1`/`0` overrides it).
 The VIP's phone then lists only the microgames; tapping one plays it once at each speed level (1, 2, 3),
-without scoring, then returns to the list. It takes priority over `debugMode`.
+without scoring, then returns to the list. It takes priority over `debugMode`, but does nothing while `woochaware` is `false`.
 
 ## Games
 

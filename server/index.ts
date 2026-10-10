@@ -9,7 +9,7 @@ import { config } from './config';
 import { Room, RoomManager, type IO } from './rooms';
 
 const PORT = Number(process.env.PORT ?? 3000);
-/** Phones join here when HTTPS is on. */
+/** Phones join here when HTTPS is on (it is whenever WoochaWare is). */
 const HTTPS_PORT = Number(process.env.HTTPS_PORT ?? PORT + 443);
 const isProd = process.env.NODE_ENV === 'production';
 const projectRoot = resolve(import.meta.dirname, '..');
@@ -29,12 +29,13 @@ function lanAddress(): string {
 }
 
 const lan = lanAddress();
-const joinUrl = config.https ? `https://${lan}:${HTTPS_PORT}` : `http://${lan}${PORT === 80 ? '' : `:${PORT}`}`;
+const joinUrl = config.woochaware ? `https://${lan}:${HTTPS_PORT}` : `http://${lan}${PORT === 80 ? '' : `:${PORT}`}`;
 
 const app = express();
 const httpServer = createServer(app);
-// The same app over HTTPS for phones, sharing the rooms and sockets.
-const httpsServer = config.https ? createHttpsServer(loadCertificate(lan), app) : null;
+// The same app over HTTPS for phones, sharing the rooms and sockets. Only WoochaWare's
+// motion games need it, so it's off along with WoochaWare.
+const httpsServer = config.woochaware ? createHttpsServer(loadCertificate(lan), app) : null;
 const io: IO = new Server(httpServer);
 if (httpsServer) io.attach(httpsServer);
 const rooms = new RoomManager(io, joinUrl);
@@ -109,4 +110,5 @@ httpServer.listen(PORT, '0.0.0.0', () => {
   }
   if (config.woochaDebug) console.log('  WOOCHAWARE DEBUG: the VIP picks a WoochaWare microgame to practise.\n');
   else if (config.debugMode) console.log('  DEBUG MODE: the VIP picks each game directly (no wheel).\n');
+  if (!config.woochaware) console.log('  WoochaWare is off (and so is HTTPS).\n');
 });

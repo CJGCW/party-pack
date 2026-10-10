@@ -121,7 +121,7 @@ export class Room {
       games: GAMES.map((g) => g.info),
       debugMode: config.debugMode,
       woochaDebug: config.woochaDebug,
-      microgames: [...MICROGAMES],
+      microgames: config.woochaware ? [...MICROGAMES] : [],
       wheelEntries: WHEEL_ENTRIES,
       settings: this.settings,
       session: this.session ? { round: this.session.round, totalRounds: this.session.totalRounds } : null,
