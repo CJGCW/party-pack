@@ -22,62 +22,78 @@ import {
 } from './engine';
 import noseUrl from './img/nose.png';
 
-/** Drag the carrot up out of the ground. It sinks back if you let go. */
+/** Pull every carrot out of the ground: grab one and drag up. Let go too soon and it sinks back. */
 export const pull: MicrogameImpl = {
   create(ctx) {
-    const resist = byLevel(ctx, [0.55, 0.45, 0.38]);
-    const slide = byLevel(ctx, [30, 60, 90]);
-    const NEEDED = 200;
+    const count = byLevel(ctx, [2, 3, 3]);
+    const resist = byLevel(ctx, [0.7, 0.6, 0.55]);
+    const slide = byLevel(ctx, [30, 50, 70]);
+    const NEEDED = 110;
     const GROUND = 330;
-    let pulled = 0;
+    const spacing = W / (count + 1);
+    const scale = count >= 3 ? 0.8 : 1;
+    const carrots = Array.from({ length: count }, (_, i) => ({ x: spacing * (i + 1), pulled: 0, flyT: -1, spin: i % 2 ? 1 : -1 }));
+    /** The carrot being pulled, and where the finger was last. */
+    let held: (typeof carrots)[number] | null = null;
     let last: Pointer | null = null;
-    let flyT = -1;
+    const out = () => carrots.filter((c) => c.flyT >= 0).length;
     return {
       update(dt) {
-        if (flyT >= 0) flyT += dt;
-        else if (!last) pulled = Math.max(0, pulled - slide * dt);
+        for (const c of carrots) {
+          if (c.flyT >= 0) c.flyT += dt;
+          else if (c !== held) c.pulled = Math.max(0, c.pulled - slide * dt);
+        }
       },
       draw(g) {
         fillBg(g, '#5ec8f2', '#bde8ff');
-        const fly = flyT >= 0 ? flyT * 600 : 0;
-        const top = GROUND - 30 - pulled - fly;
-        // Carrot: leaves on top, root pointing down.
-        g.save();
-        g.translate(180, top);
-        if (flyT >= 0) g.rotate(flyT * 6);
-        for (const a of [-0.5, 0, 0.5]) {
+        for (const c of carrots) {
+          const fly = c.flyT >= 0 ? c.flyT * 650 : 0;
+          const top = GROUND - 30 * scale - c.pulled - fly;
+          // Carrot: leaves on top, root pointing down. Wobbles a little while held.
           g.save();
-          g.rotate(a);
-          roundRect(g, -8, -70, 16, 70, 8, PALETTE.correct);
+          g.translate(c.x + (c.flyT >= 0 ? c.spin * c.flyT * 120 : 0), top);
+          g.scale(scale, scale);
+          if (c.flyT >= 0) g.rotate(c.spin * c.flyT * 6);
+          else if (c === held) g.rotate(Math.sin(performance.now() / 40) * 0.04);
+          for (const a of [-0.5, 0, 0.5]) {
+            g.save();
+            g.rotate(a);
+            roundRect(g, -8, -70, 16, 70, 8, PALETTE.correct);
+            g.restore();
+          }
+          g.beginPath();
+          g.moveTo(-34, 0);
+          g.lineTo(34, 0);
+          g.lineTo(0, 210);
+          g.closePath();
+          g.fillStyle = '#f08a24';
+          g.fill();
           g.restore();
         }
-        g.beginPath();
-        g.moveTo(-34, 0);
-        g.lineTo(34, 0);
-        g.lineTo(0, 210);
-        g.closePath();
-        g.fillStyle = '#f08a24';
-        g.fill();
-        g.restore();
-        // Ground in front of the buried part.
+        // Ground in front of the buried parts.
         roundRect(g, 0, GROUND, W, H - GROUND, 0, '#7a4a25');
         for (let i = 0; i < 14; i++) circle(g, (i * 53) % W, GROUND + 30 + ((i * 97) % 180), 6, '#5c3418');
-        if (!ctx.over) label(g, 'Drag up!', 180, 520, 26, PALETTE.accent);
+        label(g, `${out()}/${count}`, 180, 60, 34, PALETTE.bg);
+        if (!ctx.over) label(g, 'Grab a carrot and drag up!', 180, 520, 24, PALETTE.accent);
       },
       down(p) {
+        // Grab the carrot in this column that's still in the ground.
+        held = carrots.find((c) => c.flyT < 0 && Math.abs(p.x - c.x) < spacing / 2) ?? null;
         last = p;
       },
       move(p) {
-        if (!last) return;
+        if (!held || !last) return;
         const dy = last.y - p.y;
         last = p;
-        if (dy > 0) pulled += dy * resist;
-        if (pulled >= NEEDED) {
-          flyT = 0;
-          ctx.win();
+        if (dy > 0) held.pulled += dy * resist;
+        if (held.pulled >= NEEDED) {
+          held.flyT = 0;
+          held = null;
+          if (out() === count) ctx.win();
         }
       },
       up() {
+        held = null;
         last = null;
       },
     };
