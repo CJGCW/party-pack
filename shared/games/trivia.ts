@@ -20,56 +20,56 @@ export const TRIVIA: GameInfo = {
   ],
 };
 
-/** Co-op trivia: the party fights monsters together, with the same question banks as modes. */
+/**
+ * Co-op trivia, with the same question banks as modes. The team works through stages:
+ * each needs a number of correct answers between them. Wrong answers cost lives.
+ * (The id is from its first name, Trivia Quest.)
+ */
 export const TRIVIA_QUEST: GameInfo = {
   id: 'trivia-quest',
-  name: 'Trivia Quest',
-  description: 'Co-op! Right answers hit the monster; wrong ones cost you a heart. Beat every monster before the whole party falls.',
+  name: 'Team Trivia',
+  description: 'Co-op. Correct answers clear stages for the whole team; wrong ones cost a life. Clear every stage before everyone is out.',
   minPlayers: 1,
   maxPlayers: 8,
   modes: TRIVIA.modes,
 };
 
-/** Hearts each player starts a quest with. */
-export const MAX_HEARTS = 3;
+/** Lives each player starts Team Trivia with. */
+export const MAX_LIVES = 3;
 
 /**
- * What one answer did in a quest: a hit on the monster (all right), a glancing blow
- * (partly right on select-all: no hit, no harm), hurt (wrong or no answer: lose a
- * heart), revived (a ghost answered right and is back with one heart) or ghost
- * (a ghost answered wrong, which costs nothing).
+ * What one answer did in Team Trivia: correct (counts toward the stage), partial
+ * (partly right on select-all: doesn't count, costs nothing), wrong (wrong or no
+ * answer: lose a life), back (an out player answered right and is back in with one
+ * life) or out (an out player answered wrong, which costs nothing more).
  */
-export type QuestResult = 'hit' | 'glance' | 'hurt' | 'revived' | 'ghost';
+export type TeamResult = 'correct' | 'partial' | 'wrong' | 'back' | 'out';
 
-export interface QuestMonster {
-  name: string;
-  emoji: string;
-  /** Hits still needed, and the total. */
-  hp: number;
-  maxHp: number;
-  /** Which monster this is (from 1), of how many. */
+export interface TeamStage {
+  /** Which stage (from 1), of how many. */
   number: number;
   total: number;
-  boss: boolean;
+  /** Correct answers the stage needs, and how many the team has so far. */
+  needed: number;
+  correct: number;
+  /** The last stage, which needs more. */
+  final: boolean;
 }
 
-export interface QuestState {
-  monster: QuestMonster;
-  /** Set when the quest is over. */
-  outcome: 'victory' | 'defeat' | null;
-  /** At the reveal: this question finished the monster off. */
-  defeatedNow: boolean;
-  /** Hits the party landed this question (at the reveal). */
-  hitsNow: number;
+export interface TeamState {
+  stage: TeamStage;
+  /** Set when the challenge is over. */
+  outcome: 'complete' | 'failed' | null;
+  /** At the reveal: this question cleared the stage. */
+  clearedNow: boolean;
+  /** Correct answers the team got on this question (at the reveal). */
+  correctNow: number;
 }
 
 export const ANSWER_COUNT = 4;
 
-/**
- * Shapes for answers A-D, matched on the TV and phones. The tiles themselves use
- * the game's usual purple panel colour; the right answers turn green at the reveal.
- */
-export const ANSWER_STYLES = [{ shape: '▲' }, { shape: '◆' }, { shape: '●' }, { shape: '■' }];
+/** Labels for the four answers, matched on the TV and phones. */
+export const ANSWER_LETTERS = ['A', 'B', 'C', 'D'];
 
 /**
  * 'question': the question alone, so everyone can read it.
@@ -89,9 +89,9 @@ export interface TriviaHostPlayer {
   /** At the reveal: did they score anything, and what did it earn. */
   correct: boolean | null;
   questionPoints: number;
-  /** Trivia Quest only: hearts left (0 is a ghost), and what their answer did at the reveal. */
-  hearts?: number;
-  questResult?: QuestResult | null;
+  /** Team Trivia only: lives left (0 is out), and what their answer did at the reveal. */
+  lives?: number;
+  teamResult?: TeamResult | null;
 }
 
 export interface TriviaHostView {
@@ -112,8 +112,8 @@ export interface TriviaHostView {
   counts: number[] | null;
   msLeft: number;
   players: TriviaHostPlayer[];
-  /** Trivia Quest only. */
-  quest?: QuestState;
+  /** Team Trivia only. */
+  team?: TeamState;
 }
 
 export interface TriviaPlayerView {
@@ -131,10 +131,10 @@ export interface TriviaPlayerView {
   gamePoints: number;
   score: number;
   msLeft: number;
-  /** Trivia Quest only. */
-  quest?: QuestState;
-  hearts?: number;
-  questResult?: QuestResult | null;
+  /** Team Trivia only. */
+  team?: TeamState;
+  lives?: number;
+  teamResult?: TeamResult | null;
 }
 
 /** The chosen answers: exactly one for a normal question, one or more for select-all. */

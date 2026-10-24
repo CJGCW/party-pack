@@ -37,11 +37,12 @@ export function text(
     .setOrigin(0.5);
 }
 
-/** Gradient background with slowly drifting blobs, shared by every scene. */
-export function addBackdrop(scene: Phaser.Scene) {
+/** Gradient background with slowly drifting blobs, shared by every scene (`blobs: false` for a plain one). */
+export function addBackdrop(scene: Phaser.Scene, { blobs = true } = {}) {
   const g = scene.add.graphics();
   g.fillGradientStyle(COLORS.bgTop, COLORS.bgTop, COLORS.bgBottom, COLORS.bgBottom, 1);
   g.fillRect(0, 0, WIDTH, HEIGHT);
+  if (!blobs) return;
 
   const blobColors = [0xff5d73, 0x5ec8f2, 0x8b7cf6, 0xffd166];
   for (let i = 0; i < 7; i++) {

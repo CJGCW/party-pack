@@ -1,4 +1,4 @@
-import { ANSWER_STYLES, MAX_HEARTS, type TriviaInput, type TriviaPlayerView } from '../../../shared/games/trivia';
+import { ANSWER_LETTERS, MAX_LIVES, type TriviaInput, type TriviaPlayerView } from '../../../shared/games/trivia';
 import { h } from '../dom';
 import type { Controller } from '../main';
 
@@ -15,10 +15,11 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
   const timerEl = h('span', { class: 'wr-timer' });
   const scoreEl = h('span');
   const filmEl = h('div', { class: 'tu-category' });
-  /** Trivia Quest: your hearts and the monster's health. */
-  const heartsEl = h('span', { class: 'tq-hearts' });
-  const monsterEl = h('span', { class: 'tq-monster' });
-  const questEl = h('div', { class: 'tq-bar' }, heartsEl, monsterEl);
+  /** Team Trivia: your lives, the stage, and the team's progress through it. */
+  const livesEl = h('span', { class: 'tt-lives' });
+  const stageEl = h('span', { class: 'tt-stage' });
+  const progressEl = h('div', { class: 'tt-progress' });
+  const teamEl = h('div', { class: 'tt-bar' }, h('div', { class: 'tt-row' }, livesEl, stageEl), progressEl);
   const questionEl = h('div', { class: 'tv-question' });
   const multiEl = h('div', { class: 'tv-multi' }, 'Select all that apply');
   const statusEl = h('div', { class: 'tu-status' });
@@ -29,11 +30,11 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
     render();
   };
 
-  const buttons = ANSWER_STYLES.map((style, i) => {
+  const buttons = ANSWER_LETTERS.map((letter, i) => {
     const btn = h(
       'button',
       { class: 'tv-answer', type: 'button' },
-      h('span', { class: 'tv-shape' }, style.shape),
+      h('span', { class: 'tv-badge' }, letter),
       h('span', { class: 'tv-text' }),
     );
     btn.addEventListener('pointerdown', (e) => {
@@ -62,7 +63,7 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
       'div',
       { class: 'tv' },
       h('div', { class: 'wr-top' }, headerEl, timerEl, scoreEl),
-      questEl,
+      teamEl,
       filmEl,
       questionEl,
       multiEl,
@@ -100,14 +101,17 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
     }
 
     headerEl.textContent = view.totalQuestions > 0 ? `Question ${view.questionNumber}/${view.totalQuestions}` : `Question ${view.questionNumber}`;
-    const quest = view.quest;
-    questEl.hidden = !quest;
-    if (quest) {
-      const hearts = view.hearts ?? MAX_HEARTS;
-      heartsEl.textContent = hearts > 0 ? '♥'.repeat(hearts) + '♡'.repeat(MAX_HEARTS - hearts) : '👻 ghost';
-      heartsEl.classList.toggle('ghost', hearts === 0);
-      const m = quest.monster;
-      monsterEl.textContent = `${m.emoji} ${m.name} ${m.hp}/${m.maxHp}`;
+    const team = view.team;
+    teamEl.hidden = !team;
+    if (team) {
+      const lives = view.lives ?? MAX_LIVES;
+      livesEl.replaceChildren(
+        ...Array.from({ length: MAX_LIVES }, (_, k) => h('span', { class: `tt-life${k < lives ? ' on' : ''}` })),
+        ...(lives === 0 ? [h('span', { class: 'tt-out' }, 'Out')] : []),
+      );
+      const st = team.stage;
+      stageEl.textContent = `${st.final ? 'Final stage' : `Stage ${st.number}/${st.total}`} · ${st.correct}/${st.needed}`;
+      progressEl.replaceChildren(...Array.from({ length: st.needed }, (_, k) => h('span', { class: `tt-seg${k < st.correct ? ' on' : ''}` })));
     }
     scoreEl.textContent = `${view.score.toLocaleString()} pts`;
     filmEl.textContent = view.film;
@@ -133,7 +137,7 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
     lockButton.hidden = !view.multi || view.phase !== 'answering' || mine.length > 0;
     lockButton.disabled = selected.size === 0;
 
-    if (quest && questStatus(view, correct)) return;
+    if (team && teamStatus(view, correct)) return;
 
     switch (view.phase) {
       case 'question':
@@ -158,38 +162,39 @@ export function createTrivia(root: HTMLElement, send: (input: unknown) => void):
     }
   }
 
-  /** Trivia Quest messages; returns false to fall back to the usual ones. */
-  function questStatus(v: TriviaPlayerView, correct: number[]): boolean {
-    const quest = v.quest!;
-    const name = quest.monster.name;
+  /** Team Trivia messages; returns false to fall back to the usual ones. */
+  function teamStatus(v: TriviaPlayerView, correct: number[]): boolean {
+    const team = v.team!;
     const answerText = v.multi ? `The answers were ${listAnswers(correct)}.` : `It was ${listAnswers(correct)}.`;
-    const ghost = (v.hearts ?? MAX_HEARTS) === 0;
+    const out = (v.lives ?? MAX_LIVES) === 0;
     if (v.phase === 'question' || v.phase === 'answering') {
-      if (!ghost || locked().length > 0) return false;
-      setStatus("You're a ghost 👻 Answer right to come back!", 'bad');
+      if (locked().length > 0 || v.phase === 'question') return false;
+      // Speed doesn't change Team Trivia's points, so no "faster scores more".
+      if (out) setStatus("You're out. Answer right to get back in.", 'bad');
+      else setStatus(v.multi ? 'Tap every right answer, then lock in.' : 'Pick an answer.');
       return true;
     }
     if (v.phase === 'gameEnd') {
-      if (quest.outcome === 'victory') setStatus(`VICTORY! The party beat every monster. +${v.gamePoints.toLocaleString()} this round`, 'good');
-      else setStatus(`The party has fallen... +${v.gamePoints.toLocaleString()} this round`, 'bad');
+      if (team.outcome === 'complete') setStatus(`Challenge complete. +${v.gamePoints.toLocaleString()} this round`, 'good');
+      else setStatus(`Challenge failed. +${v.gamePoints.toLocaleString()} this round`, 'bad');
       return true;
     }
-    const defeated = quest.defeatedNow ? ` The ${name} is defeated!` : '';
-    switch (v.questResult) {
-      case 'hit':
-        setStatus(`HIT! +${v.questionPoints}.${defeated}`, 'good');
+    const cleared = team.clearedNow ? ' Stage cleared.' : '';
+    switch (v.teamResult) {
+      case 'correct':
+        setStatus(`Correct. +${v.questionPoints}.${cleared}`, 'good');
         break;
-      case 'glance':
-        setStatus(`Glancing blow: partly right, no harm done. ${answerText}${defeated}`);
+      case 'partial':
+        setStatus(`Partly right: doesn't count, no life lost. ${answerText}${cleared}`);
         break;
-      case 'hurt':
-        setStatus(`${ghost ? "Ouch! You're out of hearts: you're a ghost now." : 'Ouch! -1 ♥.'} ${answerText}${defeated}`, 'bad');
+      case 'wrong':
+        setStatus(`${out ? "Wrong, and that was your last life: you're out." : 'Wrong: −1 life.'} ${answerText}${cleared}`, 'bad');
         break;
-      case 'revived':
-        setStatus(`Back from the dead with 1 ♥!${defeated}`, 'good');
+      case 'back':
+        setStatus(`Correct: you're back in with 1 life.${cleared}`, 'good');
         break;
       default:
-        setStatus(`Still a ghost. ${answerText}${defeated}`, 'bad');
+        setStatus(`Still out. ${answerText}${cleared}`, 'bad');
     }
     return true;
   }

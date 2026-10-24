@@ -2,12 +2,11 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   ANSWER_COUNT,
-  MAX_HEARTS,
+  MAX_LIVES,
   TRIVIA,
   TRIVIA_QUEST,
-  type QuestMonster,
-  type QuestResult,
-  type QuestState,
+  type TeamResult,
+  type TeamState,
   type TriviaHostView,
   type TriviaInput,
   type TriviaPhase,
@@ -332,108 +331,87 @@ export const trivia: MiniGameDefinition = {
   create: (ctx, modeId, options) => new Trivia(ctx, modeId, options.puzzles),
 };
 
-// ---- Trivia Quest (co-op) ---------------------------------------------------------------
+// ---- Team Trivia (co-op) ----------------------------------------------------------------
 
-/** Points for landing a hit, and for everyone when a monster falls or the quest is won. */
-const HIT_POINTS = 150;
-const MONSTER_BONUS = 300;
-const VICTORY_BONUS = 500;
-/** If a monster outlasts this many extra questions beyond its health, it wins (keeps quests from dragging on). */
-const MONSTER_PATIENCE = 8;
-
-const MONSTERS: { name: string; emoji: string }[] = [
-  { name: 'Grumbling Goblin', emoji: '👺' },
-  { name: 'Dire Wolf', emoji: '🐺' },
-  { name: 'Giant Scorpion', emoji: '🦂' },
-  { name: 'Vampire Bat', emoji: '🦇' },
-  { name: 'Hungry Ogre', emoji: '👹' },
-  { name: 'Skeleton King', emoji: '💀' },
-  { name: 'Spider Queen', emoji: '🕷️' },
-  { name: 'Kraken', emoji: '🐙' },
-  { name: 'Haunted Pumpkin', emoji: '🎃' },
-  { name: 'Robo-Knight', emoji: '🤖' },
-];
-const BOSSES: { name: string; emoji: string }[] = [
-  { name: 'Ancient Dragon', emoji: '🐉' },
-  { name: 'Tyrant Lizard', emoji: '🦖' },
-  { name: 'Lord of the Deep', emoji: '🦈' },
-];
+/** Points for a correct answer, and for everyone when a stage is cleared or the challenge is won. */
+const CORRECT_POINTS = 150;
+const STAGE_BONUS = 300;
+const COMPLETE_BONUS = 500;
+/** A stage still not cleared this many questions beyond what it needs ends the challenge (so it can't drag on). */
+const STAGE_PATIENCE = 8;
 
 /**
- * Everyone against a string of monsters (one per puzzle; the last is a boss). Every
- * fully right answer is a hit; wrong answers cost hearts. Out of hearts, a player is
- * a ghost until they answer one right. If the whole party are ghosts, the quest fails.
+ * The team works through stages (one per puzzle; the last needs more). Every fully
+ * right answer counts toward the stage; wrong answers cost lives. Out of lives, a
+ * player is out until they answer one right. If everyone is out, the challenge fails.
  */
-class TriviaQuest extends Trivia {
-  private hearts = new Map<string, number>();
-  private results = new Map<string, QuestResult>();
-  private monsters: Omit<QuestMonster, 'hp' | 'number' | 'total'>[] = [];
-  private monsterIndex = 0;
-  private hp = 0;
-  private questionsOnMonster = 0;
-  private outcome: QuestState['outcome'] = null;
-  private defeatedNow = false;
-  private hitsNow = 0;
+class TeamTrivia extends Trivia {
+  private lives = new Map<string, number>();
+  private results = new Map<string, TeamResult>();
+  private needed: number[] = [];
+  private stageIndex = 0;
+  private correct = 0;
+  private questionsOnStage = 0;
+  private outcome: TeamState['outcome'] = null;
+  private clearedNow = false;
+  private correctNow = 0;
 
-  constructor(ctx: GameContext, bankId: string, private readonly monsterCount: number) {
+  constructor(ctx: GameContext, bankId: string, private readonly stageCount: number) {
     super(ctx, bankId, 0);
   }
 
   start() {
-    const party = this.ctx.players().filter((p) => p.connected).length || 1;
-    for (const p of this.ctx.players()) this.hearts.set(p.id, MAX_HEARTS);
-    // About one and a half hits per player for each monster, half again for the boss.
-    const health = Math.max(3, Math.ceil(party * 1.5));
-    const pool = shuffle([...MONSTERS]);
-    this.monsters = Array.from({ length: this.monsterCount }, (_, i) => {
-      const boss = this.monsterCount > 1 && i === this.monsterCount - 1;
-      const kind = boss ? BOSSES[Math.floor(Math.random() * BOSSES.length)] : pool[i % pool.length];
-      return { ...kind, maxHp: boss ? Math.ceil(health * 1.5) : health, boss };
-    });
-    this.hp = this.monsters[0].maxHp;
+    const team = this.ctx.players().filter((p) => p.connected).length || 1;
+    for (const p of this.ctx.players()) this.lives.set(p.id, MAX_LIVES);
+    // About one and a half correct answers per player for each stage, half again for the final one.
+    const base = Math.max(3, Math.ceil(team * 1.5));
+    this.needed = Array.from({ length: this.stageCount }, (_, i) =>
+      this.stageCount > 1 && i === this.stageCount - 1 ? Math.ceil(base * 1.5) : base,
+    );
     super.start();
   }
 
   protected scoreAnswers() {
     this.results.clear();
-    this.defeatedNow = false;
-    this.hitsNow = 0;
+    this.clearedNow = false;
+    this.correctNow = 0;
     for (const p of this.ctx.players()) {
       const pick = this.picks.get(p.id);
       const share = pick ? answerShare(pick.indices, this.correctIndices) : 0;
-      const hearts = this.hearts.get(p.id) ?? MAX_HEARTS;
-      let result: QuestResult;
-      if (hearts === 0) {
-        result = share === 1 ? 'revived' : 'ghost';
-        if (result === 'revived') this.hearts.set(p.id, 1);
+      const lives = this.lives.get(p.id) ?? MAX_LIVES;
+      let result: TeamResult;
+      if (lives === 0) {
+        result = share === 1 ? 'back' : 'out';
+        if (result === 'back') this.lives.set(p.id, 1);
       } else if (share === 1) {
-        result = 'hit';
-        this.hitsNow++;
-        this.lastPoints.set(p.id, HIT_POINTS);
-        this.award(p.id, HIT_POINTS);
+        result = 'correct';
+        this.correctNow++;
+        this.lastPoints.set(p.id, CORRECT_POINTS);
+        this.award(p.id, CORRECT_POINTS);
       } else if (share > 0) {
-        result = 'glance';
+        result = 'partial';
       } else {
-        result = 'hurt';
-        this.hearts.set(p.id, hearts - 1);
+        result = 'wrong';
+        this.lives.set(p.id, lives - 1);
       }
       this.results.set(p.id, result);
     }
 
-    this.hp = Math.max(0, this.hp - this.hitsNow);
-    this.questionsOnMonster++;
+    const needed = this.needed[this.stageIndex];
+    this.correct = Math.min(needed, this.correct + this.correctNow);
+    this.questionsOnStage++;
     const everyone = this.ctx.players();
-    if (this.hp === 0) {
-      this.defeatedNow = true;
-      for (const p of everyone) this.award(p.id, MONSTER_BONUS);
-      if (this.monsterIndex === this.monsters.length - 1) {
-        this.outcome = 'victory';
-        for (const p of everyone) this.award(p.id, VICTORY_BONUS);
+    if (this.correct >= needed) {
+      this.clearedNow = true;
+      for (const p of everyone) this.award(p.id, STAGE_BONUS);
+      if (this.stageIndex === this.needed.length - 1) {
+        this.outcome = 'complete';
+        for (const p of everyone) this.award(p.id, COMPLETE_BONUS);
       }
     } else {
-      const standing = everyone.filter((p) => p.connected && (this.hearts.get(p.id) ?? 0) > 0);
-      const worn = this.questionsOnMonster >= this.monsters[this.monsterIndex].maxHp + MONSTER_PATIENCE;
-      if (standing.length === 0 || worn) this.outcome = 'defeat';
+      const stillIn = everyone.filter((p) => p.connected && (this.lives.get(p.id) ?? 0) > 0);
+      const stalled = this.questionsOnStage >= needed + STAGE_PATIENCE;
+      if (stillIn.length === 0 || stalled) this.outcome = 'failed';
     }
   }
 
@@ -442,43 +420,47 @@ class TriviaQuest extends Trivia {
       this.setPhase('gameEnd', ROUND_SCORES_MS, () => this.ctx.finish());
       return;
     }
-    if (this.defeatedNow) {
-      this.monsterIndex++;
-      this.hp = this.monsters[this.monsterIndex].maxHp;
-      this.questionsOnMonster = 0;
+    if (this.clearedNow) {
+      this.stageIndex++;
+      this.correct = 0;
+      this.questionsOnStage = 0;
     }
     this.startQuestion(this.questionIndex + 1);
   }
 
-  private questState(): QuestState {
-    const m = this.monsters[this.monsterIndex];
+  private teamState(): TeamState {
     return {
-      monster: { ...m, hp: this.hp, number: this.monsterIndex + 1, total: this.monsters.length },
+      stage: {
+        number: this.stageIndex + 1,
+        total: this.needed.length,
+        needed: this.needed[this.stageIndex],
+        correct: this.correct,
+        final: this.needed.length > 1 && this.stageIndex === this.needed.length - 1,
+      },
       outcome: this.phase === 'gameEnd' ? this.outcome : null,
-      defeatedNow: this.revealing && this.defeatedNow,
-      hitsNow: this.revealing ? this.hitsNow : 0,
+      clearedNow: this.revealing && this.clearedNow,
+      correctNow: this.revealing ? this.correctNow : 0,
     };
   }
 
   protected decorateHost(view: TriviaHostView) {
-    view.packName = `Trivia Quest · ${view.packName}`;
-    view.quest = this.questState();
+    view.team = this.teamState();
     for (const p of view.players) {
-      p.hearts = this.hearts.get(p.id) ?? MAX_HEARTS;
-      p.questResult = this.revealing ? (this.results.get(p.id) ?? null) : null;
+      p.lives = this.lives.get(p.id) ?? MAX_LIVES;
+      p.teamResult = this.revealing ? (this.results.get(p.id) ?? null) : null;
     }
   }
 
   protected decoratePlayer(view: TriviaPlayerView, playerId: string) {
-    view.quest = this.questState();
-    view.hearts = this.hearts.get(playerId) ?? MAX_HEARTS;
-    view.questResult = this.revealing ? (this.results.get(playerId) ?? null) : null;
+    view.team = this.teamState();
+    view.lives = this.lives.get(playerId) ?? MAX_LIVES;
+    view.teamResult = this.revealing ? (this.results.get(playerId) ?? null) : null;
   }
 }
 
 export const triviaQuest: MiniGameDefinition = {
   info: TRIVIA_QUEST,
-  create: (ctx, modeId, options) => new TriviaQuest(ctx, modeId, options.puzzles),
+  create: (ctx, modeId, options) => new TeamTrivia(ctx, modeId, options.puzzles),
 };
 
 /** For tooling: question count per bank. */

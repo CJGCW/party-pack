@@ -185,7 +185,7 @@ export function createPickEm(root: HTMLElement, send: (input: unknown) => void):
         }
         const g = v.lastGuess;
         if (!g || g.seq !== seq) setStatus('Type an answer and press Enter.');
-        else if (g.result === 'right') setStatus(`✓ ${g.answer}!`, 'good');
+        else if (g.result === 'right') setStatus(`Got it: ${g.answer}`, 'good');
         else if (g.result === 'repeat') setStatus(`You already have ${g.answer}.`);
         else setStatus(`"${g.text}" isn't on the list.`, 'bad');
         break;

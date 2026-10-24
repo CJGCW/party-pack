@@ -1,37 +1,49 @@
 import Phaser from 'phaser';
-import { ANSWER_STYLES, MAX_HEARTS, type QuestState, type TriviaHostPlayer, type TriviaHostView } from '../../../shared/games/trivia';
+import { ANSWER_LETTERS, MAX_LIVES, type TeamState, type TriviaHostPlayer, type TriviaHostView } from '../../../shared/games/trivia';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
-import { COLORS, WIDTH, addBackdrop, burstConfetti, hex, text } from '../theme';
+import { COLORS, HEIGHT, WIDTH, addBackdrop, hex, text } from '../theme';
 
-const TILE_W = 820;
-const TILE_H = 150;
-const TILE_GAP = 30;
-const TILES_TOP = 560;
+const TILE_W = 840;
+const TILE_H = 128;
+const TILE_GAP = 24;
+const TILES_TOP = 570;
+const BADGE = 60;
+const LINE = 0x4a4290;
+const INK = '#140f2e';
 
 interface Tile {
   container: Phaser.GameObjects.Container;
   bg: Phaser.GameObjects.Graphics;
+  badge: Phaser.GameObjects.Graphics;
+  letter: Phaser.GameObjects.Text;
   label: Phaser.GameObjects.Text;
   count: Phaser.GameObjects.Text;
 }
 
+/**
+ * The TV for Trivia and Team Trivia: a clean layout of flat panels, letter badges and
+ * thin bars. Team Trivia adds the stage's progress under the header and lives on each
+ * player's card.
+ */
 export class TriviaScene extends Phaser.Scene {
   static readonly KEY = 'trivia';
 
   private view: TriviaHostView | null = null;
   private phaseKey = '';
   private phaseEndsAt = 0;
+  private phaseMs = 1;
+  private titleText!: Phaser.GameObjects.Text;
   private headerText!: Phaser.GameObjects.Text;
   private filmText!: Phaser.GameObjects.Text;
   private questionText!: Phaser.GameObjects.Text;
   private timerText!: Phaser.GameObjects.Text;
+  private timerBar!: Phaser.GameObjects.Graphics;
   private multiText!: Phaser.GameObjects.Text;
   private tiles: Tile[] = [];
   private playersRow!: Phaser.GameObjects.Container;
-  /** Trivia Quest: the monster and its health. */
-  private questBar!: Phaser.GameObjects.Container;
-  private titleText!: Phaser.GameObjects.Text;
+  /** Team Trivia: the stage and how far along it the team is. */
+  private stageBar!: Phaser.GameObjects.Container;
   private overlay!: Phaser.GameObjects.Container;
 
   constructor() {
@@ -42,40 +54,36 @@ export class TriviaScene extends Phaser.Scene {
     this.view = null;
     this.phaseKey = '';
     this.tiles = [];
-    addBackdrop(this);
+    addBackdrop(this, { blobs: false });
 
-    this.titleText = text(this, 160, 60, 'TRIVIA', 56, COLORS.accent, { fontStyle: '700' });
-    this.headerText = text(this, WIDTH / 2, 60, '', 42);
-    this.timerText = text(this, WIDTH - 150, 60, '', 64, COLORS.text, { fontStyle: '700' });
-    this.filmText = text(this, WIDTH / 2, 170, '', 40, COLORS.accent, { fontStyle: '700' }).setLetterSpacing(4);
-    this.questionText = text(this, WIDTH / 2, 330, '', 64, COLORS.text, {
-      fontStyle: '700',
-      align: 'center',
-      wordWrap: { width: 1600 },
-    });
-
-    this.multiText = text(this, WIDTH / 2, 505, 'SELECT ALL THAT APPLY', 34, COLORS.accent, { fontStyle: '700' })
-      .setLetterSpacing(3)
+    this.timerBar = this.add.graphics();
+    this.titleText = text(this, 80, 64, 'TRIVIA', 30, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5).setLetterSpacing(6);
+    this.headerText = text(this, WIDTH / 2, 64, '', 30, COLORS.muted);
+    this.timerText = text(this, WIDTH - 80, 64, '', 48, COLORS.text, { fontStyle: '700' }).setOrigin(1, 0.5);
+    this.filmText = text(this, WIDTH / 2, 200, '', 26, COLORS.accent, { fontStyle: '700' }).setLetterSpacing(6);
+    this.questionText = text(this, WIDTH / 2, 340, '', 60, COLORS.text, { fontStyle: '700', align: 'center', wordWrap: { width: 1560 } });
+    this.multiText = text(this, WIDTH / 2, 512, 'SELECT ALL THAT APPLY', 24, COLORS.muted, { fontStyle: '700' })
+      .setLetterSpacing(5)
       .setVisible(false);
 
-    for (let i = 0; i < ANSWER_STYLES.length; i++) {
+    for (let i = 0; i < ANSWER_LETTERS.length; i++) {
       const x = WIDTH / 2 + (i % 2 === 0 ? -1 : 1) * (TILE_W / 2 + TILE_GAP / 2);
       const y = TILES_TOP + Math.floor(i / 2) * (TILE_H + TILE_GAP) + TILE_H / 2;
       const container = this.add.container(x, y).setAlpha(0);
       const bg = this.add.graphics();
-      const shape = text(this, -TILE_W / 2 + 60, 0, ANSWER_STYLES[i].shape, 56, COLORS.accent);
-      const label = text(this, 30, 0, '', 44, COLORS.text, {
+      const badge = this.add.graphics();
+      const letter = text(this, -TILE_W / 2 + 32 + BADGE / 2, 0, ANSWER_LETTERS[i], 30, COLORS.accent, { fontStyle: '700' });
+      const label = text(this, -TILE_W / 2 + 32 + BADGE + 28, 0, '', 38, COLORS.text, {
         fontStyle: '700',
-        align: 'center',
-        wordWrap: { width: TILE_W - 220 },
-      });
-      const count = text(this, TILE_W / 2 - 50, 0, '', 44, COLORS.text, { fontStyle: '700' });
-      container.add([bg, shape, label, count]);
-      this.tiles.push({ container, bg, label, count });
+        wordWrap: { width: TILE_W - BADGE - 190 },
+      }).setOrigin(0, 0.5);
+      const count = text(this, TILE_W / 2 - 46, 0, '', 30, COLORS.text, { fontStyle: '700' });
+      container.add([bg, badge, letter, label, count]);
+      this.tiles.push({ container, bg, badge, letter, label, count });
     }
 
-    this.playersRow = this.add.container(WIDTH / 2, 1000);
-    this.questBar = this.add.container(WIDTH / 2, 132);
+    this.playersRow = this.add.container(WIDTH / 2, HEIGHT - 76);
+    this.stageBar = this.add.container(WIDTH / 2, 132);
     this.overlay = this.add.container(0, 0).setDepth(50);
 
     listen(this, 'gameView', (v: TriviaHostView) => this.applyView(v));
@@ -89,38 +97,51 @@ export class TriviaScene extends Phaser.Scene {
   }
 
   update() {
+    this.timerBar.clear();
     if (this.view?.phase !== 'answering') {
       this.timerText.setText('');
       return;
     }
-    const secs = Math.max(0, Math.ceil((this.phaseEndsAt - performance.now()) / 1000));
-    this.timerText.setText(String(secs)).setColor(secs <= 5 ? COLORS.danger : COLORS.text);
+    const msLeft = Math.max(0, this.phaseEndsAt - performance.now());
+    const secs = Math.ceil(msLeft / 1000);
+    const low = secs <= 5;
+    this.timerText.setText(String(secs)).setColor(low ? COLORS.danger : COLORS.text);
+    // A thin bar along the top edge, running down with the clock.
+    this.timerBar.fillStyle(low ? hex(COLORS.danger) : hex(COLORS.accent), 1);
+    this.timerBar.fillRect(0, 0, WIDTH * (msLeft / this.phaseMs), 6);
   }
 
-  /** Purple panel tiles like the rest of the game; the right answers go green at the reveal. */
   private drawTile(i: number, state: 'normal' | 'right' | 'wrong') {
-    const { bg } = this.tiles[i];
-    const fill = state === 'right' ? COLORS.correct : state === 'wrong' ? COLORS.panel : COLORS.panelLight;
+    const { bg, badge, letter } = this.tiles[i];
     bg.clear();
-    bg.fillStyle(fill, state === 'wrong' ? 0.7 : 1);
-    bg.fillRoundedRect(-TILE_W / 2, -TILE_H / 2, TILE_W, TILE_H, 24);
-    if (state !== 'wrong') {
-      bg.lineStyle(state === 'right' ? 8 : 3, state === 'right' ? 0xffffff : 0x5f57a0, 1);
-      bg.strokeRoundedRect(-TILE_W / 2, -TILE_H / 2, TILE_W, TILE_H, 24);
+    badge.clear();
+    if (state === 'right') {
+      bg.fillStyle(COLORS.correct, 1);
+      bg.fillRoundedRect(-TILE_W / 2, -TILE_H / 2, TILE_W, TILE_H, 16);
+      badge.fillStyle(0xffffff, 0.22);
+      letter.setColor(COLORS.text);
+    } else {
+      bg.fillStyle(COLORS.panel, 1);
+      bg.fillRoundedRect(-TILE_W / 2, -TILE_H / 2, TILE_W, TILE_H, 16);
+      bg.lineStyle(2, LINE, 1);
+      bg.strokeRoundedRect(-TILE_W / 2, -TILE_H / 2, TILE_W, TILE_H, 16);
+      badge.fillStyle(COLORS.panelLight, 1);
+      letter.setColor(COLORS.accent);
     }
+    badge.fillRoundedRect(-TILE_W / 2 + 32, -BADGE / 2, BADGE, BADGE, 12);
   }
 
   private applyView(view: TriviaHostView) {
     this.view = view;
     this.phaseEndsAt = performance.now() + view.msLeft;
     const count = view.totalQuestions > 0 ? `Question ${view.questionNumber} of ${view.totalQuestions}` : `Question ${view.questionNumber}`;
-    this.headerText.setText(`${count}  ·  ${view.packName}`);
-    // Trivia Quest makes room for the monster under the header.
-    const quest = view.quest;
-    this.titleText.setText(quest ? 'QUEST' : 'TRIVIA');
-    this.filmText.setY(quest ? 205 : 170);
-    this.questionText.setY(quest ? 350 : 330);
-    this.renderQuest(quest);
+    this.headerText.setText(`${count}   ·   ${view.packName}`);
+    const team = view.team;
+    this.titleText.setText(team ? 'TEAM TRIVIA' : 'TRIVIA');
+    // Team Trivia makes room for the stage bar under the header.
+    this.filmText.setY(team ? 228 : 200);
+    this.questionText.setY(team ? 360 : 340);
+    this.renderStage(team);
     this.filmText.setText(view.film.toUpperCase());
     this.questionText.setText(view.question);
     this.multiText.setVisible(view.multi && view.phase !== 'gameEnd');
@@ -129,28 +150,30 @@ export class TriviaScene extends Phaser.Scene {
     const key = `${view.questionNumber}|${view.phase}`;
     if (key === this.phaseKey) return;
     this.phaseKey = key;
+    this.phaseMs = Math.max(1, view.msLeft);
     this.overlay.removeAll(true);
 
     if (view.phase === 'question') {
       for (const t of this.tiles) t.container.setAlpha(0);
-      this.questionText.setScale(0.85).setAlpha(0);
-      this.tweens.add({ targets: this.questionText, scale: 1, alpha: 1, duration: 350, ease: 'Back.easeOut' });
+      this.questionText.setAlpha(0).setY(this.questionText.y + 16);
+      this.tweens.add({ targets: this.questionText, alpha: 1, y: this.questionText.y - 16, duration: 260, ease: 'Cubic.easeOut' });
     } else if (view.phase === 'answering') {
       view.answers.forEach((answer, i) => {
         const tile = this.tiles[i];
         this.drawTile(i, 'normal');
         tile.label.setText(answer).setAlpha(1);
         tile.count.setText('');
-        tile.container.setScale(0.7).setAlpha(0);
-        this.tweens.add({ targets: tile.container, scale: 1, alpha: 1, duration: 300, delay: i * 90, ease: 'Back.easeOut' });
+        const y = TILES_TOP + Math.floor(i / 2) * (TILE_H + TILE_GAP) + TILE_H / 2;
+        tile.container.setAlpha(0).setScale(1).setY(y + 14);
+        this.tweens.add({ targets: tile.container, alpha: 1, y, duration: 220, delay: i * 60, ease: 'Cubic.easeOut' });
       });
     } else if (view.phase === 'reveal') {
       this.showReveal(view);
-      if (quest) this.showQuestReveal(quest);
+      if (team?.clearedNow) this.showStageCleared();
     } else if (view.phase === 'gameEnd') {
       const scores = view.players.map((p) => ({ name: p.name, color: p.color, points: p.gamePoints }));
-      if (quest?.outcome === 'victory') showRoundScores(this, this.overlay, scores, 'VICTORY!', COLORS.accent);
-      else if (quest?.outcome === 'defeat') showRoundScores(this, this.overlay, scores, 'THE PARTY HAS FALLEN', COLORS.danger);
+      if (team?.outcome === 'complete') showRoundScores(this, this.overlay, scores, 'CHALLENGE COMPLETE', COLORS.accent);
+      else if (team?.outcome === 'failed') showRoundScores(this, this.overlay, scores, 'CHALLENGE FAILED', COLORS.danger);
       else showRoundScores(this, this.overlay, scores);
     }
   }
@@ -159,82 +182,94 @@ export class TriviaScene extends Phaser.Scene {
     view.answers.forEach((_, i) => {
       const tile = this.tiles[i];
       const right = view.correctIndices?.includes(i) ?? false;
-      tile.container.setAlpha(1).setScale(1);
+      tile.container.setAlpha(right ? 1 : 0.45).setScale(1);
       this.drawTile(i, right ? 'right' : 'wrong');
-      tile.label.setAlpha(right ? 1 : 0.55);
+      tile.label.setAlpha(1);
       const n = view.counts?.[i] ?? 0;
       tile.count.setText(n > 0 ? `${n}` : '');
-      if (right) this.tweens.add({ targets: tile.container, scale: 1.06, duration: 200, yoyo: true, repeat: 1 });
     });
   }
 
-  /** The monster banner: name, and a health bar of hits still needed. */
-  private renderQuest(quest: QuestState | undefined) {
-    this.questBar.removeAll(true);
-    if (!quest) return;
-    const m = quest.monster;
-    const barW = 620;
-    const barX = -barW / 2 + 140;
-    this.questBar.add(text(this, barX - 70, 0, m.emoji, 64));
-    this.questBar.add(
-      text(this, barX - 120, 0, `${m.boss ? 'BOSS: ' : ''}${m.name.toUpperCase()}`, 30, m.boss ? COLORS.danger : COLORS.text, { fontStyle: '700' }).setOrigin(1, 0.5),
-    );
+  /** Team Trivia: the stage, a segmented bar of the correct answers it needs, and the count. */
+  private renderStage(team: TeamState | undefined) {
+    this.stageBar.removeAll(true);
+    if (!team) return;
+    const st = team.stage;
+    const barW = 760;
+    const gap = 6;
+    const segW = (barW - gap * (st.needed - 1)) / st.needed;
     const g = this.add.graphics();
-    g.fillStyle(COLORS.empty, 1);
-    g.fillRoundedRect(barX, -16, barW, 32, 16);
-    if (m.hp > 0) {
-      g.fillStyle(hex(COLORS.danger), 1);
-      g.fillRoundedRect(barX, -16, Math.max(32, (barW * m.hp) / m.maxHp), 32, 16);
+    for (let i = 0; i < st.needed; i++) {
+      const filled = i < st.correct;
+      const fresh = filled && i >= st.correct - team.correctNow;
+      g.fillStyle(filled ? (fresh ? 0xffffff : hex(COLORS.accent)) : COLORS.panel, 1);
+      g.fillRoundedRect(-barW / 2 + i * (segW + gap), -7, segW, 14, 7);
     }
-    this.questBar.add(g);
-    this.questBar.add(text(this, barX + barW / 2, 0, `${m.hp} / ${m.maxHp}`, 24, COLORS.text, { fontStyle: '700' }));
-    this.questBar.add(text(this, barX + barW + 30, 0, `Monster ${m.number} of ${m.total}`, 26, COLORS.muted).setOrigin(0, 0.5));
+    this.stageBar.add(g);
+    const name = st.final ? 'FINAL STAGE' : `STAGE ${st.number} OF ${st.total}`;
+    this.stageBar.add(text(this, -barW / 2 - 28, 0, name, 24, st.final ? COLORS.accent : COLORS.muted, { fontStyle: '700' }).setOrigin(1, 0.5).setLetterSpacing(3));
+    this.stageBar.add(text(this, barW / 2 + 28, 0, `${st.correct} / ${st.needed} CORRECT`, 24, COLORS.muted, { fontStyle: '700' }).setOrigin(0, 0.5).setLetterSpacing(3));
   }
 
-  /** At the reveal: the hits landed, and a cheer if the monster falls. */
-  private showQuestReveal(quest: QuestState) {
-    const shake = { x: this.questBar.x };
-    if (quest.hitsNow > 0) {
-      this.tweens.add({ targets: this.questBar, x: shake.x + 12, duration: 50, yoyo: true, repeat: 3, onComplete: () => this.questBar.setX(shake.x) });
-      const hits = text(this, WIDTH / 2 + 520, 132, `-${quest.hitsNow}`, 56, COLORS.danger, { fontStyle: '700' });
-      this.overlay.add(hits);
-      this.tweens.add({ targets: hits, y: 90, alpha: 0, duration: 1400, ease: 'Cubic.easeOut' });
-    }
-    if (quest.defeatedNow) {
-      const banner = text(this, WIDTH / 2, 470, `${quest.monster.name.toUpperCase()} DEFEATED!`, 72, COLORS.accent, { fontStyle: '700' }).setStroke('#140f2e', 14);
-      this.overlay.add(banner);
-      banner.setScale(0.5);
-      this.tweens.add({ targets: banner, scale: 1, duration: 300, ease: 'Back.easeOut' });
-      burstConfetti(this, WIDTH * 0.3, 500, 50);
-      burstConfetti(this, WIDTH * 0.7, 500, 50);
-    }
+  /** A quiet banner when a stage is done. */
+  private showStageCleared() {
+    const w = 420;
+    const h = 72;
+    const banner = this.add.container(WIDTH / 2, 500).setAlpha(0);
+    const g = this.add.graphics();
+    g.fillStyle(hex(COLORS.accent), 1);
+    g.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2);
+    banner.add([g, text(this, 0, 0, 'STAGE CLEARED', 32, INK, { fontStyle: '700' }).setLetterSpacing(5)]);
+    this.overlay.add(banner);
+    this.tweens.add({ targets: banner, alpha: 1, duration: 250, ease: 'Cubic.easeOut' });
   }
 
-  /** Players along the bottom: a tick once they've answered, then +points or ✗ at the reveal. */
+  /** Player cards along the bottom: a stripe of their colour, their name and status (and lives in Team Trivia). */
   private renderPlayers(players: TriviaHostPlayer[], phase: TriviaHostView['phase']) {
     this.playersRow.removeAll(true);
-    const w = 210;
-    const gap = 16;
+    const w = 214;
+    const h = 84;
+    const gap = 14;
     const startX = -((players.length - 1) * (w + gap)) / 2;
     players.forEach((p, i) => {
       const x = startX + i * (w + gap);
+      const left = x - w / 2;
+      const out = p.lives === 0;
+      const card = this.add.container(0, 0).setAlpha(out ? 0.5 : 1);
       const g = this.add.graphics();
+      g.fillStyle(COLORS.panel, 1);
+      g.fillRoundedRect(left, -h / 2, w, h, 12);
       g.fillStyle(hex(p.color), 1);
-      g.fillRoundedRect(x - w / 2, -45, w, 90, 18);
-      const name = text(this, x, -14, p.name, 28, '#140f2e', { fontStyle: '700' });
+      g.fillRoundedRect(left, -h / 2, 8, h, { tl: 12, bl: 12, tr: 0, br: 0 });
+      card.add(g);
+      card.add(text(this, left + 24, -16, p.name, 26, COLORS.text, { fontStyle: '700' }).setOrigin(0, 0.5));
+
       let status = '';
-      if (p.hearts !== undefined) {
-        // Trivia Quest: hearts, then what each answer did.
-        const hearts = p.hearts > 0 ? '♥'.repeat(p.hearts) + '♡'.repeat(MAX_HEARTS - p.hearts) : '👻';
-        const questText = { hit: 'HIT!', glance: 'glancing', hurt: '-1 ♥', revived: 'REVIVED!', ghost: '👻' } as const;
-        if (phase === 'answering') status = `${hearts} ${p.answered ? '✓' : '…'}`;
-        else if (phase === 'reveal' && p.questResult) status = questText[p.questResult];
-        else status = hearts;
-      } else if (phase === 'answering') status = p.answered ? '✓ locked in' : 'thinking…';
-      else if (phase === 'reveal') status = p.correct ? `+${p.questionPoints}` : '✗';
-      else status = p.score.toLocaleString();
-      const sub = text(this, x, 20, status, 26, '#140f2e');
-      this.playersRow.add([g, name, sub]);
+      let color: string = COLORS.muted;
+      if (p.lives !== undefined) {
+        // Lives as small bars at the top right.
+        const lives = this.add.graphics();
+        for (let k = 0; k < MAX_LIVES; k++) {
+          lives.fillStyle(k < p.lives ? hex(COLORS.danger) : COLORS.panelLight, 1);
+          lives.fillRoundedRect(left + w - 20 - (MAX_LIVES - k) * 22, -22, 16, 8, 4);
+        }
+        card.add(lives);
+        const teamText = { correct: 'Correct', partial: 'Partly right', wrong: '−1 life', back: 'Back in', out: 'Out' } as const;
+        const teamColor = { correct: COLORS.accent, partial: COLORS.muted, wrong: COLORS.danger, back: COLORS.accent, out: COLORS.muted } as const;
+        if (phase === 'reveal' && p.teamResult) {
+          status = teamText[p.teamResult];
+          color = teamColor[p.teamResult];
+        } else if (phase === 'answering') status = p.answered ? 'Locked in' : out ? 'Out' : 'Thinking';
+        else status = out ? 'Out' : `${p.score.toLocaleString()} pts`;
+      } else if (phase === 'answering') {
+        status = p.answered ? 'Locked in' : 'Thinking';
+        if (p.answered) color = COLORS.text;
+      } else if (phase === 'reveal') {
+        status = p.correct ? `+${p.questionPoints}` : 'No points';
+        if (p.correct) color = COLORS.accent;
+      } else status = `${p.score.toLocaleString()} pts`;
+      card.add(text(this, left + 24, 18, status, 22, color, { fontStyle: '700' }).setOrigin(0, 0.5));
+      this.playersRow.add(card);
     });
   }
 }

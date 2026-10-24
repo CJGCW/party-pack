@@ -187,10 +187,10 @@ export class PickEmScene extends Phaser.Scene {
       const name = text(this, x, -14, p.name, 28, '#140f2e', { fontStyle: '700' });
       let status = p.score.toLocaleString();
       if (kind === 'typed') {
-        if (phase === 'answering') status = `${p.found} found${p.answered ? ' ✓' : ''}`;
+        if (phase === 'answering') status = `${p.found} found${p.answered ? ' · done' : ''}`;
         else if (phase === 'reveal') status = `${p.right} found  +${p.points}`;
-      } else if (phase === 'answering') status = p.answered ? '✓ locked in' : 'picking…';
-      else if (phase === 'reveal') status = p.answered ? `${p.right}✓ ${p.wrong}✗  +${p.points}` : 'no picks';
+      } else if (phase === 'answering') status = p.answered ? 'Locked in' : 'Picking';
+      else if (phase === 'reveal') status = p.answered ? `+${p.points} · ${p.right} right` : 'No picks';
       const sub = text(this, x, 20, status, 24, '#140f2e', { fontStyle: '700' });
       this.playersRow.add([g, name, sub]);
     });
