@@ -19,13 +19,7 @@ const INK = '#140f2e';
 export class ClueCrewScene extends Phaser.Scene {
   static readonly KEY = 'clue-crew';
 
-  private view: CrewHostView | null = null;
-  private phaseEndsAt = 0;
-  private phaseMs = 1;
-  private phaseKey = '';
   private headerText!: Phaser.GameObjects.Text;
-  private timerText!: Phaser.GameObjects.Text;
-  private timerBar!: Phaser.GameObjects.Graphics;
   private clueLayer!: Phaser.GameObjects.Container;
   private boardLayer!: Phaser.GameObjects.Container;
   private playersRow!: Phaser.GameObjects.Container;
@@ -36,13 +30,9 @@ export class ClueCrewScene extends Phaser.Scene {
   }
 
   create() {
-    this.view = null;
-    this.phaseKey = '';
     addBackdrop(this, { blobs: false });
-    this.timerBar = this.add.graphics();
     text(this, 80, 64, 'CLUE CREW', 30, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5).setLetterSpacing(6);
     this.headerText = text(this, WIDTH / 2, 64, '', 30, COLORS.muted);
-    this.timerText = text(this, WIDTH - 80, 64, '', 48, COLORS.text, { fontStyle: '700' }).setOrigin(1, 0.5);
     this.clueLayer = this.add.container(0, 0);
     this.boardLayer = this.add.container(0, 0);
     this.playersRow = this.add.container(WIDTH / 2, HEIGHT - 76);
@@ -58,29 +48,7 @@ export class ClueCrewScene extends Phaser.Scene {
     }
   }
 
-  update() {
-    this.timerBar.clear();
-    const timed = this.view?.phase === 'clue' || this.view?.phase === 'guess';
-    if (!timed) {
-      this.timerText.setText('');
-      return;
-    }
-    const msLeft = Math.max(0, this.phaseEndsAt - performance.now());
-    const secs = Math.ceil(msLeft / 1000);
-    const low = secs <= 10;
-    this.timerText.setText(String(secs)).setColor(low ? COLORS.danger : COLORS.text);
-    this.timerBar.fillStyle(low ? hex(COLORS.danger) : hex(COLORS.accent), 1);
-    this.timerBar.fillRect(0, 0, WIDTH * (msLeft / this.phaseMs), 6);
-  }
-
   private applyView(view: CrewHostView) {
-    this.view = view;
-    this.phaseEndsAt = performance.now() + view.msLeft;
-    const key = `${view.round}|${view.turn}|${view.phase}|${view.guessesLeft}`;
-    if (key !== this.phaseKey) {
-      this.phaseKey = key;
-      this.phaseMs = Math.max(1, view.msLeft);
-    }
     this.headerText.setText(`Round ${view.round} of ${view.totalRounds}   ·   Turn ${view.turn} of ${view.turnsPerRound}`);
     this.renderClue(view);
     this.renderBoard(view);

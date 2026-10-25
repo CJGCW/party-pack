@@ -8,11 +8,9 @@ import type { Controller } from '../main';
  */
 export function createClueCrew(root: HTMLElement, send: (input: unknown) => void): Controller {
   let view: CrewPlayerView | null = null;
-  let phaseEndsAt = 0;
   let number = 1;
 
   const headerEl = h('span');
-  const timerEl = h('span', { class: 'wr-timer' });
   const scoreEl = h('span');
   const turnEl = h('div', { class: 'cc-turn' });
   const boardEl = h('div', { class: 'cc-board' });
@@ -64,7 +62,7 @@ export function createClueCrew(root: HTMLElement, send: (input: unknown) => void
   });
 
   root.append(
-    h('div', { class: 'cc' }, h('div', { class: 'wr-top' }, headerEl, timerEl, scoreEl), turnEl, boardEl, legendEl, statusEl, clueForm, stopBtn),
+    h('div', { class: 'cc' }, h('div', { class: 'wr-top' }, headerEl, scoreEl), turnEl, boardEl, legendEl, statusEl, clueForm, stopBtn),
   );
 
   function setStatus(text: string, kind: '' | 'good' | 'bad' = '') {
@@ -145,24 +143,12 @@ export function createClueCrew(root: HTMLElement, send: (input: unknown) => void
     }
   }
 
-  function tick() {
-    if (!view) return;
-    const secs = Math.max(0, Math.ceil((phaseEndsAt - performance.now()) / 1000));
-    const timed = view.phase === 'clue' || view.phase === 'guess';
-    timerEl.textContent = timed ? `${secs}s` : '';
-    timerEl.classList.toggle('low', timed && secs <= 10);
-  }
-  const interval = setInterval(tick, 200);
-
   return {
     update(raw) {
       view = raw as CrewPlayerView;
-      phaseEndsAt = performance.now() + view.msLeft;
       render();
-      tick();
     },
     destroy() {
-      clearInterval(interval);
       root.replaceChildren();
     },
   };

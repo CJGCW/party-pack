@@ -16,10 +16,8 @@ import { ROUND_SCORES_MS } from '../../shared/timing';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 import { isOffensive } from './words';
 
-/** Time for the clue-giver to think of a clue. */
-const CLUE_MS = 75_000;
-/** Time for the others to vote on each guess. */
-const GUESS_MS = 30_000;
+/** Clues and votes have no time limit; this often, check whether someone dropped out mid-turn. */
+const PRESENCE_CHECK_MS = 2_000;
 /** How long the result of a vote shows before play carries on. */
 const RESULT_MS = 2_500;
 /** Traps on each player's key. */
@@ -72,6 +70,7 @@ class ClueCrew implements MiniGame {
   private gamePoints = new Map<string, number>();
   private phaseEndsAt = 0;
   private timer: NodeJS.Timeout | null = null;
+  private presenceCheck: NodeJS.Timeout | null = null;
 
   constructor(
     private readonly ctx: GameContext,
@@ -116,14 +115,25 @@ class ClueCrew implements MiniGame {
     }
     this.turnIndex = -1;
     this.nextTurn();
+    this.presenceCheck = setInterval(() => this.checkPresence(), PRESENCE_CHECK_MS);
   }
 
-  private setPhase(phase: CrewPhase, ms: number, next: () => void) {
+  /** A phase that moves on by itself after `ms`, or (clue and guess) waits for players. */
+  private setPhase(phase: CrewPhase, ms: number | null, next?: () => void) {
     this.phase = phase;
-    this.phaseEndsAt = Date.now() + ms;
+    this.phaseEndsAt = Date.now() + (ms ?? 0);
     if (this.timer) clearTimeout(this.timer);
-    this.timer = setTimeout(next, ms);
+    this.timer = ms !== null && next ? setTimeout(next, ms) : null;
     this.syncAll();
+  }
+
+  /** With no time limits, a turn would stall if the clue-giver leaves or the last voter does. */
+  private checkPresence() {
+    if (this.phase !== 'clue' && this.phase !== 'guess') return;
+    const giver = this.ctx.players().find((p) => p.id === this.giverId);
+    if (!giver?.connected) return this.nextTurn();
+    const guessers = this.guessers();
+    if (this.phase === 'guess' && guessers.length > 0 && guessers.every((p) => this.votes.has(p.id))) this.resolveVote();
   }
 
   /** Targets this player still has to give clues for. */
@@ -144,7 +154,7 @@ class ClueCrew implements MiniGame {
     this.clueError = null;
     this.votes.clear();
     this.last = null;
-    this.setPhase('clue', CLUE_MS, () => this.nextTurn());
+    this.setPhase('clue', null);
   }
 
   onInput(playerId: string, raw: unknown) {
@@ -180,10 +190,10 @@ class ClueCrew implements MiniGame {
 
   private startGuess() {
     this.votes.clear();
-    this.setPhase('guess', GUESS_MS, () => this.resolveVote());
+    this.setPhase('guess', null);
   }
 
-  /** The most-voted choice wins (ties broken at random); no votes at all means stop. */
+  /** The most-voted choice wins (ties broken at random). */
   private resolveVote() {
     const tally = new Map<number | 'stop', number>();
     for (const v of this.votes.values()) tally.set(v, (tally.get(v) ?? 0) + 1);
@@ -298,7 +308,9 @@ class ClueCrew implements MiniGame {
 
   dispose() {
     if (this.timer) clearTimeout(this.timer);
+    if (this.presenceCheck) clearInterval(this.presenceCheck);
     this.timer = null;
+    this.presenceCheck = null;
   }
 }
 
