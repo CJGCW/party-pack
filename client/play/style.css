@@ -452,3 +452,53 @@ button.secondary { background: var(--panel-light); }
 .pe-chip { padding: 6px 12px; border-radius: 999px; font-size: 16px; background: var(--panel-light); }
 .pe-chip.mine { background: var(--correct); }
 .pe-chip.missed { background: var(--panel); color: var(--muted); }
+
+/* ---------- Clue Crew ---------- */
+
+.cc { min-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 10px; user-select: none; -webkit-user-select: none; }
+.cc-turn { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 12px; background: var(--panel); }
+.cc-giver { font-size: 14px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+.cc-clue { font-size: 22px; color: var(--accent); letter-spacing: 1px; }
+.cc-waiting { font-size: 16px; color: var(--muted); }
+.cc-board { display: grid; gap: 5px; }
+.cc-card {
+  position: relative;
+  min-height: 50px;
+  padding: 4px 2px;
+  border-radius: 8px;
+  background: var(--panel);
+  border: 2px solid #4a4290;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.cc-word { font-size: 11px; letter-spacing: 0.3px; line-height: 1.1; word-break: break-all; }
+.cc-card.target { border-color: var(--correct); background: rgba(76, 175, 106, 0.18); }
+.cc-card.trap { border-color: var(--danger); background: #1a1430; }
+.cc-card.found { background: var(--correct); border-color: var(--correct); color: var(--text); }
+.cc-card.voted { box-shadow: 0 0 0 3px var(--accent); }
+.cc-card.picked-neutral { background: var(--panel-light); border-color: var(--muted); }
+.cc-card.picked-trap { background: var(--danger); border-color: var(--danger); }
+.cc-votes {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 11px;
+  line-height: 18px;
+}
+.cc-legend { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.cc-dot { width: 12px; height: 12px; border-radius: 3px; margin-left: 8px; }
+.cc-dot.target { background: rgba(76, 175, 106, 0.3); border: 2px solid var(--correct); }
+.cc-dot.trap { background: #1a1430; border: 2px solid var(--danger); }
+.cc-form { display: flex; flex-direction: column; gap: 8px; }
+.cc-form[hidden], .cc-stop[hidden] { display: none; }
+.cc-input { font-size: 20px; padding: 12px 14px; }
+.cc-give { background: var(--correct); }
+.cc-stop.voted { box-shadow: 0 0 0 3px var(--accent); }
