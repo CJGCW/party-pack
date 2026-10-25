@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import QRCode from 'qrcode';
-import { MAX_PLAYERS, type GameInfo, type RoomState } from '../../../shared/protocol';
+import { MAX_PLAYERS, TRIVIA_SLICE, type GameInfo, type RoomState } from '../../../shared/protocol';
 import { listen, net, socket } from '../net';
 import { COLORS, WIDTH, addBackdrop, hex, panel, text, toast } from '../theme';
 
@@ -92,7 +92,11 @@ export class LobbyScene extends Phaser.Scene {
     bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 24);
     card.add(bg);
 
-    const labels = state.wheelEntries.filter((e) => state.settings.enabled.includes(e.id)).map((e) => e.label);
+    const { style, topics } = state.settings.trivia;
+    const triviaNote = `${style === 'coop' ? 'co-op' : style === 'both' ? 'both' : 'competitive'}, ${topics.length} ${topics.length === 1 ? 'topic' : 'topics'}`;
+    const labels = state.wheelEntries
+      .filter((e) => state.settings.enabled.includes(e.id))
+      .map((e) => (e.id === TRIVIA_SLICE ? `${e.label} (${triviaNote})` : e.label));
     const rounds = state.settings.rounds;
     card.add(
       text(this, -210, -28, `On the wheel: ${labels.join(',  ')}`, 28, COLORS.text, {

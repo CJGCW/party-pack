@@ -1,6 +1,6 @@
 import type { GameInfo } from '../protocol';
 
-/** Each question bank is a mode, so it shows up as its own slice on the wheel. */
+/** Each question bank is a mode: a topic the VIP can choose under the Trivia slice on the wheel. */
 export const TRIVIA: GameInfo = {
   id: 'trivia',
   name: 'Trivia',

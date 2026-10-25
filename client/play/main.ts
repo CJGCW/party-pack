@@ -1,5 +1,5 @@
 import { io, type Socket } from 'socket.io-client';
-import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type RoomState, type ServerToClientEvents } from '../../shared/protocol';
+import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, TRIVIA_SLICE, type ClientToServerEvents, type RoomState, type TriviaStyle, type ServerToClientEvents } from '../../shared/protocol';
 import { CLUE_CREW } from '../../shared/games/clueCrew';
 import { PICK_EM } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
@@ -234,9 +234,9 @@ function wheelSettings(isVip: boolean): Node[] {
       if (!res.ok) errorEl.textContent = res.error;
     });
 
-  const toggles = wheelEntries.map((entry) => {
+  const toggles = wheelEntries.flatMap((entry) => {
     const on = settings.enabled.includes(entry.id);
-    return h(
+    const toggle = h(
       'button',
       {
         class: `toggle${on ? ' on' : ''}`,
@@ -249,7 +249,53 @@ function wheelSettings(isVip: boolean): Node[] {
       h('span', { class: 'check' }, on ? '✓' : ''),
       entry.label,
     );
+    return entry.id === TRIVIA_SLICE && on ? [toggle, triviaOptions()] : [toggle];
   });
+
+  /** Under the Trivia toggle: competitive, co-op or both, and which topics. */
+  function triviaOptions() {
+    const { style, topics } = settings.trivia;
+    const styles: [TriviaStyle, string][] = [['competitive', 'Competitive'], ['coop', 'Co-op'], ['both', 'Both']];
+    return h(
+      'div',
+      { class: 'trivia-options' },
+      h(
+        'div',
+        { class: 'segmented' },
+        ...styles.map(([id, label]) =>
+          h(
+            'button',
+            {
+              class: id === style ? 'on' : '',
+              disabled: !isVip,
+              onclick: () => save({ ...settings, trivia: { style: id, topics } }),
+            },
+            label,
+          ),
+        ),
+      ),
+      h('div', { class: 'muted' }, 'Topics: one is picked at random each time.'),
+      h(
+        'div',
+        { class: 'chips' },
+        ...TRIVIA.modes.map((mode) => {
+          const chosen = topics.includes(mode.id);
+          return h(
+            'button',
+            {
+              class: `chip${chosen ? ' on' : ''}`,
+              disabled: !isVip,
+              onclick: () => {
+                const next = chosen ? topics.filter((t) => t !== mode.id) : [...topics, mode.id];
+                save({ ...settings, trivia: { style, topics: next } });
+              },
+            },
+            mode.name,
+          );
+        }),
+      ),
+    );
+  }
 
   /** − value + control; only the VIP can press it. */
   const stepper = (value: number, min: number, max: number, unit: string, set: (n: number) => void) =>

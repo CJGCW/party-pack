@@ -9,6 +9,7 @@
 import { io, type Socket } from 'socket.io-client';
 import words from 'an-array-of-english-words';
 import { WORDLE_RACE, scoreGuess, type WordlePlayerView } from '../shared/games/wordleRace';
+import { TRIVIA } from '../shared/games/trivia';
 import type { ClientToServerEvents, ServerToClientEvents } from '../shared/protocol';
 
 const args = process.argv.slice(2);
@@ -71,7 +72,8 @@ function runBot(name: string, isStarter: boolean) {
         socket.emit('room:startGame', { gameId: WORDLE_RACE.id, modeId }, (r) => {
           if (r.ok) return console.log('start:', r);
           const enabled = [`${WORDLE_RACE.id}:${modeId}`];
-          socket.emit('room:updateSettings', { enabled, rounds, puzzlesPerRound }, () =>
+          const trivia = { style: 'both' as const, topics: TRIVIA.modes.map((m) => m.id) };
+          socket.emit('room:updateSettings', { enabled, trivia, rounds, puzzlesPerRound }, () =>
             socket.emit('room:startSession', (s) => console.log('start session:', s)),
           );
         });

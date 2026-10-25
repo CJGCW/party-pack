@@ -9,13 +9,16 @@ import {
   MIN_PUZZLES,
   MIN_ROUNDS,
   PLAYER_COLORS,
+  TRIVIA_SLICE,
   type ClientToServerEvents,
   type PlayerInfo,
   type RoomState,
   type ServerToClientEvents,
   type SessionSettings,
+  type TriviaStyle,
   type WheelEntry,
 } from '../shared/protocol';
+import { TRIVIA, TRIVIA_QUEST } from '../shared/games/trivia';
 import { STANDINGS_MS } from '../shared/timing';
 import { MICROGAMES, WOOCHAWARE, findMicrogame } from '../shared/games/woochaware';
 import { config } from './config';
@@ -46,16 +49,25 @@ const SPIN_RESULT_MS = 3_000;
 /** Final results screen at the end of a session. */
 const RESULTS_MS = 15_000;
 
-/** Every game/mode combination, each a possible slice on the wheel. */
-const WHEEL_ENTRIES: WheelEntry[] = GAMES.flatMap((g) =>
-  g.info.modes.map((m) => ({
+/** The trivia games share one slice; the trivia settings pick which game and topic it plays. */
+const TRIVIA_GAMES = new Set([TRIVIA.id, TRIVIA_QUEST.id]);
+const TRIVIA_TOPICS = TRIVIA.modes.map((m) => m.id);
+const TRIVIA_STYLES: TriviaStyle[] = ['competitive', 'coop', 'both'];
+
+/** Every game/mode combination, each a possible slice on the wheel, plus the one trivia slice. */
+const WHEEL_ENTRIES: WheelEntry[] = GAMES.flatMap((g): WheelEntry[] => {
+  if (g.info.id === TRIVIA.id) return [{ id: TRIVIA_SLICE, gameId: TRIVIA.id, modeId: '', label: 'Trivia' }];
+  if (TRIVIA_GAMES.has(g.info.id)) return [];
+  return g.info.modes.map((m) => ({
     id: `${g.info.id}:${m.id}`,
     gameId: g.info.id,
     modeId: m.id,
-    // Name the mode unless it's the generic one (e.g. "Trivia · Disney & Pixar", but just "Letter Drop").
+    // Name the mode unless it's the generic one (e.g. "Pick 'Em · General Knowledge", but just "Letter Drop").
     label: m.id === 'standard' ? g.info.name : `${g.info.name} · ${m.name}`,
-  })),
-);
+  }));
+});
+
+const pick = <T,>(items: T[]) => items[Math.floor(Math.random() * items.length)];
 
 interface Session {
   round: number;
@@ -70,6 +82,7 @@ export class Room {
   gameId: string | null = null;
   settings: SessionSettings = {
     enabled: WHEEL_ENTRIES.map((e) => e.id),
+    trivia: { style: 'both', topics: [...TRIVIA_TOPICS] },
     rounds: DEFAULT_ROUNDS,
     puzzlesPerRound: DEFAULT_PUZZLES,
   };
@@ -245,7 +258,12 @@ export class Room {
     // Older clients may not send this; keep the current value then.
     const puzzles = next?.puzzlesPerRound === undefined ? this.settings.puzzlesPerRound : Math.round(Number(next.puzzlesPerRound));
     if (!(puzzles >= MIN_PUZZLES && puzzles <= MAX_PUZZLES)) return `Puzzles must be ${MIN_PUZZLES}-${MAX_PUZZLES}.`;
-    this.settings = { enabled: [...new Set(enabled)], rounds, puzzlesPerRound: puzzles };
+    // Trivia: keep the current choice for anything missing or invalid.
+    const style = TRIVIA_STYLES.includes(next?.trivia?.style) ? next.trivia.style : this.settings.trivia.style;
+    const sent = next?.trivia?.topics;
+    const topics = Array.isArray(sent) ? TRIVIA_TOPICS.filter((t) => sent.includes(t)) : this.settings.trivia.topics;
+    if (topics.length === 0) return 'Pick at least one trivia topic.';
+    this.settings = { enabled: [...new Set(enabled)], trivia: { style, topics }, rounds, puzzlesPerRound: puzzles };
     this.broadcastState();
     return null;
   }
@@ -278,11 +296,19 @@ export class Room {
     this.setPhaseTimer(SPIN_MS + SPIN_RESULT_MS, () => {
       const entry = this.spin!.entries[targetIndex];
       this.spin = null;
-      const error = this.launchGame(entry.gameId, entry.modeId);
+      const { gameId, modeId } = entry.id === TRIVIA_SLICE ? this.pickTrivia() : entry;
+      const error = this.launchGame(gameId, modeId);
       // E.g. players left during the spin so the game no longer fits: end the session.
       if (error) this.returnToLobby();
     });
     this.broadcastState();
+  }
+
+  /** The trivia slice came up: competitive or co-op (per the settings), on one of the chosen topics. */
+  private pickTrivia() {
+    const { style, topics } = this.settings.trivia;
+    const coop = style === 'both' ? Math.random() < 0.5 : style === 'coop';
+    return { gameId: coop ? TRIVIA_QUEST.id : TRIVIA.id, modeId: pick(topics) };
   }
 
   /** Debug mode only: play one specific game (or, in WoochaWare debug, one microgame). */
