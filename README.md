@@ -33,6 +33,11 @@ HTTPS is only needed for WoochaWare. Setting `"woochaware": false` in `party-pac
 `PARTY_PACK_WOOCHAWARE=0`) turns WoochaWare off: it leaves the wheel and the debug picker, phones
 join over plain HTTP with no certificate warning, and WoochaWare debug mode is ignored even if it's on.
 
+The join address shown on the TV is this computer's address on your home network. VPN and
+virtual-machine adapters (NordVPN, VirtualBox, WSL and so on) are skipped. If it still picks the
+wrong one, set `PARTY_PACK_HOST` to the right address (for example `PARTY_PACK_HOST=10.0.0.26`).
+The server is only reachable from your own network either way.
+
 The first player to join is the **VIP**. On their phone they choose which games go on the
 **wheel**, how many **rounds** to play (1–10), and how many **puzzles per round** (1–10: puzzles in
 Letter Drop, words in Word Rush; it applies to every game), then spin it (the host screen has a SPIN!

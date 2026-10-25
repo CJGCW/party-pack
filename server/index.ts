@@ -14,12 +14,22 @@ const HTTPS_PORT = Number(process.env.HTTPS_PORT ?? PORT + 443);
 const isProd = process.env.NODE_ENV === 'production';
 const projectRoot = resolve(import.meta.dirname, '..');
 
-/** Best guess at this machine's address on the local network, so phones can reach it. */
+/** VPN and virtual-machine adapters, which phones on the Wi-Fi can't reach. */
+const VIRTUAL_ADAPTER = /vpn|nord|tailscale|zerotier|wireguard|virtualbox|vmware|hyper-v|vethernet|wsl|docker/i;
+
+/**
+ * Best guess at this machine's address on the local network, so phones can reach it.
+ * PARTY_PACK_HOST overrides the guess.
+ */
 function lanAddress(): string {
-  const candidates = Object.values(networkInterfaces())
-    .flat()
-    .filter((i) => i && i.family === 'IPv4' && !i.internal)
-    .map((i) => i!.address);
+  if (process.env.PARTY_PACK_HOST) return process.env.PARTY_PACK_HOST;
+  const candidates = Object.entries(networkInterfaces())
+    .filter(([name]) => !VIRTUAL_ADAPTER.test(name))
+    .flatMap(([, list]) => list ?? [])
+    .filter((i) => i.family === 'IPv4' && !i.internal)
+    .map((i) => i.address)
+    // Self-assigned (no network) and VirtualBox's default host-only range.
+    .filter((a) => !a.startsWith('169.254.') && !a.startsWith('192.168.56.'));
   return (
     candidates.find((a) => a.startsWith('192.168.')) ??
     candidates.find((a) => a.startsWith('10.')) ??
