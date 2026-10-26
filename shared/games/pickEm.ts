@@ -108,3 +108,84 @@ export type PickInput =
   | { type: 'guess'; seq: number; text: string }
   /** Typed lists: finished early. */
   | { type: 'done' };
+
+// ---- Team Pick 'Em (co-op) ------------------------------------------------------------
+
+/** Co-op Pick 'Em: the whole party works each list together against one shared clock. */
+export const PICK_EM_COOP: GameInfo = {
+  id: 'pick-em-coop',
+  name: "Team Pick 'Em",
+  description: 'Co-op. Everyone works the same list together against one clock; every wrong answer costs the team time.',
+  minPlayers: 1,
+  maxPlayers: 8,
+  modes: PICK_EM.modes,
+};
+
+/** The team's clock for each list, and what each wrong pick or guess takes off it. */
+export const COOP_START_MS = 180_000;
+export const COOP_PENALTY_MS = 10_000;
+/** Everyone gets this per answer the team finds, and this each for clearing a list. */
+export const COOP_FOUND_POINTS = 100;
+export const COOP_CLEAR_POINTS = 300;
+
+/**
+ * One tile on the board. Tap lists show every option from the start; typed lists show a
+ * blank slot (label null) until someone finds it. At the reveal, anything not found is 'missed'.
+ */
+export interface CoopTile {
+  label: string | null;
+  state: 'open' | 'found' | 'wrong' | 'missed';
+  /** Who found it (or picked it, if wrong). */
+  by: { name: string; color: string } | null;
+}
+
+/** One pick or guess, for the TV's feed and the phone's last result. */
+export interface CoopEvent {
+  seq: number;
+  playerId: string;
+  name: string;
+  color: string;
+  /** What they tapped or typed. */
+  text: string;
+  result: 'right' | 'wrong' | 'repeat';
+  /** The answer it matched, for right and repeat. */
+  answer: string | null;
+}
+
+interface CoopViewBase {
+  phase: PickPhase;
+  kind: PickKind;
+  questionNumber: number;
+  totalQuestions: number;
+  topic: string;
+  question: string;
+  /** Empty during 'question'. */
+  tiles: CoopTile[];
+  found: number;
+  total: number;
+  /** At the reveal: whether the team found everything. */
+  cleared: boolean | null;
+  /** Wrong answers so far on this list (each one took COOP_PENALTY_MS off the clock). */
+  penalties: number;
+  msLeft: number;
+}
+
+export interface PickCoopHostView extends CoopViewBase {
+  packName: string;
+  /** The latest picks and guesses, newest last. */
+  feed: CoopEvent[];
+  players: { id: string; name: string; color: string; score: number; gamePoints: number; found: number }[];
+}
+
+export interface PickCoopPlayerView extends CoopViewBase {
+  /** This player's latest pick or guess, matched by the seq the phone sent. */
+  lastGuess: CoopEvent | null;
+  gamePoints: number;
+  score: number;
+}
+
+export type PickCoopInput =
+  /** Tap lists: pick one option (it counts straight away). */
+  | { type: 'tap'; seq: number; index: number }
+  /** Typed lists: one guess. */
+  | { type: 'guess'; seq: number; text: string };

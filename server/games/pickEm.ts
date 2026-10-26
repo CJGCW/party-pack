@@ -1,8 +1,18 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+  COOP_CLEAR_POINTS,
+  COOP_FOUND_POINTS,
+  COOP_PENALTY_MS,
+  COOP_START_MS,
   PICK_EM,
+  PICK_EM_COOP,
   PICK_POINTS,
+  type CoopEvent,
+  type CoopTile,
+  type PickCoopHostView,
+  type PickCoopInput,
+  type PickCoopPlayerView,
   type PickGuessResult,
   type PickHostView,
   type PickInput,
@@ -329,6 +339,237 @@ class PickEm implements MiniGame {
 export const pickEm: MiniGameDefinition = {
   info: PICK_EM,
   create: (ctx, modeId, options) => new PickEm(ctx, modeId, options.puzzles),
+};
+
+// ---- Team Pick 'Em (co-op) ---------------------------------------------------------
+
+/** How many picks and guesses the TV's feed shows. */
+const FEED_LENGTH = 6;
+
+/**
+ * Everyone works one list together. Each pick or guess counts straight away: a right one
+ * lights up for the whole team, a wrong one takes time off the shared clock, and one
+ * that's already been tried costs nothing. Clear the list before the clock runs out.
+ */
+class PickEmCoop implements MiniGame {
+  private phase: PickPhase = 'question';
+  private questionIndex = 0;
+  private question!: Question;
+  private options: string[] = [];
+  /** Who found each right answer (by option index for tap lists, list index for typed ones). */
+  private foundBy = new Map<number, string>();
+  /** Tap lists: wrong options someone picked, and who. Typed lists: wrong guesses already made. */
+  private wrongPicks = new Map<number, string>();
+  private wrongGuesses = new Set<string>();
+  private penalties = 0;
+  private feed: CoopEvent[] = [];
+  private lastGuess = new Map<string, CoopEvent>();
+  private cleared: boolean | null = null;
+  private gamePoints = new Map<string, number>();
+  private phaseEndsAt = 0;
+  private timer: NodeJS.Timeout | null = null;
+
+  constructor(
+    private readonly ctx: GameContext,
+    private readonly bankId: string,
+    private readonly totalQuestions: number,
+  ) {}
+
+  private get kind(): PickKind {
+    return this.question.list.length > 0 ? 'typed' : 'choice';
+  }
+
+  /** How many right answers the list has. */
+  private get total() {
+    return this.kind === 'typed' ? this.question.list.length : this.question.correct.length;
+  }
+
+  start() {
+    this.startQuestion(0);
+  }
+
+  private setPhase(phase: PickPhase, ms: number, next: () => void) {
+    this.phase = phase;
+    this.phaseEndsAt = Date.now() + ms;
+    this.schedule(next);
+    this.syncAll();
+  }
+
+  /** (Re)arm the timer for the current phase's end, e.g. after a penalty moves it. */
+  private schedule(next: () => void) {
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = setTimeout(next, Math.max(0, this.phaseEndsAt - Date.now()));
+  }
+
+  private startQuestion(index: number) {
+    this.questionIndex = index;
+    this.question = dealQuestion(this.bankId);
+    this.options = shuffle([...this.question.correct, ...this.question.wrong]);
+    this.foundBy.clear();
+    this.wrongPicks.clear();
+    this.wrongGuesses.clear();
+    this.penalties = 0;
+    this.feed = [];
+    this.lastGuess.clear();
+    this.cleared = null;
+    this.setPhase('question', READ_MS, () => this.setPhase('answering', COOP_START_MS, () => this.reveal()));
+  }
+
+  onInput(playerId: string, raw: unknown) {
+    const input = raw as PickCoopInput;
+    const player = this.ctx.players().find((p) => p.id === playerId);
+    if (this.phase !== 'answering' || !input || !player) return;
+    const seq = Number(input.seq) || 0;
+    let text: string;
+    let result: CoopEvent['result'];
+    let answer: string | null = null;
+
+    if (this.kind === 'choice') {
+      if (input.type !== 'tap' || !Number.isInteger(input.index) || input.index < 0 || input.index >= this.options.length) return;
+      const i = input.index;
+      text = this.options[i];
+      if (this.foundBy.has(i) || this.wrongPicks.has(i)) {
+        result = 'repeat';
+        answer = text;
+      } else if (this.question.correct.includes(text)) {
+        result = 'right';
+        answer = text;
+        this.foundBy.set(i, playerId);
+      } else {
+        result = 'wrong';
+        this.wrongPicks.set(i, playerId);
+      }
+    } else {
+      if (input.type !== 'guess' || typeof input.text !== 'string') return;
+      text = input.text.trim().slice(0, 60);
+      if (!text) return;
+      const i = matchAnswer(text, this.question.list);
+      if (i >= 0) {
+        answer = this.question.list[i][0];
+        result = this.foundBy.has(i) ? 'repeat' : 'right';
+        if (result === 'right') this.foundBy.set(i, playerId);
+      } else {
+        // The same wrong guess twice only costs once.
+        const key = normalise(text);
+        result = this.wrongGuesses.has(key) ? 'repeat' : 'wrong';
+        this.wrongGuesses.add(key);
+      }
+    }
+
+    const event: CoopEvent = { seq, playerId, name: player.name, color: player.color, text, result, answer };
+    this.lastGuess.set(playerId, event);
+    this.feed = [...this.feed, event].slice(-FEED_LENGTH);
+
+    if (result === 'right') {
+      for (const p of this.ctx.players()) this.award(p.id, COOP_FOUND_POINTS);
+      if (this.foundBy.size === this.total) return this.reveal();
+    } else if (result === 'wrong') {
+      this.penalties++;
+      this.phaseEndsAt -= COOP_PENALTY_MS;
+      if (this.phaseEndsAt <= Date.now()) return this.reveal();
+      this.schedule(() => this.reveal());
+    }
+    this.syncAll();
+  }
+
+  private award(playerId: string, points: number) {
+    this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + points);
+    this.ctx.addScore(playerId, points);
+  }
+
+  private reveal() {
+    this.cleared = this.foundBy.size === this.total;
+    if (this.cleared) for (const p of this.ctx.players()) this.award(p.id, COOP_CLEAR_POINTS);
+    const isLast = this.questionIndex >= this.totalQuestions - 1;
+    this.setPhase('reveal', PUZZLE_RESULT_MS, () => {
+      if (!isLast) this.startQuestion(this.questionIndex + 1);
+      else if (this.totalQuestions === 1) this.ctx.finish();
+      else this.setPhase('gameEnd', ROUND_SCORES_MS, () => this.ctx.finish());
+    });
+  }
+
+  private person(id: string | undefined) {
+    const p = id ? this.ctx.players().find((pl) => pl.id === id) : undefined;
+    return p ? { name: p.name, color: p.color } : null;
+  }
+
+  private tiles(): CoopTile[] {
+    if (this.phase === 'question') return [];
+    const revealing = this.phase === 'reveal' || this.phase === 'gameEnd';
+    if (this.kind === 'choice') {
+      return this.options.map((label, i) => {
+        if (this.foundBy.has(i)) return { label, state: 'found', by: this.person(this.foundBy.get(i)) };
+        if (this.wrongPicks.has(i)) return { label, state: 'wrong', by: this.person(this.wrongPicks.get(i)) };
+        if (revealing && this.question.correct.includes(label)) return { label, state: 'missed', by: null };
+        return { label, state: 'open', by: null };
+      });
+    }
+    return this.question.list.map((forms, i) => {
+      if (this.foundBy.has(i)) return { label: forms[0], state: 'found', by: this.person(this.foundBy.get(i)) };
+      return revealing ? { label: forms[0], state: 'missed', by: null } : { label: null, state: 'open', by: null };
+    });
+  }
+
+  private base() {
+    return {
+      phase: this.phase,
+      kind: this.kind,
+      questionNumber: this.questionIndex + 1,
+      totalQuestions: this.totalQuestions,
+      topic: this.question.film,
+      question: this.question.question,
+      tiles: this.tiles(),
+      found: this.foundBy.size,
+      total: this.total,
+      cleared: this.cleared,
+      penalties: this.penalties,
+      msLeft: Math.max(0, this.phaseEndsAt - Date.now()),
+    };
+  }
+
+  syncHost() {
+    const view: PickCoopHostView = {
+      ...this.base(),
+      packName: PICK_EM_COOP.modes.find((m) => m.id === this.bankId)?.name ?? '',
+      feed: this.feed,
+      players: this.ctx.players().map((p) => ({
+        id: p.id,
+        name: p.name,
+        color: p.color,
+        score: p.score,
+        gamePoints: this.gamePoints.get(p.id) ?? 0,
+        found: [...this.foundBy.values()].filter((id) => id === p.id).length,
+      })),
+    };
+    this.ctx.sendHost(view);
+  }
+
+  syncPlayer(playerId: string) {
+    const player = this.ctx.players().find((p) => p.id === playerId);
+    if (!player) return;
+    const view: PickCoopPlayerView = {
+      ...this.base(),
+      lastGuess: this.lastGuess.get(playerId) ?? null,
+      gamePoints: this.gamePoints.get(playerId) ?? 0,
+      score: player.score,
+    };
+    this.ctx.sendPlayer(playerId, view);
+  }
+
+  private syncAll() {
+    this.syncHost();
+    for (const p of this.ctx.players()) this.syncPlayer(p.id);
+  }
+
+  dispose() {
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = null;
+  }
+}
+
+export const pickEmCoop: MiniGameDefinition = {
+  info: PICK_EM_COOP,
+  create: (ctx, modeId, options) => new PickEmCoop(ctx, modeId, options.puzzles),
 };
 
 /** For tooling: list count per bank, split into tap and typed lists. */

@@ -46,23 +46,27 @@ export const MIN_PUZZLES = 1;
 export const MAX_PUZZLES = 10;
 export const DEFAULT_PUZZLES = 3;
 
-/** One slice of the game wheel: a game played in a particular mode. */
+/** One slice of the game wheel: a game played in a particular mode, or a group of games. */
 export interface WheelEntry {
-  /** "gameId:modeId", or TRIVIA_SLICE for the one trivia slice (its game and mode are picked at launch). */
+  /** "gameId:modeId", or for a group, the competitive game's id. */
   id: string;
   gameId: string;
+  /** Empty for a group: the group settings pick the mode when the wheel lands on it. */
   modeId: string;
   label: string;
+  /**
+   * A game with a competitive and a co-op version (e.g. Trivia and Team Trivia) is one slice;
+   * `settings.groups[id]` picks which version, and which topics (the competitive game's modes).
+   */
+  group?: { competitive: string; coop: string };
 }
 
-/** Trivia is one slice on the wheel: these pick which game and question bank it plays. */
-export type TriviaStyle = 'competitive' | 'coop' | 'both';
-export const TRIVIA_SLICE = 'trivia';
+/** Competitive, co-op, or either at random each time. */
+export type PlayStyle = 'competitive' | 'coop' | 'both';
 
-export interface TriviaSettings {
-  /** Competitive is Trivia, co-op is Team Trivia; both picks one at random each time. */
-  style: TriviaStyle;
-  /** Trivia mode ids (question banks); one is picked at random each time. */
+export interface GroupSettings {
+  style: PlayStyle;
+  /** Mode ids (question banks); one is picked at random each time. */
   topics: string[];
 }
 
@@ -70,7 +74,8 @@ export interface TriviaSettings {
 export interface SessionSettings {
   /** Wheel entry ids that can come up. */
   enabled: string[];
-  trivia: TriviaSettings;
+  /** Per group slice (keyed by its entry id). Missing ones are left as they are. */
+  groups: Record<string, GroupSettings>;
   rounds: number;
   /** How many puzzles each game has, whichever game the wheel picks. */
   puzzlesPerRound: number;

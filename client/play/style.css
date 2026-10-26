@@ -251,8 +251,8 @@ button.secondary { background: var(--panel-light); }
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.25);
 }
-/* Trivia's options, nested under its toggle. */
-.trivia-options {
+/* A group's options (e.g. Trivia's), nested under its toggle. */
+.group-options {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -459,6 +459,8 @@ button.secondary { background: var(--panel-light); }
 .pe-option.missed { border-color: var(--correct); background: var(--panel); }
 .pe-option.wrong { background: var(--danger); }
 .pe-option.dimmed { opacity: 0.3; }
+/* Team Pick 'Em: who found (or wrongly picked) an option. */
+.pe-by { display: block; margin-top: 3px; font-size: 11px; opacity: 0.85; }
 .tv-lock[hidden] { display: none; }
 
 .pe-typed { display: flex; flex-direction: column; gap: 10px; }

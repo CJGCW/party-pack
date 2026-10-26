@@ -9,15 +9,16 @@ import {
   MIN_PUZZLES,
   MIN_ROUNDS,
   PLAYER_COLORS,
-  TRIVIA_SLICE,
   type ClientToServerEvents,
   type PlayerInfo,
   type RoomState,
   type ServerToClientEvents,
   type SessionSettings,
-  type TriviaStyle,
+  type GroupSettings,
+  type PlayStyle,
   type WheelEntry,
 } from '../shared/protocol';
+import { PICK_EM, PICK_EM_COOP } from '../shared/games/pickEm';
 import { TRIVIA, TRIVIA_QUEST } from '../shared/games/trivia';
 import { STANDINGS_MS } from '../shared/timing';
 import { MICROGAMES, WOOCHAWARE, findMicrogame } from '../shared/games/woochaware';
@@ -49,15 +50,24 @@ const SPIN_RESULT_MS = 3_000;
 /** Final results screen at the end of a session. */
 const RESULTS_MS = 15_000;
 
-/** The trivia games share one slice; the trivia settings pick which game and topic it plays. */
-const TRIVIA_GAMES = new Set([TRIVIA.id, TRIVIA_QUEST.id]);
-const TRIVIA_TOPICS = TRIVIA.modes.map((m) => m.id);
-const TRIVIA_STYLES: TriviaStyle[] = ['competitive', 'coop', 'both'];
+/**
+ * Games with a competitive and a co-op version share one slice each; the group settings
+ * pick which version and which topics (the competitive game's modes, which both share).
+ */
+const GROUPS = [
+  { competitive: TRIVIA, coop: TRIVIA_QUEST },
+  { competitive: PICK_EM, coop: PICK_EM_COOP },
+];
+const GROUPED_GAMES = new Set(GROUPS.flatMap((g) => [g.competitive.id, g.coop.id]));
+const PLAY_STYLES: PlayStyle[] = ['competitive', 'coop', 'both'];
 
-/** Every game/mode combination, each a possible slice on the wheel, plus the one trivia slice. */
+/** Every game/mode combination, each a possible slice on the wheel, plus one slice per group. */
 const WHEEL_ENTRIES: WheelEntry[] = GAMES.flatMap((g): WheelEntry[] => {
-  if (g.info.id === TRIVIA.id) return [{ id: TRIVIA_SLICE, gameId: TRIVIA.id, modeId: '', label: 'Trivia' }];
-  if (TRIVIA_GAMES.has(g.info.id)) return [];
+  const group = GROUPS.find((gr) => gr.competitive.id === g.info.id);
+  if (group) {
+    return [{ id: g.info.id, gameId: g.info.id, modeId: '', label: g.info.name, group: { competitive: g.info.id, coop: group.coop.id } }];
+  }
+  if (GROUPED_GAMES.has(g.info.id)) return [];
   return g.info.modes.map((m) => ({
     id: `${g.info.id}:${m.id}`,
     gameId: g.info.id,
@@ -82,7 +92,7 @@ export class Room {
   gameId: string | null = null;
   settings: SessionSettings = {
     enabled: WHEEL_ENTRIES.map((e) => e.id),
-    trivia: { style: 'both', topics: [...TRIVIA_TOPICS] },
+    groups: Object.fromEntries(GROUPS.map((g) => [g.competitive.id, { style: 'both', topics: g.competitive.modes.map((m) => m.id) }])),
     rounds: DEFAULT_ROUNDS,
     puzzlesPerRound: DEFAULT_PUZZLES,
   };
@@ -258,12 +268,19 @@ export class Room {
     // Older clients may not send this; keep the current value then.
     const puzzles = next?.puzzlesPerRound === undefined ? this.settings.puzzlesPerRound : Math.round(Number(next.puzzlesPerRound));
     if (!(puzzles >= MIN_PUZZLES && puzzles <= MAX_PUZZLES)) return `Puzzles must be ${MIN_PUZZLES}-${MAX_PUZZLES}.`;
-    // Trivia: keep the current choice for anything missing or invalid.
-    const style = TRIVIA_STYLES.includes(next?.trivia?.style) ? next.trivia.style : this.settings.trivia.style;
-    const sent = next?.trivia?.topics;
-    const topics = Array.isArray(sent) ? TRIVIA_TOPICS.filter((t) => sent.includes(t)) : this.settings.trivia.topics;
-    if (topics.length === 0) return 'Pick at least one trivia topic.';
-    this.settings = { enabled: [...new Set(enabled)], trivia: { style, topics }, rounds, puzzlesPerRound: puzzles };
+    // Groups: keep the current choice for anything missing or invalid.
+    const groups: Record<string, GroupSettings> = {};
+    for (const g of GROUPS) {
+      const id = g.competitive.id;
+      const current = this.settings.groups[id];
+      const sent = next?.groups?.[id];
+      const style = PLAY_STYLES.includes(sent?.style as PlayStyle) ? sent!.style : current.style;
+      const all = g.competitive.modes.map((m) => m.id);
+      const topics = Array.isArray(sent?.topics) ? all.filter((t) => sent.topics.includes(t)) : current.topics;
+      if (topics.length === 0) return `Pick at least one ${g.competitive.name} topic.`;
+      groups[id] = { style, topics };
+    }
+    this.settings = { enabled: [...new Set(enabled)], groups, rounds, puzzlesPerRound: puzzles };
     this.broadcastState();
     return null;
   }
@@ -296,7 +313,7 @@ export class Room {
     this.setPhaseTimer(SPIN_MS + SPIN_RESULT_MS, () => {
       const entry = this.spin!.entries[targetIndex];
       this.spin = null;
-      const { gameId, modeId } = entry.id === TRIVIA_SLICE ? this.pickTrivia() : entry;
+      const { gameId, modeId } = entry.group ? this.pickFromGroup(entry.id, entry.group) : entry;
       const error = this.launchGame(gameId, modeId);
       // E.g. players left during the spin so the game no longer fits: end the session.
       if (error) this.returnToLobby();
@@ -304,11 +321,11 @@ export class Room {
     this.broadcastState();
   }
 
-  /** The trivia slice came up: competitive or co-op (per the settings), on one of the chosen topics. */
-  private pickTrivia() {
-    const { style, topics } = this.settings.trivia;
+  /** A group slice came up: competitive or co-op (per the settings), on one of the chosen topics. */
+  private pickFromGroup(id: string, group: NonNullable<WheelEntry['group']>) {
+    const { style, topics } = this.settings.groups[id];
     const coop = style === 'both' ? Math.random() < 0.5 : style === 'coop';
-    return { gameId: coop ? TRIVIA_QUEST.id : TRIVIA.id, modeId: pick(topics) };
+    return { gameId: coop ? group.coop : group.competitive, modeId: pick(topics) };
   }
 
   /** Debug mode only: play one specific game (or, in WoochaWare debug, one microgame). */

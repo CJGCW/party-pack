@@ -1,7 +1,7 @@
 import { io, type Socket } from 'socket.io-client';
-import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, TRIVIA_SLICE, type ClientToServerEvents, type RoomState, type TriviaStyle, type ServerToClientEvents } from '../../shared/protocol';
+import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type RoomState, type PlayStyle, type WheelEntry, type ServerToClientEvents } from '../../shared/protocol';
 import { CLUE_CREW } from '../../shared/games/clueCrew';
-import { PICK_EM } from '../../shared/games/pickEm';
+import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
 import { TRIVIA, TRIVIA_QUEST } from '../../shared/games/trivia';
@@ -11,6 +11,7 @@ import { h } from './dom';
 import { needsMotionPermission, requestMotionPermission } from './motion';
 import { createClueCrew } from './games/clueCrew';
 import { createPickEm } from './games/pickEm';
+import { createPickEmCoop } from './games/pickEmCoop';
 import { createRackAttack } from './games/rackAttack';
 import { createTossUp } from './games/tossUp';
 import { createTrivia } from './games/trivia';
@@ -31,6 +32,7 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [TRIVIA.id]: createTrivia,
   [TRIVIA_QUEST.id]: createTrivia,
   [PICK_EM.id]: createPickEm,
+  [PICK_EM_COOP.id]: createPickEmCoop,
   [CLUE_CREW.id]: createClueCrew,
   [RACK_ATTACK.id]: createRackAttack,
   [WOOCHAWARE.id]: createWoochaWare,
@@ -249,16 +251,18 @@ function wheelSettings(isVip: boolean): Node[] {
       h('span', { class: 'check' }, on ? '✓' : ''),
       entry.label,
     );
-    return entry.id === TRIVIA_SLICE && on ? [toggle, triviaOptions()] : [toggle];
+    return entry.group && on ? [toggle, groupOptions(entry)] : [toggle];
   });
 
-  /** Under the Trivia toggle: competitive, co-op or both, and which topics. */
-  function triviaOptions() {
-    const { style, topics } = settings.trivia;
-    const styles: [TriviaStyle, string][] = [['competitive', 'Competitive'], ['coop', 'Co-op'], ['both', 'Both']];
+  /** Under a group's toggle (e.g. Trivia): competitive, co-op or both, and which topics if there's a choice. */
+  function groupOptions(entry: WheelEntry) {
+    const { style, topics } = settings.groups[entry.id];
+    const modes = room!.games.find((g) => g.id === entry.gameId)?.modes ?? [];
+    const set = (next: { style: PlayStyle; topics: string[] }) => save({ ...settings, groups: { ...settings.groups, [entry.id]: next } });
+    const styles: [PlayStyle, string][] = [['competitive', 'Competitive'], ['coop', 'Co-op'], ['both', 'Both']];
     return h(
       'div',
-      { class: 'trivia-options' },
+      { class: 'group-options' },
       h(
         'div',
         { class: 'segmented' },
@@ -268,32 +272,34 @@ function wheelSettings(isVip: boolean): Node[] {
             {
               class: id === style ? 'on' : '',
               disabled: !isVip,
-              onclick: () => save({ ...settings, trivia: { style: id, topics } }),
+              onclick: () => set({ style: id, topics }),
             },
             label,
           ),
         ),
       ),
-      h('div', { class: 'muted' }, 'Topics: one is picked at random each time.'),
-      h(
-        'div',
-        { class: 'chips' },
-        ...TRIVIA.modes.map((mode) => {
-          const chosen = topics.includes(mode.id);
-          return h(
-            'button',
-            {
-              class: `chip${chosen ? ' on' : ''}`,
-              disabled: !isVip,
-              onclick: () => {
-                const next = chosen ? topics.filter((t) => t !== mode.id) : [...topics, mode.id];
-                save({ ...settings, trivia: { style, topics: next } });
+      // Topics only when there's a choice.
+      modes.length > 1 && h('div', { class: 'muted' }, 'Topics: one is picked at random each time.'),
+      modes.length > 1 &&
+        h(
+          'div',
+          { class: 'chips' },
+          ...modes.map((mode) => {
+            const chosen = topics.includes(mode.id);
+            return h(
+              'button',
+              {
+                class: `chip${chosen ? ' on' : ''}`,
+                disabled: !isVip,
+                onclick: () => {
+                  const next = chosen ? topics.filter((t) => t !== mode.id) : [...topics, mode.id];
+                  set({ style, topics: next });
+                },
               },
-            },
-            mode.name,
-          );
-        }),
-      ),
+              mode.name,
+            );
+          }),
+        ),
     );
   }
 
