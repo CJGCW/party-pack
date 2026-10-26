@@ -1,6 +1,7 @@
 import { io, type Socket } from 'socket.io-client';
 import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type GroupSettings, type RoomState, type PlayStyle, type WheelEntry, type ServerToClientEvents } from '../../shared/protocol';
 import { CLUE_CREW } from '../../shared/games/clueCrew';
+import { BLOCKBUSTERS } from '../../shared/games/blockbusters';
 import { CONCENTRATION } from '../../shared/games/concentration';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
@@ -10,6 +11,7 @@ import { WOOCHAWARE } from '../../shared/games/woochaware';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { h } from './dom';
 import { needsMotionPermission, requestMotionPermission } from './motion';
+import { createBlockbusters } from './games/blockbusters';
 import { createClueCrew } from './games/clueCrew';
 import { createConcentration } from './games/concentration';
 import { createPickEm } from './games/pickEm';
@@ -36,6 +38,7 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [PICK_EM.id]: createPickEm,
   [PICK_EM_COOP.id]: createPickEmCoop,
   [CLUE_CREW.id]: createClueCrew,
+  [BLOCKBUSTERS.id]: createBlockbusters,
   [CONCENTRATION.id]: createConcentration,
   [RACK_ATTACK.id]: createRackAttack,
   [WOOCHAWARE.id]: createWoochaWare,
@@ -297,9 +300,12 @@ function wheelSettings(isVip: boolean): Node[] {
         }),
       );
     const styles: [PlayStyle, string][] = [['competitive', 'Competitive'], ['coop', 'Co-op'], ['both', 'Both']];
+    // Only games with a co-op version get the competitive/co-op choice.
+    const hasCoop = fmts.some((f) => f.coop !== f.competitive);
     return h(
       'div',
       { class: 'group-options' },
+      hasCoop &&
       h(
         'div',
         { class: 'segmented' },

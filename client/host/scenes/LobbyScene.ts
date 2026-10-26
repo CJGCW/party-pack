@@ -96,13 +96,14 @@ export class LobbyScene extends Phaser.Scene {
     const groupNote = (e: WheelEntry) => {
       const settings = state.settings.groups[e.id];
       if (!settings) return e.label;
-      const notes = [settings.style === 'coop' ? 'co-op' : settings.style];
+      const hasCoop = e.group?.formats.some((f) => f.coop !== f.competitive) ?? false;
+      const notes = hasCoop ? [settings.style === 'coop' ? 'co-op' : settings.style] : [];
       const n = settings.topics.length;
       if ((e.group?.topics.length ?? 0) > 1) notes.push(`${n} ${n === 1 ? 'topic' : 'topics'}`);
       if ((e.group?.formats.length ?? 0) > 1 && settings.formats.length === 1) {
         notes.push(e.group!.formats.find((f) => f.id === settings.formats[0])?.label ?? '');
       }
-      return `${e.label} (${notes.join(', ')})`;
+      return notes.length ? `${e.label} (${notes.join(', ')})` : e.label;
     };
     const labels = state.wheelEntries.filter((e) => state.settings.enabled.includes(e.id)).map(groupNote);
     const rounds = state.settings.rounds;

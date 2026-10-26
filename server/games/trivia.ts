@@ -463,3 +463,6 @@ export const triviaQuest: MiniGameDefinition = {
 
 /** For tooling: question count per bank. */
 export const bankSizes = () => Object.fromEntries([...BANKS].map(([id, qs]) => [id, qs.length]));
+
+/** A bank's questions (e.g. for Blockbusters, which picks them by the answer's first letter). */
+export const triviaBank = (bankId: string): readonly Question[] => BANKS.get(bankId) ?? [];

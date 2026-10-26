@@ -20,6 +20,7 @@ import {
   type WheelEntry,
 } from '../shared/protocol';
 import { PICK_EM, PICK_EM_COOP } from '../shared/games/pickEm';
+import { BLOCKBUSTERS } from '../shared/games/blockbusters';
 import { TRIVIA, TRIVIA_QUEST } from '../shared/games/trivia';
 import { STANDINGS_MS } from '../shared/timing';
 import { MICROGAMES, WOOCHAWARE, findMicrogame } from '../shared/games/woochaware';
@@ -65,6 +66,8 @@ const GROUPS = [
       { competitive: PICK_EM, coop: PICK_EM_COOP, label: "Pick 'Em lists" },
     ],
   },
+  // One slice with Trivia's topics; it has no co-op version, so no competitive/co-op choice.
+  { id: BLOCKBUSTERS.id, label: 'Blockbusters', formats: [{ competitive: BLOCKBUSTERS, coop: BLOCKBUSTERS, label: 'Blockbusters' }] },
 ];
 type Group = (typeof GROUPS)[number];
 const groupFormats = (group: Group): GroupFormat[] =>

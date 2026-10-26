@@ -1,0 +1,164 @@
+import type { BlockbustersInput, BlockbustersPlayerView, Team } from '../../../shared/games/blockbusters';
+import { h } from '../dom';
+import type { Controller } from '../main';
+
+const TEAM_NAME: Record<Team, string> = { red: 'RED', white: 'WHITE' };
+/** What each team is trying to link. */
+const TEAM_GOAL: Record<Team, string> = { red: 'top ↕ bottom', white: 'left ↔ right' };
+
+/**
+ * Blockbusters on the phone: the board (tap a letter when it's your team's pick), a buzzer while
+ * a question is up, and the choices if you buzzed in first.
+ */
+export function createBlockbusters(root: HTMLElement, send: (input: unknown) => void): Controller {
+  let view: BlockbustersPlayerView | null = null;
+  let phaseEndsAt = 0;
+
+  const headerEl = h('span');
+  const timerEl = h('span', { class: 'wr-timer' });
+  const teamEl = h('span', { class: 'bb-team' });
+  const boardEl = h('div', { class: 'bb-board' });
+  const letterEl = h('div', { class: 'bb-letter' });
+  const questionEl = h('div', { class: 'tv-question' });
+  const buzzBtn = h('button', { class: 'bb-buzz', type: 'button' }, 'BUZZ');
+  const inputEl = h('input', { class: 'pe-input', type: 'text', autocomplete: 'off', autocapitalize: 'words', enterkeyhint: 'send', maxlength: '80', placeholder: 'Your answer' });
+  const answerForm = h(
+    'form',
+    {
+      class: 'pe-form',
+      onsubmit: (e) => {
+        e.preventDefault();
+        const text = inputEl.value.trim();
+        if (!text || view?.phase !== 'answer' || !view.isBuzzer) return;
+        send({ type: 'answer', text } satisfies BlockbustersInput);
+        inputEl.value = '';
+      },
+    },
+    inputEl,
+    h('button', { type: 'submit' }, 'Answer'),
+  );
+  const statusEl = h('div', { class: 'tu-status' });
+  root.append(h('div', { class: 'bb' }, h('div', { class: 'wr-top' }, headerEl, timerEl, teamEl), boardEl, letterEl, questionEl, buzzBtn, answerForm, statusEl));
+
+  boardEl.addEventListener('pointerdown', (e) => {
+    const hex = (e.target as HTMLElement).closest<HTMLElement>('.bb-hex.pickable');
+    if (!hex || !canPick()) return;
+    e.preventDefault();
+    send({ type: 'pick', index: Number(hex.dataset.index) } satisfies BlockbustersInput);
+  });
+  buzzBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (canBuzz()) send({ type: 'buzz' } satisfies BlockbustersInput);
+  });
+
+  const canPick = () => view?.phase === 'pick' && view.myTeam === view.control;
+  const canBuzz = () => view?.phase === 'question' && !!view.myTeam && !view.lockedOut.includes(view.myTeam);
+
+  function setStatus(text: string, kind: '' | 'good' | 'bad' = '') {
+    statusEl.textContent = text;
+    statusEl.className = `tu-status ${kind}`;
+  }
+
+  /** Flat-topped hexagons in columns, odd columns half a hexagon lower, sized to the phone. */
+  function renderBoard(v: BlockbustersPlayerView) {
+    const width = Math.min(window.innerWidth, 520) - 40;
+    const r = width / (1.5 * v.cols + 0.5);
+    const hexH = Math.sqrt(3) * r;
+    boardEl.style.width = `${width}px`;
+    boardEl.style.height = `${hexH * (v.rows + 0.5)}px`;
+    const pickable = canPick();
+    boardEl.replaceChildren(
+      ...v.hexes.map((hex, i) => {
+        const col = i % v.cols;
+        const row = Math.floor(i / v.cols);
+        const cls = ['bb-hex'];
+        if (hex.owner) cls.push(hex.owner);
+        else if (pickable) cls.push('pickable');
+        if (i === v.current && !hex.owner) cls.push('current');
+        if (v.winningPath.includes(i)) cls.push('path');
+        const el = h('div', { class: cls.join(' ') }, hex.letter);
+        el.dataset.index = String(i);
+        el.style.cssText = `left:${col * 1.5 * r}px;top:${row * hexH + (col % 2 ? hexH / 2 : 0)}px;width:${2 * r}px;height:${hexH}px;font-size:${r * 0.8}px`;
+        return el;
+      }),
+    );
+  }
+
+  function render() {
+    if (!view) return;
+    const v = view;
+    const amBuzzer = v.isBuzzer;
+    headerEl.textContent = `Board ${v.board}/${v.totalBoards}`;
+    teamEl.textContent = v.myTeam ? `${TEAM_NAME[v.myTeam]} ${v.myTeam === 'red' ? '↕' : '↔'}` : 'Watching';
+    teamEl.className = `bb-team ${v.myTeam ?? ''}`;
+
+    const asking = v.phase === 'question' || v.phase === 'answer' || v.phase === 'result';
+    renderBoard(v);
+    boardEl.hidden = v.phase === 'question' || v.phase === 'answer' || v.phase === 'gameEnd';
+    const letter = v.current !== null ? v.hexes[v.current].letter : '';
+    letterEl.hidden = !asking;
+    letterEl.textContent = letter;
+    questionEl.hidden = !asking || !v.question;
+    questionEl.textContent = v.question ? `${v.question} (starts with ${letter})` : '';
+    buzzBtn.hidden = v.phase !== 'question' || !v.myTeam;
+    buzzBtn.disabled = !canBuzz();
+
+    // The buzzer types their answer; keep the keyboard up.
+    const typing = v.phase === 'answer' && amBuzzer;
+    answerForm.hidden = !typing;
+    if (typing && document.activeElement !== inputEl) inputEl.focus();
+    if (!typing) inputEl.value = '';
+
+    const mine = v.myTeam;
+    switch (v.phase) {
+      case 'pick':
+        if (!mine) setStatus(`${TEAM_NAME[v.control]} is choosing a letter…`);
+        else if (mine === v.control) setStatus(`Your team's pick: tap a letter. Link ${TEAM_GOAL[mine]}!`, 'good');
+        else setStatus(`${TEAM_NAME[v.control]} is choosing a letter…`);
+        break;
+      case 'question':
+        if (!mine) setStatus('Buzz in if you know it!');
+        else if (v.lockedOut.includes(mine)) setStatus('Your team missed this one. Over to the others…', 'bad');
+        else setStatus(v.lockedOut.length ? 'The other team missed it. Your chance: buzz!' : 'Know it? Buzz in!');
+        break;
+      case 'answer':
+        if (amBuzzer) setStatus(`Type your answer: it starts with ${letter}.`, 'good');
+        else setStatus(`${v.buzzer?.name} (${TEAM_NAME[v.buzzer!.team]}) buzzed in…`);
+        break;
+      case 'result':
+        if (v.correct === null && !v.buzzer) setStatus(`Nobody got it. It was ${v.answer}.`, 'bad');
+        else if (v.correct) setStatus(`${v.buzzer?.name} got it: ${v.answer}! ${TEAM_NAME[v.buzzer!.team]} takes ${letter}.`, 'good');
+        else setStatus(`${v.buzzer?.name} ${v.guess ? `said "${v.guess}"` : 'ran out of time'}: not it.`, 'bad');
+        break;
+      case 'boardEnd':
+        if (!v.winner) setStatus('The board is full: no winner this time.');
+        else setStatus(v.winner === mine ? `Your team linked ${TEAM_GOAL[v.winner]}! You win the board.` : `${TEAM_NAME[v.winner]} wins the board.`, v.winner === mine ? 'good' : 'bad');
+        break;
+      case 'gameEnd':
+        setStatus(`Round scores: you got +${v.gamePoints.toLocaleString()} this round. Look at the TV!`, 'good');
+        break;
+    }
+  }
+
+  function tick() {
+    if (!view) return;
+    const secs = Math.max(0, Math.ceil((phaseEndsAt - performance.now()) / 1000));
+    const timed = ['pick', 'question', 'answer'].includes(view.phase);
+    timerEl.textContent = timed ? `${secs}s` : '';
+    timerEl.classList.toggle('low', timed && secs <= 3);
+  }
+  const interval = setInterval(tick, 200);
+
+  return {
+    update(raw) {
+      view = raw as BlockbustersPlayerView;
+      phaseEndsAt = performance.now() + view.msLeft;
+      render();
+      tick();
+    },
+    destroy() {
+      clearInterval(interval);
+      root.replaceChildren();
+    },
+  };
+}

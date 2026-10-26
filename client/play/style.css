@@ -592,3 +592,52 @@ button.secondary { background: var(--panel-light); }
   25% { transform: translateX(-4px); }
   75% { transform: translateX(4px); }
 }
+
+/* ---------- Blockbusters ---------- */
+
+.bb { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px); }
+.bb-team { padding: 2px 10px; border-radius: 999px; font-weight: 700; }
+.bb-team.red { background: var(--danger); color: var(--bg); }
+.bb-team.white { background: #f2f0ff; color: var(--bg); }
+/* The board, with Red's edges (top and bottom) and White's (left and right) drawn round it. */
+.bb-board {
+  position: relative;
+  align-self: center;
+  margin: 8px 0;
+  box-shadow: 0 -6px 0 var(--danger), 0 6px 0 var(--danger), -6px 0 0 #f2f0ff, 6px 0 0 #f2f0ff;
+  border-radius: 4px;
+  touch-action: manipulation;
+}
+.bb-board[hidden], .bb-letter[hidden], .bb-buzz[hidden] { display: none; }
+.bb-hex {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  background: var(--panel-light);
+  color: var(--accent);
+  font-weight: 700;
+  /* A little gap between hexagons. */
+  transform: scale(0.94);
+}
+.bb-hex.pickable { background: #5a4dc0; color: #fff; cursor: pointer; }
+.bb-hex.current { background: var(--accent); color: var(--bg); }
+.bb-hex.red { background: var(--danger); color: var(--bg); }
+.bb-hex.white { background: #f2f0ff; color: var(--bg); }
+.bb-hex.path { filter: brightness(1.2); transform: scale(1); }
+.bb-letter {
+  align-self: center;
+  width: 96px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 48px;
+  font-weight: 700;
+}
+.bb-buzz { font-size: 44px; padding: 36px; border-radius: 24px; background: var(--danger); }
+.bb-buzz:disabled { opacity: 0.35; }
