@@ -97,7 +97,7 @@ export class LobbyScene extends Phaser.Scene {
       const settings = state.settings.groups[e.id];
       if (!settings) return e.label;
       const style = settings.style === 'coop' ? 'co-op' : settings.style;
-      const topicCount = state.games.find((g) => g.id === e.gameId)?.modes.length ?? 0;
+      const topicCount = e.group?.topics.length ?? 0;
       const n = settings.topics.length;
       return topicCount > 1 ? `${e.label} (${style}, ${n} ${n === 1 ? 'topic' : 'topics'})` : `${e.label} (${style})`;
     };

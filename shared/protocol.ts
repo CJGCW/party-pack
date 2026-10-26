@@ -55,10 +55,20 @@ export interface WheelEntry {
   modeId: string;
   label: string;
   /**
-   * A game with a competitive and a co-op version (e.g. Trivia and Team Trivia) is one slice;
-   * `settings.groups[id]` picks which version, and which topics (the competitive game's modes).
+   * Several games on one slice (e.g. Trivia: Trivia, Team Trivia, Pick 'Em and Team Pick 'Em).
+   * `settings.groups[id]` picks competitive or co-op, and which topics can come up.
    */
-  group?: { competitive: string; coop: string };
+  group?: { topics: GroupTopic[] };
+}
+
+/** One choice under a group slice: a question bank, played by a competitive or a co-op game. */
+export interface GroupTopic {
+  /** "gameId:modeId" of the competitive game. */
+  id: string;
+  label: string;
+  competitive: string;
+  coop: string;
+  modeId: string;
 }
 
 /** Competitive, co-op, or either at random each time. */
@@ -66,7 +76,7 @@ export type PlayStyle = 'competitive' | 'coop' | 'both';
 
 export interface GroupSettings {
   style: PlayStyle;
-  /** Mode ids (question banks); one is picked at random each time. */
+  /** GroupTopic ids; one is picked at random each time. */
   topics: string[];
 }
 

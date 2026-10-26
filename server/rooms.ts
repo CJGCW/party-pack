@@ -15,6 +15,7 @@ import {
   type ServerToClientEvents,
   type SessionSettings,
   type GroupSettings,
+  type GroupTopic,
   type PlayStyle,
   type WheelEntry,
 } from '../shared/protocol';
@@ -51,22 +52,37 @@ const SPIN_RESULT_MS = 3_000;
 const RESULTS_MS = 15_000;
 
 /**
- * Games with a competitive and a co-op version share one slice each; the group settings
- * pick which version and which topics (the competitive game's modes, which both share).
+ * Games that share one slice. Each member is a competitive game and its co-op version (which
+ * share question banks); every bank is a topic. The group settings pick competitive or co-op,
+ * and which topics can come up. A one-bank member's topic is just the game's name.
  */
 const GROUPS = [
-  { competitive: TRIVIA, coop: TRIVIA_QUEST },
-  { competitive: PICK_EM, coop: PICK_EM_COOP },
+  {
+    id: TRIVIA.id,
+    label: 'Trivia',
+    members: [
+      { competitive: TRIVIA, coop: TRIVIA_QUEST },
+      { competitive: PICK_EM, coop: PICK_EM_COOP },
+    ],
+  },
 ];
-const GROUPED_GAMES = new Set(GROUPS.flatMap((g) => [g.competitive.id, g.coop.id]));
+const groupTopics = (group: (typeof GROUPS)[number]): GroupTopic[] =>
+  group.members.flatMap(({ competitive, coop }) =>
+    competitive.modes.map((m) => ({
+      id: `${competitive.id}:${m.id}`,
+      label: competitive.id === group.id ? m.name : competitive.modes.length === 1 ? competitive.name : `${competitive.name} · ${m.name}`,
+      competitive: competitive.id,
+      coop: coop.id,
+      modeId: m.id,
+    })),
+  );
+const GROUPED_GAMES = new Set(GROUPS.flatMap((g) => g.members.flatMap((m) => [m.competitive.id, m.coop.id])));
 const PLAY_STYLES: PlayStyle[] = ['competitive', 'coop', 'both'];
 
 /** Every game/mode combination, each a possible slice on the wheel, plus one slice per group. */
 const WHEEL_ENTRIES: WheelEntry[] = GAMES.flatMap((g): WheelEntry[] => {
-  const group = GROUPS.find((gr) => gr.competitive.id === g.info.id);
-  if (group) {
-    return [{ id: g.info.id, gameId: g.info.id, modeId: '', label: g.info.name, group: { competitive: g.info.id, coop: group.coop.id } }];
-  }
+  const group = GROUPS.find((gr) => gr.id === g.info.id);
+  if (group) return [{ id: group.id, gameId: g.info.id, modeId: '', label: group.label, group: { topics: groupTopics(group) } }];
   if (GROUPED_GAMES.has(g.info.id)) return [];
   return g.info.modes.map((m) => ({
     id: `${g.info.id}:${m.id}`,
@@ -92,7 +108,7 @@ export class Room {
   gameId: string | null = null;
   settings: SessionSettings = {
     enabled: WHEEL_ENTRIES.map((e) => e.id),
-    groups: Object.fromEntries(GROUPS.map((g) => [g.competitive.id, { style: 'both', topics: g.competitive.modes.map((m) => m.id) }])),
+    groups: Object.fromEntries(GROUPS.map((g) => [g.id, { style: 'both', topics: groupTopics(g).map((t) => t.id) }])),
     rounds: DEFAULT_ROUNDS,
     puzzlesPerRound: DEFAULT_PUZZLES,
   };
@@ -271,14 +287,13 @@ export class Room {
     // Groups: keep the current choice for anything missing or invalid.
     const groups: Record<string, GroupSettings> = {};
     for (const g of GROUPS) {
-      const id = g.competitive.id;
-      const current = this.settings.groups[id];
-      const sent = next?.groups?.[id];
+      const current = this.settings.groups[g.id];
+      const sent = next?.groups?.[g.id];
       const style = PLAY_STYLES.includes(sent?.style as PlayStyle) ? sent!.style : current.style;
-      const all = g.competitive.modes.map((m) => m.id);
+      const all = groupTopics(g).map((t) => t.id);
       const topics = Array.isArray(sent?.topics) ? all.filter((t) => sent.topics.includes(t)) : current.topics;
-      if (topics.length === 0) return `Pick at least one ${g.competitive.name} topic.`;
-      groups[id] = { style, topics };
+      if (topics.length === 0) return `Pick at least one ${g.label} topic.`;
+      groups[g.id] = { style, topics };
     }
     this.settings = { enabled: [...new Set(enabled)], groups, rounds, puzzlesPerRound: puzzles };
     this.broadcastState();
@@ -325,7 +340,8 @@ export class Room {
   private pickFromGroup(id: string, group: NonNullable<WheelEntry['group']>) {
     const { style, topics } = this.settings.groups[id];
     const coop = style === 'both' ? Math.random() < 0.5 : style === 'coop';
-    return { gameId: coop ? group.coop : group.competitive, modeId: pick(topics) };
+    const topic = group.topics.find((t) => t.id === pick(topics))!;
+    return { gameId: coop ? topic.coop : topic.competitive, modeId: topic.modeId };
   }
 
   /** Debug mode only: play one specific game (or, in WoochaWare debug, one microgame). */

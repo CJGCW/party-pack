@@ -257,7 +257,7 @@ function wheelSettings(isVip: boolean): Node[] {
   /** Under a group's toggle (e.g. Trivia): competitive, co-op or both, and which topics if there's a choice. */
   function groupOptions(entry: WheelEntry) {
     const { style, topics } = settings.groups[entry.id];
-    const modes = room!.games.find((g) => g.id === entry.gameId)?.modes ?? [];
+    const modes = entry.group?.topics ?? [];
     const set = (next: { style: PlayStyle; topics: string[] }) => save({ ...settings, groups: { ...settings.groups, [entry.id]: next } });
     const styles: [PlayStyle, string][] = [['competitive', 'Competitive'], ['coop', 'Co-op'], ['both', 'Both']];
     return h(
@@ -296,7 +296,7 @@ function wheelSettings(isVip: boolean): Node[] {
                   set({ style, topics: next });
                 },
               },
-              mode.name,
+              mode.label,
             );
           }),
         ),
