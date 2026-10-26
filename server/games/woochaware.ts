@@ -16,8 +16,8 @@ import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 
 /** Microgames in each stage; one stage per "puzzle" in the session settings. */
 const PER_STAGE = 5;
-/** Points per microgame won, so a perfect stage is worth 750 like a Letter Drop puzzle. */
-const POINTS_PER_WIN = 150;
+/** Points per microgame won, so a perfect stage is worth 1,000 (the shared puzzle scale). */
+const POINTS_PER_WIN = 200;
 /** The command on its own, before the microgame starts. */
 const INTRO_MS = 1_600;
 /** Extra intro time when the speed goes up, to announce it. */

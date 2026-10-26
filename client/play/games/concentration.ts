@@ -103,7 +103,7 @@ export function createConcentration(root: HTMLElement, send: (input: unknown) =>
         break;
       case 'roundEnd':
         if (v.finishRank !== null) setStatus(`Cleared in ${v.guesses} guesses: +${v.roundPoints.toLocaleString()}`, 'good');
-        else setStatus(`Time's up! You found ${v.pairsFound} of ${v.totalPairs} pairs.`, 'bad');
+        else setStatus(`Time's up! You found ${v.pairsFound} of ${v.totalPairs} pairs${v.roundPoints ? `: +${v.roundPoints}` : '.'}`, 'bad');
         break;
       case 'gameEnd':
         setStatus(`Round scores: you got +${v.gamePoints.toLocaleString()} this round. Look at the TV!`, 'good');

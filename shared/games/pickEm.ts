@@ -16,11 +16,9 @@ export const PICK_EM: GameInfo = {
   ],
 };
 
-/**
- * Points per right answer. For tap lists the same is taken off for each wrong pick
- * (a list never scores below 0); for typed lists wrong guesses cost nothing.
- */
-export const PICK_POINTS = 100;
+// Scoring (on the shared 1,000-point scale): a tap list is worth up to 1,000, shared out among its
+// right answers; each wrong pick takes off as much as a right one is worth (never below 0). A
+// typed list is worth up to 1,000 shared among its answers; wrong guesses cost nothing.
 
 /**
  * 'choice': tap every right answer from a list of options, then lock in.
@@ -133,9 +131,11 @@ export const PICK_EM_COOP: GameInfo = {
 /** The team's clock for each list, and what each wrong pick or guess takes off it. */
 export const COOP_START_MS = 180_000;
 export const COOP_PENALTY_MS = 10_000;
-/** Everyone gets this per answer the team finds, and this each for clearing a list. */
-export const COOP_FOUND_POINTS = 100;
-export const COOP_CLEAR_POINTS = 300;
+/**
+ * Team Pick 'Em, on the shared scale: everyone gets a share of COOP_FIND_POINTS for each answer the
+ * team finds (split among the list's answers), and the rest of the 1,000 for clearing the list.
+ */
+export const COOP_FIND_POINTS = 700;
 
 /**
  * One tile on the board. Tap lists show every option from the start; typed lists show a

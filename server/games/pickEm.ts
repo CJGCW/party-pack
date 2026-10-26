@@ -1,13 +1,11 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  COOP_CLEAR_POINTS,
-  COOP_FOUND_POINTS,
+  COOP_FIND_POINTS,
   COOP_PENALTY_MS,
   COOP_START_MS,
   PICK_EM,
   PICK_EM_COOP,
-  PICK_POINTS,
   type CoopEvent,
   type CoopTile,
   type PickCoopHostView,
@@ -20,6 +18,7 @@ import {
   type PickPhase,
   type PickPlayerView,
 } from '../../shared/games/pickEm';
+import { PUZZLE_POINTS, puzzlePoints } from '../../shared/scoring';
 import { PUZZLE_RESULT_MS, ROUND_SCORES_MS } from '../../shared/timing';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 import { loadQuestionFile, shuffle, type Question } from './questions';
@@ -60,11 +59,11 @@ function dealQuestion(bankId: string): Question {
   return deck.pop()!;
 }
 
-/** Points for a set of picks: PICK_POINTS per right one, minus as much per wrong one, never below 0. */
+/** Points for a set of picks: the share of the right answers picked, less a right one's worth per wrong one. */
 export function pickPoints(picks: number[], correct: number[]) {
   const right = picks.filter((i) => correct.includes(i)).length;
   const wrong = picks.length - right;
-  return { right, wrong, points: Math.max(0, (right - wrong) * PICK_POINTS) };
+  return { right, wrong, points: puzzlePoints((right - wrong) / correct.length) };
 }
 
 // ---- Matching typed answers ---------------------------------------------------------
@@ -225,7 +224,7 @@ class PickEm implements MiniGame {
         if (picks) result = pickPoints(picks, this.correctIndices);
       } else {
         const right = this.found.get(p.id)?.length ?? 0;
-        result = { right, wrong: 0, points: right * PICK_POINTS };
+        result = { right, wrong: 0, points: puzzlePoints(right / this.question.list.length) };
       }
       if (!result) continue;
       this.results.set(p.id, result);
@@ -390,6 +389,11 @@ class PickEmCoop implements MiniGame {
     return this.foundBy.size;
   }
 
+  /** Everyone's points for each answer the team finds on this list. */
+  private get findPoints() {
+    return Math.floor(COOP_FIND_POINTS / this.total / 10) * 10;
+  }
+
   /** How many right answers the list has. */
   private get total() {
     return this.kind === 'typed' ? this.question.list.length : this.question.correct.length;
@@ -473,7 +477,7 @@ class PickEmCoop implements MiniGame {
     this.feed = [...this.feed, event].slice(-FEED_LENGTH);
 
     if (result === 'right') {
-      for (const p of this.ctx.players()) this.award(p.id, COOP_FOUND_POINTS);
+      for (const p of this.ctx.players()) this.award(p.id, this.findPoints);
       if (this.foundBy.size === this.total) return this.reveal();
     } else if (result === 'wrong') {
       this.penalties++;
@@ -491,7 +495,8 @@ class PickEmCoop implements MiniGame {
 
   private reveal() {
     this.cleared = this.foundBy.size === this.total;
-    if (this.cleared) for (const p of this.ctx.players()) this.award(p.id, COOP_CLEAR_POINTS);
+    // Clearing makes it up to the full 1,000.
+    if (this.cleared) for (const p of this.ctx.players()) this.award(p.id, PUZZLE_POINTS - this.findPoints * this.total);
     const isLast = this.questionIndex >= this.totalQuestions - 1;
     this.setPhase('reveal', PUZZLE_RESULT_MS, () => {
       if (!isLast) this.startQuestion(this.questionIndex + 1);

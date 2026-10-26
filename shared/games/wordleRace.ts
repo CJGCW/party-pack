@@ -131,5 +131,5 @@ export function describeSolve(guesses: number, solvedMsLeft: number | null): str
 
 /** The scoring rule in one line, shown before each round. */
 export function describeScoring(guessCostSeconds: number): string {
-  return `Points: seconds left, minus ${guessCostSeconds}s for every guess`;
+  return `Up to 1,000 points: faster is better, and every guess costs ${guessCostSeconds}s`;
 }

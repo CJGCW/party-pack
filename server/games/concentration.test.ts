@@ -22,9 +22,9 @@ describe('Concentration', () => {
     }
   });
 
-  it('scores time left minus a cost per guess, with a floor', () => {
-    assert.equal(boardPoints(60_000, 8), 360);
-    assert.equal(boardPoints(60_000, 10), 300);
-    assert.equal(boardPoints(5_000, 30), 100);
+  it('scores 300 for clearing plus up to 700 for time left, less a cost per guess', () => {
+    assert.equal(boardPoints(100_000, 0, 100_000), 1000);
+    assert.equal(boardPoints(55_000, 10, 100_000), 580);
+    assert.equal(boardPoints(5_000, 30, 100_000), 300);
   });
 });

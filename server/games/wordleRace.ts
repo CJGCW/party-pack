@@ -12,23 +12,20 @@ import {
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 import { define } from './definitions';
 import { isValidGuess, pickAnswers } from './words';
+import { racePoints } from '../../shared/scoring';
 import { PUZZLE_RESULT_MS, ROUND_SCORES_MS } from '../../shared/timing';
 
 const COUNTDOWN_MS = 4_000;
 /** Round length per mode. Hard words are obscure, so players get longer. */
 const ROUND_MS: Record<WordleModeId, number> = { normal: 150_000, hard: 240_000 };
 
-// Scoring: points = (seconds left - GUESS_COST_MS x guesses) x POINTS_PER_SECOND.
-// Each guess is worth 8 seconds of points in both modes (the clock itself isn't
-// affected), so solving quickly and in few guesses both matter. Anyone who solves
-// gets at least MIN_POINTS.
+// Scoring is a race on the shared scale (shared/scoring.ts): 300 for solving, plus up to 700 for
+// the time left, less 8 seconds of it per guess (the clock itself isn't affected), so solving
+// quickly and in few guesses both matter.
 const GUESS_COST_MS = 8_000;
-const POINTS_PER_SECOND = 10;
-const MIN_POINTS = 100;
 
-export function roundPoints(msLeft: number, guesses: number): number {
-  const seconds = (msLeft - guesses * GUESS_COST_MS) / 1000;
-  return Math.max(MIN_POINTS, Math.round(seconds * POINTS_PER_SECOND));
+export function roundPoints(msLeft: number, guesses: number, roundMs: number): number {
+  return racePoints(msLeft, roundMs, guesses, GUESS_COST_MS);
 }
 
 interface Progress {
@@ -117,7 +114,7 @@ class WordleRace implements MiniGame {
         prog.solved = true;
         prog.finishRank = ++this.finishers;
         prog.solvedMsLeft = this.msLeft();
-        prog.roundPoints = roundPoints(prog.solvedMsLeft, prog.guesses.length);
+        prog.roundPoints = roundPoints(prog.solvedMsLeft, prog.guesses.length, ROUND_MS[this.mode]);
         this.ctx.addScore(playerId, prog.roundPoints);
         this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + prog.roundPoints);
       }

@@ -22,10 +22,13 @@ const PRESENCE_CHECK_MS = 2_000;
 const RESULT_MS = 2_500;
 /** Traps on each player's key. */
 const TRAPS_PER_PLAYER = 2;
-/** Points to everyone for each target found, extra for the clue-giver whose clue found it, and to everyone for a win. */
-const TEAM_POINTS = 100;
+/**
+ * On the shared scale, per round: finding every target is worth 700 a round to everyone (split
+ * among the targets), and winning another 300 a round. The clue-giver gets a little extra.
+ */
+const FIND_POINTS_PER_ROUND = 700;
+const WIN_POINTS_PER_ROUND = 300;
 const GIVER_BONUS = 50;
-const WIN_BONUS = 300;
 
 const WORDS = readFileSync(join(import.meta.dirname, 'cluecrew', 'words.txt'), 'utf8')
   .split(/\r?\n/)
@@ -211,7 +214,8 @@ class ClueCrew implements MiniGame {
     if (kind === 'neutral') return this.setPhase('result', RESULT_MS, () => this.nextTurn());
 
     this.found[choice] = true;
-    for (const p of this.ctx.players()) this.award(p.id, TEAM_POINTS);
+    const perTarget = Math.floor((FIND_POINTS_PER_ROUND * this.totalRounds) / this.targets.size / 10) * 10;
+    for (const p of this.ctx.players()) this.award(p.id, perTarget);
     this.award(this.giverId, GIVER_BONUS);
     this.guessesLeft--;
     const allFound = [...this.targets].every((i) => this.found[i]);
@@ -229,7 +233,7 @@ class ClueCrew implements MiniGame {
 
   private end(outcome: NonNullable<CrewHostView['outcome']>) {
     this.outcome = outcome;
-    if (outcome === 'complete') for (const p of this.ctx.players()) this.award(p.id, WIN_BONUS);
+    if (outcome === 'complete') for (const p of this.ctx.players()) this.award(p.id, WIN_POINTS_PER_ROUND * this.totalRounds);
     this.setPhase('gameEnd', ROUND_SCORES_MS, () => this.ctx.finish());
   }
 

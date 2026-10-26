@@ -311,9 +311,11 @@ export const trivia: MiniGameDefinition = {
 // ---- Team Trivia (co-op) ----------------------------------------------------------------
 
 /** Points for a correct answer, and for everyone when a stage is cleared or the challenge is won. */
+// On the shared scale: a stage (one puzzle) comes to about 700 with a couple of right answers,
+// and the final one to about 1,000 with the completion bonus.
 const CORRECT_POINTS = 150;
-const STAGE_BONUS = 300;
-const COMPLETE_BONUS = 500;
+const STAGE_BONUS = 400;
+const COMPLETE_BONUS = 300;
 /** A stage still not cleared this many questions beyond what it needs ends the challenge (so it can't drag on). */
 const STAGE_PATIENCE = 8;
 

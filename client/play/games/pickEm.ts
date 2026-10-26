@@ -1,4 +1,4 @@
-import { PICK_POINTS, type PickInput, type PickPlayerView } from '../../../shared/games/pickEm';
+import type { PickInput, PickPlayerView } from '../../../shared/games/pickEm';
 import { h } from '../dom';
 import type { Controller } from '../main';
 
@@ -16,7 +16,7 @@ export function createPickEm(root: HTMLElement, send: (input: unknown) => void):
   const scoreEl = h('span');
   const topicEl = h('div', { class: 'tu-category' });
   const questionEl = h('div', { class: 'tv-question' });
-  const hintEl = h('div', { class: 'tv-multi' }, `Pick all that apply · ±${PICK_POINTS} each`);
+  const hintEl = h('div', { class: 'tv-multi' }, 'Pick all that apply · wrong picks cost points');
   const gridEl = h('div', { class: 'pe-grid' });
   const statusEl = h('div', { class: 'tu-status' });
   const lockBtn = h('button', { class: 'tv-lock', type: 'button' }, 'Lock in');
@@ -111,7 +111,7 @@ export function createPickEm(root: HTMLElement, send: (input: unknown) => void):
       return;
     }
     typedEl.hidden = true;
-    hintEl.textContent = `Pick all that apply · ±${PICK_POINTS} each`;
+    hintEl.textContent = 'Pick all that apply · wrong picks cost points';
     const mine = locked();
     const picked = mine.length > 0 ? mine : [...selected];
     const revealing = v.phase === 'reveal' || v.phase === 'gameEnd';
@@ -167,7 +167,7 @@ export function createPickEm(root: HTMLElement, send: (input: unknown) => void):
     typedEl.hidden = v.phase === 'question' || v.phase === 'gameEnd';
     formEl.hidden = !playing;
     doneBtn.hidden = !playing;
-    hintEl.textContent = `Type as many as you can · +${PICK_POINTS} each`;
+    hintEl.textContent = 'Type as many as you can · wrong guesses are free';
     foundTitleEl.textContent = v.phase === 'reveal' ? `You found ${v.found.length} of ${v.slots}` : `Found ${v.found.length} of ${v.slots}`;
 
     const chips =

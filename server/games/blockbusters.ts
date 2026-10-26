@@ -23,8 +23,11 @@ const RESULT_MS = 2_500;
 const BOARD_END_MS = 5_000;
 /** Questions tried on one hexagon before the team in control picks again. */
 const QUESTIONS_PER_HEX = 2;
-/** To whoever answers right, and to everyone on a team that wins a board. */
-const CORRECT_POINTS = 200;
+/**
+ * On the shared scale: to whoever answers right, and to everyone on a team that wins a board, so
+ * a board comes to about 1,000 for a winner who answered several.
+ */
+const CORRECT_POINTS = 100;
 const WIN_POINTS = 500;
 
 const other = (team: Team): Team => (team === 'red' ? 'white' : 'red');

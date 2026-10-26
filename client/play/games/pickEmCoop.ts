@@ -1,4 +1,4 @@
-import { COOP_CLEAR_POINTS, COOP_PENALTY_MS, type PickCoopInput, type PickCoopPlayerView } from '../../../shared/games/pickEm';
+import { COOP_PENALTY_MS, type PickCoopInput, type PickCoopPlayerView } from '../../../shared/games/pickEm';
 import { h } from '../dom';
 import type { Controller } from '../main';
 
@@ -118,7 +118,7 @@ export function createPickEmCoop(root: HTMLElement, send: (input: unknown) => vo
         break;
       }
       case 'reveal':
-        if (v.cleared) setStatus(`Cleared! The team found all ${v.total}. +${COOP_CLEAR_POINTS} each`, 'good');
+        if (v.cleared) setStatus(`Cleared! The team found all ${v.total}. +${v.gamePoints.toLocaleString()} so far`, 'good');
         else setStatus(`Out of time: the team found ${v.found} of ${v.total}.`, 'bad');
         break;
       case 'gameEnd':

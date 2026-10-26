@@ -8,14 +8,15 @@ import {
   type RackPlayerView,
   type ScoredMove,
 } from '../../shared/games/rackAttack';
+import { puzzlePoints } from '../../shared/scoring';
 import { PUZZLE_RESULT_MS, ROUND_SCORES_MS } from '../../shared/timing';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 import { checkMove, makePuzzle, type Puzzle } from './rackAttack/engine';
 
 /** Time to make a play. */
 const PLAY_MS = 60_000;
-/** Party points for each point a play scores (a 40-point play is worth 400). */
-const POINTS_PER_SCORE = 10;
+// Scoring on the shared scale: a play is worth its share of the best play possible, so the best
+// play scores 1,000 and one half as good scores 500.
 
 const PASS: ScoredMove = { tiles: [], words: [], score: 0 };
 
@@ -93,7 +94,8 @@ class RackAttack implements MiniGame {
 
   private reveal() {
     for (const [playerId, move] of this.submitted) {
-      const points = move.score * POINTS_PER_SCORE;
+      const best = this.puzzle.best?.score ?? move.score;
+      const points = puzzlePoints(best > 0 ? move.score / best : 0);
       if (points === 0) continue;
       this.lastPoints.set(playerId, points);
       this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + points);

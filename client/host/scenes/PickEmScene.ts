@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PICK_POINTS, type PickHostPlayer, type PickHostView } from '../../../shared/games/pickEm';
+import type { PickHostPlayer, PickHostView } from '../../../shared/games/pickEm';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
 import { COLORS, WIDTH, addBackdrop, hex, text } from '../theme';
@@ -57,7 +57,7 @@ export class PickEmScene extends Phaser.Scene {
     this.timerText = text(this, WIDTH - 150, 60, '', 64, COLORS.text, { fontStyle: '700' });
     this.topicText = text(this, WIDTH / 2, 160, '', 40, COLORS.accent, { fontStyle: '700' }).setLetterSpacing(4);
     this.questionText = text(this, WIDTH / 2, 290, '', 62, COLORS.text, { fontStyle: '700', align: 'center', wordWrap: { width: 1600 } });
-    this.hintText = text(this, WIDTH / 2, 395, `PICK ALL THAT APPLY  ·  +${PICK_POINTS} RIGHT  ·  −${PICK_POINTS} WRONG`, 30, COLORS.accent, {
+    this.hintText = text(this, WIDTH / 2, 395, 'PICK ALL THAT APPLY  ·  WRONG PICKS COST POINTS', 30, COLORS.accent, {
       fontStyle: '700',
     }).setLetterSpacing(2);
 
@@ -114,8 +114,8 @@ export class PickEmScene extends Phaser.Scene {
     this.hintText.setVisible(view.phase !== 'gameEnd');
     this.hintText.setText(
       view.kind === 'typed'
-        ? `TYPE AS MANY AS YOU CAN  ·  +${PICK_POINTS} EACH  ·  ${view.slots} TO FIND`
-        : `PICK ALL THAT APPLY  ·  +${PICK_POINTS} RIGHT  ·  −${PICK_POINTS} WRONG`,
+        ? `TYPE AS MANY AS YOU CAN  ·  ${view.slots} TO FIND`
+        : 'PICK ALL THAT APPLY  ·  WRONG PICKS COST POINTS',
     );
     this.renderPlayers(view.players, view.phase, view.kind);
 

@@ -9,6 +9,7 @@ import {
   type ConcentrationPhase,
   type ConcentrationPlayerView,
 } from '../../shared/games/concentration';
+import { puzzlePoints, racePoints } from '../../shared/scoring';
 import { PUZZLE_RESULT_MS, ROUND_SCORES_MS } from '../../shared/timing';
 import { Deck, shuffleCards } from './cards';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
@@ -17,16 +18,14 @@ const COUNTDOWN_MS = 4_000;
 /** The clock grows with the board: half a minute, plus four seconds a card. */
 const roundMs = (cells: number) => 30_000 + cells * 4_000;
 
-// Scoring, as in Word Rush: points = (seconds left - GUESS_COST_MS x guesses) x POINTS_PER_SECOND,
-// so clearing the board quickly and in few guesses both matter. Anyone who clears it gets at
-// least MIN_POINTS.
-const GUESS_COST_MS = 3_000;
-const POINTS_PER_SECOND = 10;
-const MIN_POINTS = 100;
+// Scoring is a race on the shared scale, as in Word Rush: 300 for clearing the board, plus up to
+// 700 for the time left, less GUESS_COST_MS of it per guess. Anyone who runs out of time gets a
+// little for the pairs they found.
+const GUESS_COST_MS = 1_500;
+const UNFINISHED_SHARE = 0.25;
 
-export function boardPoints(msLeft: number, guesses: number): number {
-  const seconds = (msLeft - guesses * GUESS_COST_MS) / 1000;
-  return Math.max(MIN_POINTS, Math.round(seconds * POINTS_PER_SECOND));
+export function boardPoints(msLeft: number, guesses: number, roundMs: number): number {
+  return racePoints(msLeft, roundMs, guesses, GUESS_COST_MS);
 }
 
 /** A board: a card id per square (null for the empty centre of an odd-sized board). */
@@ -94,6 +93,12 @@ class Concentration implements MiniGame {
   }
 
   private endRound() {
+    // Out of time: a little for each pair found.
+    for (const [id, prog] of this.progress) {
+      if (prog.finishRank !== null || prog.matched.size === 0) continue;
+      prog.roundPoints = puzzlePoints((UNFINISHED_SHARE * prog.matched.size) / (this.totalPairs * 2));
+      this.award(id, prog.roundPoints);
+    }
     const isLast = this.round >= this.totalBoards;
     this.setPhase('roundEnd', PUZZLE_RESULT_MS, () => {
       if (!isLast) this.startRound(this.round + 1);
@@ -125,9 +130,8 @@ class Concentration implements MiniGame {
         prog.lastMiss = null;
         if (prog.matched.size === this.totalPairs * 2) {
           prog.finishRank = ++this.finishers;
-          prog.roundPoints = boardPoints(this.msLeft(), prog.guesses);
-          this.ctx.addScore(playerId, prog.roundPoints);
-          this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + prog.roundPoints);
+          prog.roundPoints = boardPoints(this.msLeft(), prog.guesses, roundMs(this.board.length));
+          this.award(playerId, prog.roundPoints);
         }
       } else {
         prog.lastMiss = { seq: ++this.missSeq, cells: [first, i], cards: [this.board[first]!, this.board[i]!] };
@@ -139,6 +143,11 @@ class Concentration implements MiniGame {
     // End early once every connected player is done, so nobody waits on someone who left.
     const connected = new Set(this.ctx.players().filter((p) => p.connected).map((p) => p.id));
     if ([...this.progress].every(([id, p]) => p.finishRank !== null || !connected.has(id))) this.endRound();
+  }
+
+  private award(playerId: string, points: number) {
+    this.ctx.addScore(playerId, points);
+    this.gamePoints.set(playerId, (this.gamePoints.get(playerId) ?? 0) + points);
   }
 
   private msLeft() {
