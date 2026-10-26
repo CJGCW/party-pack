@@ -11,7 +11,8 @@
     "build": "vite build",
     "start": "vite build && cross-env NODE_ENV=production tsx server/index.ts",
     "bot": "tsx scripts/bot.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test server/**/*.test.ts"
   },
   "dependencies": {
     "an-array-of-english-words": "^2.0.0",

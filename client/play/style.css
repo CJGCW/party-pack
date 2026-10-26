@@ -525,3 +525,56 @@ button.secondary { background: var(--panel-light); }
 .cc-input { font-size: 20px; padding: 12px 14px; }
 .cc-give { background: var(--correct); }
 .cc-stop.voted { box-shadow: 0 0 0 3px var(--accent); }
+
+/* ---------- Playing cards (shared by card games) ---------- */
+
+.pcard {
+  --w: var(--card-w, 64px);
+  position: relative;
+  flex: none;
+  width: var(--w);
+  height: calc(var(--w) * 1.4);
+  border-radius: calc(var(--w) * 0.1);
+  background: #fdfcf7;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  font-size: calc(var(--w) * 0.26);
+  line-height: 1;
+  user-select: none;
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
+}
+.pcard.red { color: #d6264a; }
+.pcard.black { color: #1d1a33; }
+.pcard.selected { z-index: 1; transform: translateY(-14%); box-shadow: 0 0 0 3px var(--accent), 0 6px 12px rgba(0, 0, 0, 0.45); }
+.pcard.disabled { opacity: 0.45; }
+.pcard-corner {
+  position: absolute;
+  top: 6%;
+  left: 8%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.85em;
+}
+.pcard-corner b { font-weight: 700; }
+.pcard-corner.end { top: auto; left: auto; bottom: 6%; right: 8%; transform: rotate(180deg); }
+.pcard-pip, .pcard-face, .pcard-joker {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pcard-pip { font-size: 1.9em; }
+.pcard-face { flex-direction: column; font-size: 1.7em; font-weight: 700; }
+.pcard-face small { font-size: 0.6em; }
+.pcard-joker { writing-mode: vertical-rl; font-size: 0.75em; font-weight: 700; letter-spacing: 0.15em; }
+.pcard.back {
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.14) 0 4px, transparent 4px 10px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.14) 0 4px, transparent 4px 10px),
+    var(--player, #8b7cf6);
+  border: calc(var(--w) * 0.06) solid #fdfcf7;
+}
+/* A hand: cards overlap so a full hand fits across the phone. */
+.pcard-hand { display: flex; justify-content: center; padding-top: 12px; }
+.pcard-hand .pcard + .pcard { margin-left: calc(var(--card-w, 64px) * -0.45); }
