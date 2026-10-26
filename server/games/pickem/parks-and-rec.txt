@@ -32,7 +32,7 @@ Q: Which of these are businesses in Pawnee?
 A: JJ's Diner
 A: Paunch Burger
 A: Sweetums
-A: The Snakehole Lounge
+A: The Snake Hole Lounge
 A: Entertainment 720
 W: Central Perk
 W: Cheers
@@ -55,7 +55,7 @@ W: Marlene
 Q: Which of these are the names of Leslie and Ben's triplets?
 A: Stephen
 A: Sonia
-A: Wesley
+A: Westley
 W: Mac
 W: Nikolaj
 W: Cagney
@@ -77,6 +77,118 @@ W: Zach Braff
 W: Melissa Fumero
 W: Steve Carell
 W: Judy Reyes
+
+TOPIC: The Parks Department
+
+Q: Which of these were Tom Haverford's business ventures?
+A: Rent-A-Swag
+A: Tom's Bistro
+A: Entertainment 720
+W: The Very Good Building Company
+W: The Low-Cal Calzone Zone
+W: Sweetums
+W: Gryzzl
+W: Paunch Burger
+
+Q: Which of these does Ron Swanson love?
+A: Breakfast food
+A: Hunting
+A: Meat
+A: Woodworking
+A: Scotch
+W: Salads
+W: The government
+W: Tammy Two
+W: Skim milk
+
+Q: Which of these does Leslie Knope dislike?
+A: Libraries
+A: Eagleton
+A: Salads
+W: Waffles
+W: Joe Biden
+W: Ann
+W: Galentine's Day
+W: Pawnee
+
+Q: Which of these jobs has Andy Dwyer had?
+A: Shoeshiner
+A: Children's TV host
+A: Leslie's assistant
+W: Nurse
+W: Mayor
+W: Police officer
+W: Pediatric surgeon
+W: IRS agent
+
+Q: Which of these men has Ann Perkins dated?
+A: Andy Dwyer
+A: Mark Brendanawicz
+A: Tom Haverford
+A: Chris Traeger
+W: Ron Swanson
+W: Ben Wyatt
+W: Jerry Gergich
+W: Craig Middlebrooks
+
+Q: Which of these were Andy's bands?
+A: Mouse Rat
+A: Scarecrow Boat
+W: The Worthless Peons
+W: Neutral Milk Hotel
+W: The Cool Cats
+W: Rent-A-Swag
+W: Sweetums
+W: Gryzzl
+
+TOPIC: Pawnee
+
+Q: Which of these characters host or report the news in Pawnee?
+A: Joan Callamezzo
+A: Perd Hapley
+A: Shauna Malwae-Tweep
+W: Jeremy Jamm
+W: Ethel Beavers
+W: Marcia Langman
+W: Bobby Newport
+W: Dennis Feinstein
+
+Q: Which of these characters come from Eagleton?
+A: Craig Middlebrooks
+A: Ron Dunn
+A: Ingrid de Forest
+W: Ron Swanson
+W: Andy Dwyer
+W: April Ludgate
+W: Ann Perkins
+W: Jerry Gergich
+
+Q: Which of these famous people appear as themselves?
+A: Michelle Obama
+A: Madeleine Albright
+A: John Cena
+A: Newt Gingrich
+A: Joe Biden
+W: Oprah Winfrey
+W: Bill Gates
+W: Taylor Swift
+W: Barack Obama
+
+TOPIC: Cast
+
+Q: Which of these actors guest-star on Parks and Recreation?
+A: Paul Rudd
+A: Kathryn Hahn
+A: Kristen Bell
+A: Henry Winkler
+A: Jenny Slate
+A: Lucy Lawless
+A: Megan Mullally
+A: Patricia Clarkson
+A: Bill Murray
+W: Zach Braff
+W: Judy Reyes
+W: Andre Braugher
 
 # ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
 
@@ -108,3 +220,25 @@ L: Amy Poehler | Poehler
 L: Nick Offerman | Offerman
 L: Aziz Ansari | Ansari
 L: Aubrey Plaza | Plaza
+
+TOPIC: Ben Wyatt
+
+Q: Name Ben's board game, his failed winter-sports complex, and his calzone restaurant idea.
+L: The Cones of Dunshire | Cones of Dunshire
+L: Ice Town
+L: The Low-Cal Calzone Zone | Low-Cal Calzone Zone | Low Cal Calzone Zone | Calzone Zone
+
+TOPIC: Alter Egos
+
+Q: Name the alter egos of Andy (an FBI agent), April (a rich widow) and Ron (a jazz saxophonist).
+L: Burt Macklin
+L: Janet Snakehole
+L: Duke Silver
+
+TOPIC: Cast
+
+Q: Name the actors who play Andy, Ann, Ben and Chris.
+L: Chris Pratt | Pratt
+L: Rashida Jones | Jones
+L: Adam Scott | Scott
+L: Rob Lowe | Lowe

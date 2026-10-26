@@ -131,6 +131,73 @@ W: Into the Unknown
 W: We Don't Talk About Bruno
 W: Part of Your World
 
+TOPIC: Disney Animation
+
+Q: Which of these characters are in Frozen (2013)?
+A: Elsa
+A: Anna
+A: Olaf
+A: Kristoff
+A: Sven
+A: Hans
+W: Rapunzel
+W: Flynn Rider
+W: Maui
+W: Pascal
+
+Q: Which of these sidekicks are from Disney animated films?
+A: Abu
+A: Pascal
+A: Flounder
+A: Meeko
+A: Mushu
+A: Heihei
+A: Timon
+W: Donkey
+W: Puss in Boots
+W: Scrat
+W: Minion
+
+TOPIC: Pixar
+
+Q: Which of these Pixar films came out before 2010?
+A: Toy Story
+A: A Bug's Life
+A: Monsters, Inc.
+A: Finding Nemo
+A: The Incredibles
+A: Cars
+A: Ratatouille
+A: WALL-E
+A: Up
+W: Brave
+W: Inside Out
+W: Coco
+
+TOPIC: Songs
+
+Q: Which of these songs are from Frozen (2013)?
+A: Let It Go
+A: Do You Want to Build a Snowman?
+A: For the First Time in Forever
+A: Love Is an Open Door
+A: In Summer
+W: Into the Unknown
+W: Show Yourself
+W: How Far I'll Go
+W: Part of Your World
+
+Q: Which of these songs are from Aladdin (1992)?
+A: A Whole New World
+A: Friend Like Me
+A: Prince Ali
+A: Arabian Nights
+A: One Jump Ahead
+W: Be Our Guest
+W: Colors of the Wind
+W: Reflection
+W: Go the Distance
+
 # ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
 
 TOPIC: Disney Animation
@@ -169,3 +236,10 @@ L: Helen | Elastigirl | Helen Parr
 L: Violet | Violet Parr
 L: Dash | Dash Parr
 L: Jack-Jack | Jack Jack | Jackjack
+
+TOPIC: Disney Animation
+
+Q: Name the three good fairies in Sleeping Beauty (1959).
+L: Flora
+L: Fauna
+L: Merryweather

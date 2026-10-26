@@ -69,6 +69,111 @@ W: Nick Offerman
 W: Donald Faison
 W: Craig Robinson
 
+TOPIC: Family
+
+Q: Which of these characters are part of Jake Peralta's family?
+A: Roger
+A: Karen
+A: Kate
+A: Mac
+A: Amy
+W: Kevin
+W: Nikolaj
+W: Cagney
+W: Genevieve
+W: Marcus
+W: Iggy
+
+Q: Which of these characters are part of Charles Boyle's family?
+A: Nikolaj
+A: Genevieve
+A: Lynn
+W: Kevin
+W: Mac
+W: Ava
+W: Sharon
+W: Marcus
+
+Q: Which of these characters are part of Captain Holt's family?
+A: Kevin
+A: Cheddar
+A: Marcus
+A: Debbie
+W: Genevieve
+W: Sharon
+W: Karen
+W: Nikolaj
+
+Q: Which of these actors play Jake's parents?
+A: Katey Sagal
+A: Bradley Whitford
+W: Jimmy Smits
+W: Danny Trejo
+W: Stephen Root
+W: Niecy Nash
+W: Martin Mull
+W: Kyra Sedgwick
+
+TOPIC: The Nine-Nine
+
+Q: Which of these characters run the Nine-Nine as its captain at some point?
+A: Raymond Holt
+A: Terry Jeffords
+A: C.J. Stentley
+A: Seth Dozerman
+W: Doug Judy
+W: Kevin Cozner
+W: Adrian Pimento
+W: Charles Boyle
+
+Q: Which of these are true of Amy Santiago?
+A: She has seven brothers
+A: She's allergic to dogs
+A: She dreams of being the NYPD's youngest captain
+A: She loves binders
+W: She has a twin sister
+W: She hates paperwork
+W: She hates rules
+W: She's Jake's boss when the show starts
+
+Q: Which of these happen in the series finale?
+A: Jake quits to be a stay-at-home dad
+A: Terry becomes captain
+A: Amy becomes a chief
+A: Holt becomes Deputy Commissioner
+A: Hitchcock wins the Halloween Heist
+W: Jake becomes captain
+W: Rosa rejoins the NYPD
+W: Charles moves to Canada
+W: Holt retires
+W: Amy quits the NYPD
+
+Q: Which of these are aliases or undercover names used by the squad?
+A: Greg Stickney
+A: Emily Goldfinch
+A: Isabel Cortez
+W: Burt Macklin
+W: Janet Snakehole
+W: Duke Silver
+W: Johnny Karate
+W: Tobias Fünke
+
+TOPIC: Cast
+
+Q: Which of these actors guest-star on Brooklyn Nine-Nine?
+A: Craig Robinson
+A: Kyra Sedgwick
+A: Dean Winters
+A: Jason Mantzoukas
+A: Bill Hader
+A: Ed Helms
+A: Fred Armisen
+A: Lin-Manuel Miranda
+W: Zach Braff
+W: Sarah Chalke
+W: Aziz Ansari
+W: Judy Reyes
+
 # ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
 
 TOPIC: The Nine-Nine
@@ -98,3 +203,17 @@ L: Andy Samberg | Samberg
 L: Melissa Fumero | Fumero
 L: Stephanie Beatriz | Beatriz
 L: Terry Crews | Crews
+
+TOPIC: Holt
+
+Q: Name Captain Holt's husband, his dog, and his beloved Corvair.
+L: Kevin | Kevin Cozner
+L: Cheddar
+L: Gertie
+
+TOPIC: Cast
+
+Q: Name the actors who play Charles, Gina and Holt.
+L: Joe Lo Truglio | Lo Truglio | Truglio
+L: Chelsea Peretti | Peretti
+L: Andre Braugher | Braugher

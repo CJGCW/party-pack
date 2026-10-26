@@ -70,6 +70,108 @@ W: Chris Pratt
 W: Hugh Laurie
 W: Jim Parsons
 
+TOPIC: Nicknames
+
+Q: Which of these nicknames does Dr. Cox use?
+A: Newbie
+A: Barbie
+A: Gandhi
+A: Bobbo
+W: Bambi
+W: Turkleton
+W: Chocolate Bear
+W: Tiger
+
+Q: Which of these nicknames are for J.D.?
+A: Newbie
+A: Bambi
+A: Tiger
+W: Barbie
+W: Gandhi
+W: Bobbo
+W: Turkleton
+W: Chocolate Bear
+
+TOPIC: Sacred Heart
+
+Q: Which of these characters are in the Janitor's Brain Trust?
+A: Ted
+A: Doug
+A: The Todd
+W: J.D.
+W: Dr. Cox
+W: Elliot
+W: Dr. Kelso
+W: Jordan
+
+Q: Which of these characters are interns in season 1?
+A: J.D.
+A: Turk
+A: Elliot
+W: Dr. Cox
+W: Carla
+W: Dr. Kelso
+W: The Janitor
+W: Ted
+
+Q: Which of these characters are nurses?
+A: Carla
+A: Laverne
+W: Elliot
+W: Kim
+W: Jordan
+W: Molly
+W: Dr. Cox
+W: Ted
+
+Q: Which of these networks aired Scrubs?
+A: NBC
+A: ABC
+W: Fox
+W: CBS
+W: HBO
+W: AMC
+W: The CW
+W: Showtime
+
+TOPIC: Family
+
+Q: Which of these characters are part of J.D.'s family?
+A: Dan
+A: Sam
+W: Jack
+W: Izzy
+W: Jennifer Dylan
+W: Ben
+W: Danni
+W: Paige
+
+Q: Which of these characters are Dr. Kelso's family, often mentioned but never seen?
+A: Enid
+A: Harrison
+W: Lady
+W: Jordan
+W: Kim
+W: Danni
+W: Paige
+W: Izzy
+
+TOPIC: Cast
+
+Q: Which of these actors appear on Scrubs?
+A: Brendan Fraser
+A: John Ritter
+A: Michael J. Fox
+A: Elizabeth Banks
+A: Heather Graham
+A: Courteney Cox
+A: Tom Cavanagh
+W: Andy Samberg
+W: Amy Poehler
+W: Andre Braugher
+W: Chelsea Peretti
+W: Rob Lowe
+
 # ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
 
 TOPIC: Sacred Heart
@@ -90,3 +192,24 @@ L: Zach Braff | Braff
 L: Donald Faison | Faison
 L: Sarah Chalke | Chalke
 L: Judy Reyes | Reyes
+
+TOPIC: Nicknames
+
+Q: Name Dr. Cox's nicknames for J.D., Elliot and Turk.
+L: Newbie
+L: Barbie
+L: Gandhi
+
+TOPIC: Family
+
+Q: Name the three Sullivan siblings: Jordan and her brother and sister.
+L: Jordan | Jordan Sullivan
+L: Ben | Ben Sullivan
+L: Danni | Danni Sullivan | Dani
+
+TOPIC: Cast
+
+Q: Name the actors who play Dr. Cox, Dr. Kelso and the Janitor.
+L: John C. McGinley | John McGinley | McGinley
+L: Ken Jenkins | Jenkins
+L: Neil Flynn | Flynn
