@@ -1,0 +1,110 @@
+# Pick 'Em lists: Parks and Recreation. Same format as general.txt: TOPIC:, Q:, then A: for
+# each right answer and W: for each wrong one (8 to 12 options, at least two of each), or
+# L: lines for a typed list. Lines starting with # are comments.
+
+TOPIC: The Parks Department
+
+Q: Which of these characters work in the Pawnee Parks Department in seasons 1 and 2?
+A: Leslie Knope
+A: Ron Swanson
+A: Tom Haverford
+A: April Ludgate
+A: Jerry Gergich
+A: Donna Meagle
+W: Ann Perkins
+W: Mark Brendanawicz
+W: Joan Callamezzo
+W: Tammy Two
+
+Q: Which of these are alter egos used by Parks and Rec characters?
+A: Burt Macklin
+A: Janet Snakehole
+A: Duke Silver
+A: Johnny Karate
+W: Ron Burgundy
+W: Sasha Fierce
+W: Jan Itor
+W: Tobias Fünke
+
+TOPIC: Pawnee
+
+Q: Which of these are businesses in Pawnee?
+A: JJ's Diner
+A: Paunch Burger
+A: Sweetums
+A: The Snakehole Lounge
+A: Entertainment 720
+W: Central Perk
+W: Cheers
+W: MacLaren's
+W: Monk's Café
+W: Paddy's Pub
+
+TOPIC: Family
+
+Q: Which of these characters have been married to Ron Swanson?
+A: Tammy One
+A: Tammy Two
+A: Diane
+W: Ann
+W: April
+W: Donna
+W: Leslie
+W: Marlene
+
+Q: Which of these are the names of Leslie and Ben's triplets?
+A: Stephen
+A: Sonia
+A: Wesley
+W: Mac
+W: Nikolaj
+W: Cagney
+W: Izzy
+W: Jack
+
+TOPIC: Cast
+
+Q: Which of these actors are in the main cast of Parks and Recreation?
+A: Amy Poehler
+A: Nick Offerman
+A: Aziz Ansari
+A: Aubrey Plaza
+A: Chris Pratt
+A: Rashida Jones
+A: Adam Scott
+W: Andy Samberg
+W: Zach Braff
+W: Melissa Fumero
+W: Steve Carell
+W: Judy Reyes
+
+# ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
+
+TOPIC: The Parks Department
+
+Q: Name the ten main characters of Parks and Recreation from seasons 3 to 7.
+L: Leslie | Leslie Knope | Knope
+L: Ron | Ron Swanson | Swanson
+L: Tom | Tom Haverford | Haverford
+L: April | April Ludgate | Ludgate
+L: Andy | Andy Dwyer | Dwyer
+L: Ann | Ann Perkins | Perkins
+L: Ben | Ben Wyatt | Wyatt
+L: Chris | Chris Traeger | Traeger
+L: Jerry | Jerry Gergich | Gergich | Garry | Garry Gergich | Larry | Terry
+L: Donna | Donna Meagle | Meagle
+
+TOPIC: Family
+
+Q: Name the three women Ron Swanson has been married to.
+L: Tammy One | Tammy 1 | Tammy I
+L: Tammy Two | Tammy 2 | Tammy II
+L: Diane | Diane Lewis
+
+TOPIC: Cast
+
+Q: Name the actors who play Leslie, Ron, Tom and April.
+L: Amy Poehler | Poehler
+L: Nick Offerman | Offerman
+L: Aziz Ansari | Ansari
+L: Aubrey Plaza | Plaza

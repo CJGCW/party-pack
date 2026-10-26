@@ -1,13 +1,19 @@
 import type { GameInfo } from '../protocol';
 
-/** Long-list trivia: pick, or type, every right answer. Each bank is a mode. */
+/** Long-list trivia: pick, or type, every right answer. Each bank is a mode, with the same ids as Trivia's subjects. */
 export const PICK_EM: GameInfo = {
   id: 'pick-em',
   name: "Pick 'Em",
   description: 'Lists with lots of right answers: tap every one you think is right, or type as many as you can name.',
   minPlayers: 1,
   maxPlayers: 8,
-  modes: [{ id: 'general', name: 'General Knowledge', description: 'Planets, primes, dinosaurs, capitals and more.' }],
+  modes: [
+    { id: 'general', name: 'General Knowledge', description: 'Planets, primes, dinosaurs, capitals and more.' },
+    { id: 'disney-pixar', name: 'Disney & Pixar', description: 'Pixar films, Disney villains, princesses and songs.' },
+    { id: 'scrubs', name: 'Scrubs', description: 'Sacred Heart Hospital, seasons 1 to 8.' },
+    { id: 'brooklyn-99', name: 'Brooklyn Nine-Nine', description: 'The detectives of the 99th Precinct.' },
+    { id: 'parks-and-rec', name: 'Parks and Recreation', description: 'The Pawnee Parks Department.' },
+  ],
 };
 
 /**

@@ -1,0 +1,171 @@
+# Pick 'Em lists: Disney & Pixar (theatrical animated films). Same format as general.txt:
+# TOPIC:, Q:, then A: for each right answer and W: for each wrong one (8 to 12 options,
+# at least two of each), or L: lines for a typed list. Lines starting with # are comments.
+
+TOPIC: Pixar
+
+Q: Which of these films are made by Pixar?
+A: Toy Story
+A: Finding Nemo
+A: Ratatouille
+A: WALL-E
+A: Up
+A: Inside Out
+A: Coco
+W: Shrek
+W: Frozen
+W: Moana
+W: Madagascar
+W: Despicable Me
+
+Q: Which of these Pixar films got a sequel or prequel in cinemas?
+A: Toy Story
+A: Cars
+A: Finding Nemo
+A: The Incredibles
+A: Monsters, Inc.
+A: Inside Out
+W: Up
+W: Ratatouille
+W: WALL-E
+W: Coco
+W: Brave
+W: Soul
+
+Q: Which of these characters are toys in the Toy Story films?
+A: Woody
+A: Buzz Lightyear
+A: Jessie
+A: Rex
+A: Hamm
+A: Slinky Dog
+A: Bo Peep
+A: Forky
+W: Sid
+W: Andy
+W: Al
+W: Lightning McQueen
+
+Q: Which of these characters are in Finding Nemo?
+A: Marlin
+A: Dory
+A: Gill
+A: Crush
+A: Bruce
+A: Nigel
+A: Squirt
+W: Sebastian
+W: Flounder
+W: Heihei
+W: Meeko
+
+TOPIC: Disney Animation
+
+Q: Which of these villains are from Disney animated films?
+A: Ursula
+A: Jafar
+A: Scar
+A: Maleficent
+A: Hades
+A: Gaston
+A: Cruella de Vil
+W: Lord Farquaad
+W: Tai Lung
+W: Lord Business
+W: Vector
+
+Q: Which of these characters are official Disney Princesses?
+A: Ariel
+A: Belle
+A: Jasmine
+A: Mulan
+A: Tiana
+A: Rapunzel
+A: Merida
+W: Elsa
+W: Anna
+W: Esmeralda
+W: Megara
+W: Tinker Bell
+
+Q: Which of these films are set in France?
+A: Ratatouille
+A: The Hunchback of Notre Dame
+A: The Aristocats
+A: Beauty and the Beast
+W: Coco
+W: Luca
+W: Mulan
+W: Brave
+W: Encanto
+W: Frozen
+W: Tangled
+W: The Princess and the Frog
+
+TOPIC: Songs
+
+Q: Which of these songs are from The Lion King (1994)?
+A: Circle of Life
+A: Hakuna Matata
+A: Can You Feel the Love Tonight
+A: I Just Can't Wait to Be King
+A: Be Prepared
+W: Under the Sea
+W: A Whole New World
+W: Let It Go
+W: Colors of the Wind
+W: You've Got a Friend in Me
+W: How Far I'll Go
+
+Q: Which of these songs won the Oscar for Best Original Song?
+A: Under the Sea
+A: A Whole New World
+A: Can You Feel the Love Tonight
+A: Colors of the Wind
+A: Let It Go
+A: Remember Me
+W: How Far I'll Go
+W: You've Got a Friend in Me
+W: Hakuna Matata
+W: Into the Unknown
+W: We Don't Talk About Bruno
+W: Part of Your World
+
+# ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
+
+TOPIC: Disney Animation
+
+Q: Name the seven dwarfs from Snow White.
+L: Doc
+L: Grumpy
+L: Happy
+L: Sleepy
+L: Bashful
+L: Sneezy
+L: Dopey
+
+Q: Name the three hyenas who work for Scar in The Lion King (1994).
+L: Shenzi
+L: Banzai
+L: Ed
+
+Q: Name the three Disney princesses from Disney's films of 1937 to 1959.
+L: Snow White
+L: Cinderella
+L: Aurora | Sleeping Beauty | Briar Rose | Princess Aurora
+
+TOPIC: Pixar
+
+Q: Name the five emotions in Riley's head in Inside Out (2015).
+L: Joy
+L: Sadness
+L: Anger
+L: Fear
+L: Disgust
+
+Q: Name the five members of the Parr family in The Incredibles.
+L: Bob | Mr. Incredible | Mr Incredible | Bob Parr
+L: Helen | Elastigirl | Helen Parr
+L: Violet | Violet Parr
+L: Dash | Dash Parr
+L: Jack-Jack | Jack Jack | Jackjack

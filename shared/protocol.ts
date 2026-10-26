@@ -56,19 +56,23 @@ export interface WheelEntry {
   label: string;
   /**
    * Several games on one slice (e.g. Trivia: Trivia, Team Trivia, Pick 'Em and Team Pick 'Em).
-   * `settings.groups[id]` picks competitive or co-op, and which topics can come up.
+   * `settings.groups[id]` picks competitive or co-op, and which topics and formats can come up.
    */
-  group?: { topics: GroupTopic[] };
+  group?: { topics: { id: string; label: string }[]; formats: GroupFormat[] };
 }
 
-/** One choice under a group slice: a question bank, played by a competitive or a co-op game. */
-export interface GroupTopic {
-  /** "gameId:modeId" of the competitive game. */
+/**
+ * One way to play a group's topics, e.g. Questions (Trivia / Team Trivia) or Pick 'Em lists
+ * (Pick 'Em / Team Pick 'Em). Its games' modes are topics, with the same ids across formats.
+ */
+export interface GroupFormat {
+  /** The competitive game's id. */
   id: string;
   label: string;
   competitive: string;
   coop: string;
-  modeId: string;
+  /** The topics this format has questions for. */
+  topics: string[];
 }
 
 /** Competitive, co-op, or either at random each time. */
@@ -76,8 +80,9 @@ export type PlayStyle = 'competitive' | 'coop' | 'both';
 
 export interface GroupSettings {
   style: PlayStyle;
-  /** GroupTopic ids; one is picked at random each time. */
+  /** Topic (mode) ids and format ids; one of each is picked at random each time. */
   topics: string[];
+  formats: string[];
 }
 
 /** What the VIP has chosen for the next session. */

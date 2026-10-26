@@ -92,14 +92,17 @@ export class LobbyScene extends Phaser.Scene {
     bg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 24);
     card.add(bg);
 
-    // Groups say which version, and how many topics if there's a choice: "Trivia (co-op, 3 topics)".
+    // Groups say which version, how many topics, and the format if only one: "Trivia (co-op, 3 topics, Pick 'Em lists)".
     const groupNote = (e: WheelEntry) => {
       const settings = state.settings.groups[e.id];
       if (!settings) return e.label;
-      const style = settings.style === 'coop' ? 'co-op' : settings.style;
-      const topicCount = e.group?.topics.length ?? 0;
+      const notes = [settings.style === 'coop' ? 'co-op' : settings.style];
       const n = settings.topics.length;
-      return topicCount > 1 ? `${e.label} (${style}, ${n} ${n === 1 ? 'topic' : 'topics'})` : `${e.label} (${style})`;
+      if ((e.group?.topics.length ?? 0) > 1) notes.push(`${n} ${n === 1 ? 'topic' : 'topics'}`);
+      if ((e.group?.formats.length ?? 0) > 1 && settings.formats.length === 1) {
+        notes.push(e.group!.formats.find((f) => f.id === settings.formats[0])?.label ?? '');
+      }
+      return `${e.label} (${notes.join(', ')})`;
     };
     const labels = state.wheelEntries.filter((e) => state.settings.enabled.includes(e.id)).map(groupNote);
     const rounds = state.settings.rounds;

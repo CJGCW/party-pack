@@ -1,5 +1,5 @@
 import { io, type Socket } from 'socket.io-client';
-import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type RoomState, type PlayStyle, type WheelEntry, type ServerToClientEvents } from '../../shared/protocol';
+import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type GroupSettings, type RoomState, type PlayStyle, type WheelEntry, type ServerToClientEvents } from '../../shared/protocol';
 import { CLUE_CREW } from '../../shared/games/clueCrew';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
@@ -256,9 +256,29 @@ function wheelSettings(isVip: boolean): Node[] {
 
   /** Under a group's toggle (e.g. Trivia): competitive, co-op or both, and which topics if there's a choice. */
   function groupOptions(entry: WheelEntry) {
-    const { style, topics } = settings.groups[entry.id];
+    const current = settings.groups[entry.id];
+    const { style, topics, formats } = current;
     const modes = entry.group?.topics ?? [];
-    const set = (next: { style: PlayStyle; topics: string[] }) => save({ ...settings, groups: { ...settings.groups, [entry.id]: next } });
+    const fmts = entry.group?.formats ?? [];
+    const set = (next: Partial<GroupSettings>) => save({ ...settings, groups: { ...settings.groups, [entry.id]: { ...current, ...next } } });
+    /** A row of on/off chips for a list of ids. */
+    const chips = (items: { id: string; label: string }[], on: string[], key: 'topics' | 'formats') =>
+      h(
+        'div',
+        { class: 'chips' },
+        ...items.map((item) => {
+          const chosen = on.includes(item.id);
+          return h(
+            'button',
+            {
+              class: `chip${chosen ? ' on' : ''}`,
+              disabled: !isVip,
+              onclick: () => set({ [key]: chosen ? on.filter((t) => t !== item.id) : [...on, item.id] }),
+            },
+            item.label,
+          );
+        }),
+      );
     const styles: [PlayStyle, string][] = [['competitive', 'Competitive'], ['coop', 'Co-op'], ['both', 'Both']];
     return h(
       'div',
@@ -272,34 +292,17 @@ function wheelSettings(isVip: boolean): Node[] {
             {
               class: id === style ? 'on' : '',
               disabled: !isVip,
-              onclick: () => set({ style: id, topics }),
+              onclick: () => set({ style: id }),
             },
             label,
           ),
         ),
       ),
-      // Topics only when there's a choice.
+      // Topics and formats only when there's a choice.
       modes.length > 1 && h('div', { class: 'muted' }, 'Topics: one is picked at random each time.'),
-      modes.length > 1 &&
-        h(
-          'div',
-          { class: 'chips' },
-          ...modes.map((mode) => {
-            const chosen = topics.includes(mode.id);
-            return h(
-              'button',
-              {
-                class: `chip${chosen ? ' on' : ''}`,
-                disabled: !isVip,
-                onclick: () => {
-                  const next = chosen ? topics.filter((t) => t !== mode.id) : [...topics, mode.id];
-                  set({ style, topics: next });
-                },
-              },
-              mode.label,
-            );
-          }),
-        ),
+      modes.length > 1 && chips(modes, topics, 'topics'),
+      fmts.length > 1 && h('div', { class: 'muted' }, 'Formats: multiple choice questions, long lists, or both.'),
+      fmts.length > 1 && chips(fmts, formats, 'formats'),
     );
   }
 

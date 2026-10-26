@@ -1,0 +1,100 @@
+# Pick 'Em lists: Brooklyn Nine-Nine. Same format as general.txt: TOPIC:, Q:, then A: for
+# each right answer and W: for each wrong one (8 to 12 options, at least two of each), or
+# L: lines for a typed list. Lines starting with # are comments.
+
+TOPIC: The Nine-Nine
+
+Q: Which of these characters are detectives at the Nine-Nine when the show begins?
+A: Jake Peralta
+A: Amy Santiago
+A: Rosa Diaz
+A: Charles Boyle
+A: Hitchcock
+A: Scully
+W: Terry Jeffords
+W: Raymond Holt
+W: Gina Linetti
+W: Doug Judy
+W: Kevin Cozner
+W: Madeline Wuntch
+
+Q: Which of these phrases does Jake Peralta say again and again?
+A: Cool cool cool
+A: Noice
+A: Title of your sex tape
+W: Treat yo self
+W: Eagle!
+W: Literally
+W: Bazinga
+W: That's what she said
+
+TOPIC: Family
+
+Q: Which of these are Terry Jeffords's daughters?
+A: Cagney
+A: Lacey
+A: Ava
+W: Nikolaj
+W: Mac
+W: Cheddar
+W: Genevieve
+W: Sharon
+
+TOPIC: Criminals
+
+Q: Which of these characters are criminals the Nine-Nine go after?
+A: Doug Judy
+A: Seamus Murphy
+A: Figgis
+A: Melanie Hawkins
+W: Kevin Cozner
+W: Cheddar
+W: Teddy Wells
+W: Madeline Wuntch
+W: Sharon Jeffords
+
+TOPIC: Cast
+
+Q: Which of these actors are in the main cast of Brooklyn Nine-Nine?
+A: Andy Samberg
+A: Melissa Fumero
+A: Stephanie Beatriz
+A: Terry Crews
+A: Joe Lo Truglio
+A: Andre Braugher
+A: Chelsea Peretti
+W: Zach Braff
+W: Aubrey Plaza
+W: Nick Offerman
+W: Donald Faison
+W: Craig Robinson
+
+# ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
+
+TOPIC: The Nine-Nine
+
+Q: Name the nine members of the Nine-Nine squad (the main characters).
+L: Jake | Jake Peralta | Peralta
+L: Amy | Amy Santiago | Santiago
+L: Rosa | Rosa Diaz | Diaz
+L: Terry | Terry Jeffords | Jeffords | Sarge
+L: Charles | Charles Boyle | Boyle
+L: Gina | Gina Linetti | Linetti
+L: Holt | Raymond Holt | Captain Holt | Ray Holt
+L: Hitchcock | Michael Hitchcock
+L: Scully | Norm Scully | Norm
+
+TOPIC: Family
+
+Q: Name Terry Jeffords's three daughters.
+L: Cagney
+L: Lacey
+L: Ava
+
+TOPIC: Cast
+
+Q: Name the actors who play Jake, Amy, Rosa and Terry.
+L: Andy Samberg | Samberg
+L: Melissa Fumero | Fumero
+L: Stephanie Beatriz | Beatriz
+L: Terry Crews | Crews

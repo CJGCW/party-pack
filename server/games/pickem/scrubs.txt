@@ -1,0 +1,92 @@
+# Pick 'Em lists: Scrubs (seasons 1 to 8). Same format as general.txt: TOPIC:, Q:, then A:
+# for each right answer and W: for each wrong one (8 to 12 options, at least two of each),
+# or L: lines for a typed list. Lines starting with # are comments.
+
+TOPIC: Sacred Heart
+
+Q: Which of these characters work at Sacred Heart Hospital?
+A: J.D.
+A: Turk
+A: Elliot
+A: Carla
+A: Dr. Cox
+A: Dr. Kelso
+A: The Janitor
+A: Laverne
+W: Meredith Grey
+W: Dr. Ross
+W: Leslie Knope
+W: Jake Peralta
+
+Q: Which of these characters are doctors?
+A: J.D.
+A: Turk
+A: Elliot
+A: Dr. Cox
+A: Dr. Kelso
+A: The Todd
+A: Keith
+A: Doug
+W: Carla
+W: Laverne
+W: The Janitor
+W: Ted
+
+Q: Which of these characters die during seasons 1 to 8?
+A: Ben
+A: Laverne
+W: Dr. Kelso
+W: Ted
+W: The Todd
+W: Doug
+W: Jordan
+W: Elliot
+
+TOPIC: Family
+
+Q: Which of these characters are part of Dr. Cox's family?
+A: Jordan
+A: Jack
+A: Jennifer Dylan
+A: Ben
+W: Dan
+W: Sam
+W: Izzy
+W: Kim
+
+TOPIC: Cast
+
+Q: Which of these actors are in the main cast of Scrubs?
+A: Zach Braff
+A: Donald Faison
+A: Sarah Chalke
+A: Judy Reyes
+A: John C. McGinley
+A: Ken Jenkins
+A: Neil Flynn
+W: Neil Patrick Harris
+W: Andy Samberg
+W: Chris Pratt
+W: Hugh Laurie
+W: Jim Parsons
+
+# ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
+
+TOPIC: Sacred Heart
+
+Q: Name the seven main characters of Scrubs.
+L: J.D. | JD | John Dorian | Dorian
+L: Turk | Christopher Turk | Chris Turk
+L: Elliot | Elliot Reid
+L: Carla | Carla Espinosa | Carla Turk
+L: Dr. Cox | Cox | Perry Cox | Perry | Dr Cox
+L: Dr. Kelso | Kelso | Bob Kelso | Dr Kelso
+L: The Janitor | Janitor
+
+TOPIC: Cast
+
+Q: Name the actors who play J.D., Turk, Elliot and Carla.
+L: Zach Braff | Braff
+L: Donald Faison | Faison
+L: Sarah Chalke | Chalke
+L: Judy Reyes | Reyes

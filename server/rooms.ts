@@ -15,7 +15,7 @@ import {
   type ServerToClientEvents,
   type SessionSettings,
   type GroupSettings,
-  type GroupTopic,
+  type GroupFormat,
   type PlayStyle,
   type WheelEntry,
 } from '../shared/protocol';
@@ -52,37 +52,44 @@ const SPIN_RESULT_MS = 3_000;
 const RESULTS_MS = 15_000;
 
 /**
- * Games that share one slice. Each member is a competitive game and its co-op version (which
- * share question banks); every bank is a topic. The group settings pick competitive or co-op,
- * and which topics can come up. A one-bank member's topic is just the game's name.
+ * Games that share one slice. Each format is a competitive game and its co-op version (which
+ * share question banks); the banks are topics, with the same ids in every format. The group
+ * settings pick competitive or co-op, and which topics and formats can come up.
  */
 const GROUPS = [
   {
     id: TRIVIA.id,
     label: 'Trivia',
-    members: [
-      { competitive: TRIVIA, coop: TRIVIA_QUEST },
-      { competitive: PICK_EM, coop: PICK_EM_COOP },
+    formats: [
+      { competitive: TRIVIA, coop: TRIVIA_QUEST, label: 'Questions' },
+      { competitive: PICK_EM, coop: PICK_EM_COOP, label: "Pick 'Em lists" },
     ],
   },
 ];
-const groupTopics = (group: (typeof GROUPS)[number]): GroupTopic[] =>
-  group.members.flatMap(({ competitive, coop }) =>
-    competitive.modes.map((m) => ({
-      id: `${competitive.id}:${m.id}`,
-      label: competitive.id === group.id ? m.name : competitive.modes.length === 1 ? competitive.name : `${competitive.name} · ${m.name}`,
-      competitive: competitive.id,
-      coop: coop.id,
-      modeId: m.id,
-    })),
-  );
-const GROUPED_GAMES = new Set(GROUPS.flatMap((g) => g.members.flatMap((m) => [m.competitive.id, m.coop.id])));
+type Group = (typeof GROUPS)[number];
+const groupFormats = (group: Group): GroupFormat[] =>
+  group.formats.map((f) => ({
+    id: f.competitive.id,
+    label: f.label,
+    competitive: f.competitive.id,
+    coop: f.coop.id,
+    topics: f.competitive.modes.map((m) => m.id),
+  }));
+/** Every topic any format has, in order. */
+const groupTopics = (group: Group) => {
+  const topics = new Map<string, string>();
+  for (const f of group.formats) for (const m of f.competitive.modes) if (!topics.has(m.id)) topics.set(m.id, m.name);
+  return [...topics].map(([id, label]) => ({ id, label }));
+};
+const GROUPED_GAMES = new Set(GROUPS.flatMap((g) => g.formats.flatMap((f) => [f.competitive.id, f.coop.id])));
 const PLAY_STYLES: PlayStyle[] = ['competitive', 'coop', 'both'];
 
 /** Every game/mode combination, each a possible slice on the wheel, plus one slice per group. */
 const WHEEL_ENTRIES: WheelEntry[] = GAMES.flatMap((g): WheelEntry[] => {
   const group = GROUPS.find((gr) => gr.id === g.info.id);
-  if (group) return [{ id: group.id, gameId: g.info.id, modeId: '', label: group.label, group: { topics: groupTopics(group) } }];
+  if (group) {
+    return [{ id: group.id, gameId: g.info.id, modeId: '', label: group.label, group: { topics: groupTopics(group), formats: groupFormats(group) } }];
+  }
   if (GROUPED_GAMES.has(g.info.id)) return [];
   return g.info.modes.map((m) => ({
     id: `${g.info.id}:${m.id}`,
@@ -108,7 +115,9 @@ export class Room {
   gameId: string | null = null;
   settings: SessionSettings = {
     enabled: WHEEL_ENTRIES.map((e) => e.id),
-    groups: Object.fromEntries(GROUPS.map((g) => [g.id, { style: 'both', topics: groupTopics(g).map((t) => t.id) }])),
+    groups: Object.fromEntries(
+      GROUPS.map((g) => [g.id, { style: 'both', topics: groupTopics(g).map((t) => t.id), formats: groupFormats(g).map((f) => f.id) }]),
+    ),
     rounds: DEFAULT_ROUNDS,
     puzzlesPerRound: DEFAULT_PUZZLES,
   };
@@ -290,10 +299,13 @@ export class Room {
       const current = this.settings.groups[g.id];
       const sent = next?.groups?.[g.id];
       const style = PLAY_STYLES.includes(sent?.style as PlayStyle) ? sent!.style : current.style;
-      const all = groupTopics(g).map((t) => t.id);
-      const topics = Array.isArray(sent?.topics) ? all.filter((t) => sent.topics.includes(t)) : current.topics;
+      const allTopics = groupTopics(g).map((t) => t.id);
+      const topics = Array.isArray(sent?.topics) ? allTopics.filter((t) => sent.topics.includes(t)) : current.topics;
+      const allFormats = groupFormats(g).map((f) => f.id);
+      const formats = Array.isArray(sent?.formats) ? allFormats.filter((f) => sent.formats.includes(f)) : current.formats;
       if (topics.length === 0) return `Pick at least one ${g.label} topic.`;
-      groups[g.id] = { style, topics };
+      if (formats.length === 0) return `Pick at least one ${g.label} format.`;
+      groups[g.id] = { style, topics, formats };
     }
     this.settings = { enabled: [...new Set(enabled)], groups, rounds, puzzlesPerRound: puzzles };
     this.broadcastState();
@@ -336,12 +348,17 @@ export class Room {
     this.broadcastState();
   }
 
-  /** A group slice came up: competitive or co-op (per the settings), on one of the chosen topics. */
+  /**
+   * A group slice came up: one of the chosen topics, in one of the chosen formats that has it,
+   * competitive or co-op per the settings.
+   */
   private pickFromGroup(id: string, group: NonNullable<WheelEntry['group']>) {
-    const { style, topics } = this.settings.groups[id];
+    const { style, topics, formats } = this.settings.groups[id];
     const coop = style === 'both' ? Math.random() < 0.5 : style === 'coop';
-    const topic = group.topics.find((t) => t.id === pick(topics))!;
-    return { gameId: coop ? topic.coop : topic.competitive, modeId: topic.modeId };
+    const chosen = group.formats.filter((f) => formats.includes(f.id));
+    const pairs = chosen.flatMap((f) => topics.filter((t) => f.topics.includes(t)).map((topic) => ({ format: f, topic })));
+    const { format, topic } = pick(pairs);
+    return { gameId: coop ? format.coop : format.competitive, modeId: topic };
   }
 
   /** Debug mode only: play one specific game (or, in WoochaWare debug, one microgame). */
