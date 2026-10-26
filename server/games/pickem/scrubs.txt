@@ -172,6 +172,62 @@ W: Andre Braugher
 W: Chelsea Peretti
 W: Rob Lowe
 
+TOPIC: Romance
+
+Q: Which of these men has Jordan Sullivan been with?
+A: Dr. Cox
+A: J.D.
+A: Pete Fisher
+W: Dr. Kelso
+W: Turk
+W: The Janitor
+W: Ted
+W: The Todd
+
+Q: Which of these men does Elliot date in seasons 1 to 8?
+A: J.D.
+A: Sean Kelly
+A: Paul Flowers
+A: Dan Dorian
+A: Jake
+A: Keith
+W: Turk
+W: Dr. Cox
+W: Ted
+W: The Todd
+W: Doug
+W: Dr. Kelso
+
+Q: Which of these women does J.D. date or sleep with?
+A: Elliot
+A: Kim
+A: Danni
+A: Jordan
+A: Julie
+A: Kylie
+A: Alex
+A: Neena
+W: Carla
+W: Laverne
+W: Lady
+W: Gooch
+
+TOPIC: Guest Stars
+
+Q: Which of these famous actors guest-star on Scrubs?
+A: Colin Farrell
+A: Ryan Reynolds
+A: Dick Van Dyke
+A: Matthew Perry
+A: Scott Foley
+A: Tara Reid
+A: Mandy Moore
+A: Amy Smart
+W: Andre Braugher
+W: Chelsea Peretti
+W: Amy Poehler
+W: Stephanie Beatriz
+
 # ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
 
 TOPIC: Sacred Heart
@@ -213,3 +269,15 @@ Q: Name the actors who play Dr. Cox, Dr. Kelso and the Janitor.
 L: John C. McGinley | John McGinley | McGinley
 L: Ken Jenkins | Jenkins
 L: Neil Flynn | Flynn
+
+TOPIC: Guest Stars
+
+Q: Name the actors who play J.D.'s father, J.D.'s brother, and Jordan's brother Ben.
+L: John Ritter | Ritter
+L: Tom Cavanagh | Cavanagh
+L: Brendan Fraser | Fraser
+
+Q: Name the actors who play Kim Briggs, Molly Clock and Dr. Maddox.
+L: Elizabeth Banks | Banks
+L: Heather Graham | Graham
+L: Courteney Cox | Courtney Cox

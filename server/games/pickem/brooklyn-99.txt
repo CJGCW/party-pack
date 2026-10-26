@@ -174,6 +174,18 @@ W: Sarah Chalke
 W: Aziz Ansari
 W: Judy Reyes
 
+TOPIC: Romance
+
+Q: Which of these characters has Rosa Diaz dated?
+A: Marcus
+A: Adrian Pimento
+W: Jake
+W: Charles
+W: Terry
+W: Doug Judy
+W: Hitchcock
+W: Scully
+
 # ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
 
 TOPIC: The Nine-Nine

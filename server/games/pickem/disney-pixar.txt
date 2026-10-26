@@ -198,6 +198,144 @@ W: Colors of the Wind
 W: Reflection
 W: Go the Distance
 
+TOPIC: Looks
+
+Q: Which of these characters have curly hair?
+A: Merida
+A: Moana
+A: Mirabel
+A: Maui
+A: Mother Gothel
+A: Tiana
+W: Elsa
+W: Rapunzel
+W: Pocahontas
+W: Jasmine
+W: Mulan
+W: Anna
+
+Q: Which of these characters wear glasses?
+A: Doc
+A: Carl Fredricksen
+A: Edna Mode
+A: Mirabel
+A: Milo Thatch
+A: Honey Lemon
+W: Belle
+W: Aladdin
+W: Woody
+W: Buzz Lightyear
+W: Moana
+W: Mulan
+
+Q: Which of these characters have red hair?
+A: Ariel
+A: Merida
+A: Jessie
+W: Elsa
+W: Rapunzel
+W: Belle
+W: Aurora
+W: Jasmine
+
+Q: Which of these characters have blue hair?
+A: Hades
+A: Joy
+A: Sadness
+W: Disgust
+W: Elsa
+W: Merida
+W: Ariel
+W: Rapunzel
+
+TOPIC: Family
+
+Q: Which of these characters have at least one parent shown on screen in their film?
+A: Simba
+A: Ariel
+A: Jasmine
+A: Belle
+A: Mulan
+A: Moana
+A: Merida
+A: Tiana
+W: Snow White
+W: Peter Pan
+W: Mowgli
+W: Woody
+
+Q: Which of these characters are Madrigals in Encanto?
+A: Mirabel
+A: Isabela
+A: Luisa
+A: Bruno
+A: Pepa
+A: Julieta
+A: Camilo
+A: Dolores
+W: Maui
+W: Namaari
+W: Tamatoa
+W: Sisu
+
+TOPIC: Animals
+
+Q: Which of these characters are dogs?
+A: Pongo
+A: Lady
+A: Tramp
+A: Bolt
+A: Dug
+A: Pluto
+A: Copper
+A: Dante
+W: Pumbaa
+W: Meeko
+W: Abu
+W: Pascal
+
+Q: Which of these characters are cats?
+A: Lucifer
+A: Figaro
+A: Duchess
+A: Thomas O'Malley
+A: Cheshire Cat
+A: Oliver
+W: Pongo
+W: Abu
+W: Meeko
+W: Sebastian
+
+Q: Which of these characters are mice or rats?
+A: Remy
+A: Mickey
+A: Minnie
+A: Jaq
+A: Gus
+A: Bernard
+A: Bianca
+A: Basil
+W: Pascal
+W: Meeko
+W: Flit
+W: Abu
+
+TOPIC: Villains
+
+Q: Which of these characters die in their film?
+A: Mufasa
+A: Ray
+A: Kerchak
+A: Mother Gothel
+A: Gaston
+A: Ursula
+W: Simba
+W: Jafar
+W: Hades
+W: Captain Hook
+W: Cruella de Vil
+W: Yzma
+
 # ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
 
 TOPIC: Disney Animation
@@ -243,3 +381,10 @@ Q: Name the three good fairies in Sleeping Beauty (1959).
 L: Flora
 L: Fauna
 L: Merryweather
+
+TOPIC: Family
+
+Q: Name the three Madrigal sisters in Encanto.
+L: Isabela | Isabella
+L: Luisa | Louisa
+L: Mirabel | Mirabelle

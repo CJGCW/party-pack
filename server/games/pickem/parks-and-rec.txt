@@ -190,6 +190,39 @@ W: Zach Braff
 W: Judy Reyes
 W: Andre Braugher
 
+TOPIC: Romance
+
+Q: Which of these women has Tom Haverford dated?
+A: Lucy
+A: Ann
+A: Wendy
+W: Leslie
+W: April
+W: Donna
+W: Diane
+W: Marlene
+
+Q: Which of these men has Leslie Knope dated?
+A: Ben
+A: Mark
+A: Dave
+A: Justin
+W: Ron
+W: Tom
+W: Andy
+W: Chris
+W: Jerry
+
+Q: Which of these women has Chris Traeger dated?
+A: Ann
+A: Millicent Gergich
+W: Leslie
+W: April
+W: Donna
+W: Gayle
+W: Diane
+W: Ingrid de Forest
+
 # ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
 
 TOPIC: The Parks Department
