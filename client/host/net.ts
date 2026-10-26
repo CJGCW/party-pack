@@ -13,6 +13,8 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io();
 export const net = {
   room: null as RoomState | null,
   gameView: null as unknown,
+  /** Which scene a game view is for (set by main), so a scene isn't handed another's view. */
+  sceneFor: (_view: unknown): string | undefined => undefined,
   events: new Phaser.Events.EventEmitter(),
 };
 
@@ -48,6 +50,12 @@ socket.on('room:closed', () => {
  */
 export function listen(scene: Phaser.Scene, event: 'room' | 'gameView', fn: (data: any) => void) {
   const safe = (data: unknown) => {
+    // Stopped part way through this same event (another listener switched scenes).
+    if (!scene.sys.isActive()) return;
+    if (event === 'gameView') {
+      const target = net.sceneFor(data);
+      if (target && target !== scene.scene.key) return;
+    }
     try {
       fn(data);
     } catch (err) {

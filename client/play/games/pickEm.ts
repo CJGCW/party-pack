@@ -100,7 +100,7 @@ export function createPickEm(root: HTMLElement, send: (input: unknown) => void):
       selected = new Set();
       pendingLock = null;
     }
-    headerEl.textContent = `List ${v.questionNumber}/${v.totalQuestions}`;
+    headerEl.textContent = v.heading ?? `List ${v.questionNumber}/${v.totalQuestions}`;
     scoreEl.textContent = `${v.score.toLocaleString()} pts`;
     topicEl.textContent = v.topic;
     questionEl.textContent = v.question;

@@ -68,7 +68,7 @@ game.events.once(Phaser.Core.Events.READY, () => {
 function showSceneFor(state: RoomState) {
   const key =
     state.phase === 'game' && state.gameId
-      ? GAME_SCENES[state.gameId]
+      ? sceneForView(net.gameView, state.gameId)
       : state.phase === 'spinning'
         ? SpinnerScene.KEY
         : state.phase === 'standings'
@@ -88,6 +88,17 @@ function showSceneFor(state: RoomState) {
 
 net.events.on('room', (state: RoomState) => {
   if (game.isBooted) showSceneFor(state);
+});
+
+/** A game can hand a question to another game's scene (Trivia mixes in Pick 'Em lists). */
+function sceneForView(view: unknown, gameId: string) {
+  return GAME_SCENES[(view as { asGame?: string } | null)?.asGame ?? gameId];
+}
+net.sceneFor = (view) => (net.room?.gameId ? sceneForView(view, net.room.gameId) : undefined);
+
+// Registered before any scene's listener, so the right scene is up before views are handed out.
+net.events.on('gameView', () => {
+  if (game.isBooted && net.room) showSceneFor(net.room);
 });
 
 // Esc on the host screen abandons the current game or session.

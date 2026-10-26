@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   ANSWER_COUNT,
@@ -14,11 +14,15 @@ import {
 } from '../../shared/games/trivia';
 import { PUZZLE_RESULT_MS, ROUND_SCORES_MS } from '../../shared/timing';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
+import { embeddedList, hasLists, type EmbeddedList } from './pickEm';
+import { loadQuestionFile, shuffle, type Question } from './questions';
 
 /** The question alone, before the answers appear. */
 const READ_MS = 3_000;
 /** Time to pick an answer once they're up. */
 const ANSWER_MS = 20_000;
+/** With lists mixed in, the share of questions that are Pick 'Em lists instead. */
+const LIST_SHARE = 0.25;
 
 // Scoring: a right answer is worth BASE_POINTS plus up to SPEED_BONUS more the
 // sooner it was locked in (all of it at once, none of it at the buzzer).
@@ -46,80 +50,9 @@ export function answerShare(picked: number[], correct: number[]): number {
 
 // ---- Question banks -----------------------------------------------------------
 //
-// Each file in ./trivia is one bank (one mode). Questions are blocks like:
-//
-//   FILM: The Lion King
-//
-//   Q: Who voices adult Simba?
-//   A: Matthew Broderick
-//   W: Jonathan Taylor Thomas
-//   W: Nathan Lane
-//   W: Jeremy Irons
-//
-// A "FILM:" (or "TOPIC:") line is the banner for every question after it. A is a right answer and
-// each W is a wrong one; there are always four in total. More than one A makes
-// it a select-all-that-apply question. Lines starting with # are comments.
-//
-// Pick 'Em also has typed lists: no A/W lines, but an L line per answer, with other
-// accepted ways to write it after | (e.g. "L: Paris | Count Paris").
-
-export interface Question {
-  film: string;
-  question: string;
-  correct: string[];
-  wrong: string[];
-  /** Typed lists (Pick 'Em): each answer's accepted forms, the first being how it's shown. */
-  list: string[][];
-}
+// Each file in ./trivia is one bank (one mode), in the format described in ./questions.
 
 const BANK_DIR = join(import.meta.dirname, 'trivia');
-
-/**
- * Reads a question file in the format above. `valid` decides which questions to keep
- * (trivia wants exactly four options; Pick 'Em wants long lists).
- */
-export function loadQuestionFile(path: string, valid: (q: Question) => boolean, tag = 'trivia'): Question[] {
-  const questions: Question[] = [];
-  let film = '';
-  let current: Question | null = null;
-  const finish = () => {
-    if (!current) return;
-    if (!valid(current)) {
-      console.warn(`[${tag}] Skipping malformed question in ${path}: ${current.question}`);
-    } else {
-      questions.push(current);
-    }
-    current = null;
-  };
-
-  for (const raw of readFileSync(path, 'utf8').split(/\r?\n/)) {
-    const line = raw.trim();
-    if (!line || line.startsWith('#')) continue;
-    const match = /^(FILM|TOPIC|Q|A|W|L):\s*(.+)$/.exec(line);
-    if (!match) {
-      console.warn(`[${tag}] Ignoring line in ${path}: ${line}`);
-      continue;
-    }
-    const [, key, value] = match;
-    // TOPIC is FILM by another name, for banks that aren't about films (e.g. TV shows).
-    if (key === 'FILM' || key === 'TOPIC') {
-      finish();
-      film = value;
-    } else if (key === 'Q') {
-      finish();
-      current = { film, question: value, correct: [], wrong: [], list: [] };
-    } else if (current && key === 'A') {
-      current.correct.push(value);
-    } else if (current && key === 'W') {
-      current.wrong.push(value);
-    } else if (current && key === 'L') {
-      // "L: Paris | Count Paris": one answer to a typed list, with other ways to write it.
-      current.list.push(value.split('|').map((form) => form.trim()).filter(Boolean));
-    }
-  }
-  finish();
-  return questions;
-}
 
 function loadBank(file: string): Question[] {
   return loadQuestionFile(
@@ -146,14 +79,6 @@ function dealQuestion(bankId: string): Question {
   return deck.pop()!;
 }
 
-export function shuffle<T>(items: T[]): T[] {
-  for (let i = items.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [items[i], items[j]] = [items[j], items[i]];
-  }
-  return items;
-}
-
 // ---- Game -----------------------------------------------------------------------
 
 class Trivia implements MiniGame {
@@ -169,12 +94,16 @@ class Trivia implements MiniGame {
   protected gamePoints = new Map<string, number>();
   protected phaseEndsAt = 0;
   protected timer: NodeJS.Timeout | null = null;
+  /** A Pick 'Em list being played in place of a question, when lists are mixed in. */
+  protected list: EmbeddedList | null = null;
+  private listPlayed = false;
 
   constructor(
     protected readonly ctx: GameContext,
     protected readonly bankId: string,
     /** Questions in the game (0 when open-ended, as in a quest). */
     protected readonly totalQuestions: number,
+    private readonly mixLists = false,
   ) {}
 
   start() {
@@ -191,6 +120,13 @@ class Trivia implements MiniGame {
 
   protected startQuestion(index: number) {
     this.questionIndex = index;
+    // Lists come up now and then, and at least once in a game of two or more questions.
+    const lastChance = this.totalQuestions > 1 && index === this.totalQuestions - 1 && !this.listPlayed;
+    if (this.mixLists && hasLists(this.bankId) && (lastChance || Math.random() < LIST_SHARE)) {
+      this.listPlayed = true;
+      this.startList();
+      return;
+    }
     this.question = dealQuestion(this.bankId);
     this.answers = shuffle([...this.question.correct, ...this.question.wrong]);
     this.correctIndices = this.answers.flatMap((a, i) => (this.question.correct.includes(a) ? [i] : []));
@@ -199,7 +135,44 @@ class Trivia implements MiniGame {
     this.setPhase('question', READ_MS, () => this.setPhase('answering', ANSWER_MS, () => this.reveal()));
   }
 
+  /** A Pick 'Em list in place of this question; it hands back when its reveal is over. */
+  private startList() {
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = null;
+    const list = embeddedList(
+      { ...this.ctx, addScore: (id, points) => this.award(id, points), finish: () => this.listFinished(list) },
+      this.bankId,
+      this.isTeam,
+      this.listHeading(),
+    );
+    this.list = list;
+    list.game.start();
+  }
+
+  private listFinished(list: EmbeddedList) {
+    if (this.list !== list) return;
+    list.game.dispose();
+    this.list = null;
+    this.afterList(list.found());
+  }
+
+  /** Shown on a mixed-in list in place of "List 1 of 1". */
+  protected listHeading() {
+    return `Question ${this.questionIndex + 1} of ${this.totalQuestions}`;
+  }
+
+  /** Team Trivia plays mixed-in lists co-op. */
+  protected get isTeam() {
+    return false;
+  }
+
+  /** After a mixed-in list (its points are already scored): on as after a question's reveal. */
+  protected afterList(_found: number) {
+    this.afterReveal();
+  }
+
   onInput(playerId: string, raw: unknown) {
+    if (this.list) return this.list.game.onInput(playerId, raw);
     const input = raw as TriviaInput;
     if (this.phase !== 'answering' || input?.type !== 'answer' || !Array.isArray(input.indices)) return;
     if (this.picks.has(playerId)) return; // answers are final
@@ -265,6 +238,7 @@ class Trivia implements MiniGame {
   }
 
   syncHost() {
+    if (this.list) return this.list.game.syncHost();
     const counts = this.answers.map((_, i) => [...this.picks.values()].filter((p) => p.indices.includes(i)).length);
     const view: TriviaHostView = {
       phase: this.phase,
@@ -294,6 +268,7 @@ class Trivia implements MiniGame {
   }
 
   syncPlayer(playerId: string) {
+    if (this.list) return this.list.game.syncPlayer(playerId);
     const player = this.ctx.players().find((p) => p.id === playerId);
     if (!player) return;
     const view: TriviaPlayerView = {
@@ -323,12 +298,14 @@ class Trivia implements MiniGame {
   dispose() {
     if (this.timer) clearTimeout(this.timer);
     this.timer = null;
+    this.list?.game.dispose();
+    this.list = null;
   }
 }
 
 export const trivia: MiniGameDefinition = {
   info: TRIVIA,
-  create: (ctx, modeId, options) => new Trivia(ctx, modeId, options.puzzles),
+  create: (ctx, modeId, options) => new Trivia(ctx, modeId, options.puzzles, options.mixLists),
 };
 
 // ---- Team Trivia (co-op) ----------------------------------------------------------------
@@ -356,8 +333,25 @@ class TeamTrivia extends Trivia {
   private clearedNow = false;
   private correctNow = 0;
 
-  constructor(ctx: GameContext, bankId: string, private readonly stageCount: number) {
-    super(ctx, bankId, 0);
+  constructor(ctx: GameContext, bankId: string, private readonly stageCount: number, mixLists = false) {
+    super(ctx, bankId, 0, mixLists);
+  }
+
+  protected get isTeam() {
+    return true;
+  }
+
+  protected listHeading() {
+    return `Stage ${this.stageIndex + 1} of ${this.needed.length}`;
+  }
+
+  /** Every answer the team found on a mixed-in list counts toward the stage (and costs no lives). */
+  protected afterList(found: number) {
+    this.results.clear();
+    this.clearedNow = false;
+    this.correctNow = found;
+    this.advanceStage();
+    this.afterReveal();
   }
 
   start() {
@@ -396,7 +390,11 @@ class TeamTrivia extends Trivia {
       }
       this.results.set(p.id, result);
     }
+    this.advanceStage();
+  }
 
+  /** Adds this question's correct answers to the stage: cleared, complete, or failed. */
+  private advanceStage() {
     const needed = this.needed[this.stageIndex];
     this.correct = Math.min(needed, this.correct + this.correctNow);
     this.questionsOnStage++;
@@ -460,7 +458,7 @@ class TeamTrivia extends Trivia {
 
 export const triviaQuest: MiniGameDefinition = {
   info: TRIVIA_QUEST,
-  create: (ctx, modeId, options) => new TeamTrivia(ctx, modeId, options.puzzles),
+  create: (ctx, modeId, options) => new TeamTrivia(ctx, modeId, options.puzzles, options.mixLists),
 };
 
 /** For tooling: question count per bank. */

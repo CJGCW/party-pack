@@ -340,8 +340,8 @@ export class Room {
     this.setPhaseTimer(SPIN_MS + SPIN_RESULT_MS, () => {
       const entry = this.spin!.entries[targetIndex];
       this.spin = null;
-      const { gameId, modeId } = entry.group ? this.pickFromGroup(entry.id, entry.group) : entry;
-      const error = this.launchGame(gameId, modeId);
+      const { gameId, modeId, mixLists } = entry.group ? this.pickFromGroup(entry.id, entry.group) : { ...entry, mixLists: false };
+      const error = this.launchGame(gameId, modeId, undefined, mixLists);
       // E.g. players left during the spin so the game no longer fits: end the session.
       if (error) this.returnToLobby();
     });
@@ -358,7 +358,13 @@ export class Room {
     const chosen = group.formats.filter((f) => formats.includes(f.id));
     const pairs = chosen.flatMap((f) => topics.filter((t) => f.topics.includes(t)).map((topic) => ({ format: f, topic })));
     const { format, topic } = pick(pairs);
-    return { gameId: coop ? format.coop : format.competitive, modeId: topic };
+    // More than one format chosen, and the first (Questions) has this topic: its game, with
+    // the others' lists mixed in.
+    const [main] = group.formats;
+    if (chosen.length > 1 && chosen[0] === main && main.topics.includes(topic)) {
+      return { gameId: coop ? main.coop : main.competitive, modeId: topic, mixLists: true };
+    }
+    return { gameId: coop ? format.coop : format.competitive, modeId: topic, mixLists: false };
   }
 
   /** Debug mode only: play one specific game (or, in WoochaWare debug, one microgame). */
@@ -373,7 +379,7 @@ export class Room {
     return this.launchGame(gameId, modeId, config.woochaDebug ? microgameId : undefined);
   }
 
-  private launchGame(gameId: string, modeId?: string, microgameId?: string): string | null {
+  private launchGame(gameId: string, modeId?: string, microgameId?: string, mixLists = false): string | null {
     const def = findGame(gameId);
     if (!def) return 'Unknown game.';
     const mode = modeId ? def.info.modes.find((m) => m.id === modeId) : def.info.modes[0];
@@ -403,7 +409,7 @@ export class Room {
         },
       },
       mode.id,
-      { puzzles: this.settings.puzzlesPerRound, microgame: microgameId },
+      { puzzles: this.settings.puzzlesPerRound, microgame: microgameId, mixLists },
     );
     this.game = game;
     this.broadcastState();

@@ -54,6 +54,8 @@ export interface PickHostPlayer {
 export interface PickHostView {
   phase: PickPhase;
   kind: PickKind;
+  /** Inside another game (e.g. mixed into Trivia): shown in place of "List 1 of 1". */
+  heading: string | null;
   packName: string;
   questionNumber: number;
   totalQuestions: number;
@@ -84,6 +86,7 @@ export interface PickGuessResult {
 export interface PickPlayerView {
   phase: PickPhase;
   kind: PickKind;
+  heading: string | null;
   questionNumber: number;
   totalQuestions: number;
   topic: string;
@@ -163,6 +166,7 @@ interface CoopViewBase {
   kind: PickKind;
   questionNumber: number;
   totalQuestions: number;
+  heading: string | null;
   topic: string;
   question: string;
   /** Empty during 'question'. */

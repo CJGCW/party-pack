@@ -22,7 +22,7 @@ import {
 } from '../../shared/games/pickEm';
 import { PUZZLE_RESULT_MS, ROUND_SCORES_MS } from '../../shared/timing';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
-import { loadQuestionFile, shuffle, type Question } from './trivia';
+import { loadQuestionFile, shuffle, type Question } from './questions';
 
 /** The question alone, before the options (or the text box) appear. */
 const READ_MS = 3_000;
@@ -139,6 +139,7 @@ class PickEm implements MiniGame {
     private readonly ctx: GameContext,
     private readonly bankId: string,
     private readonly totalQuestions: number,
+    private readonly embedding: ListEmbedding | null = null,
   ) {}
 
   private get kind(): PickKind {
@@ -260,6 +261,7 @@ class PickEm implements MiniGame {
     const view: PickHostView = {
       phase: this.phase,
       kind: this.kind,
+      heading: this.embedding?.heading ?? null,
       packName: PICK_EM.modes.find((m) => m.id === this.bankId)?.name ?? '',
       questionNumber: this.questionIndex + 1,
       totalQuestions: this.totalQuestions,
@@ -303,6 +305,7 @@ class PickEm implements MiniGame {
     const view: PickPlayerView = {
       phase: this.phase,
       kind: this.kind,
+      heading: this.embedding?.heading ?? null,
       questionNumber: this.questionIndex + 1,
       totalQuestions: this.totalQuestions,
       topic: this.question.film,
@@ -373,10 +376,15 @@ class PickEmCoop implements MiniGame {
     private readonly ctx: GameContext,
     private readonly bankId: string,
     private readonly totalQuestions: number,
+    private readonly embedding: ListEmbedding | null = null,
   ) {}
 
   private get kind(): PickKind {
     return this.question.list.length > 0 ? 'typed' : 'choice';
+  }
+
+  get foundCount() {
+    return this.foundBy.size;
   }
 
   /** How many right answers the list has. */
@@ -412,7 +420,8 @@ class PickEmCoop implements MiniGame {
     this.feed = [];
     this.lastGuess.clear();
     this.cleared = null;
-    this.setPhase('question', READ_MS, () => this.setPhase('answering', COOP_START_MS, () => this.reveal()));
+    const clockMs = this.embedding?.clockMs ?? COOP_START_MS;
+    this.setPhase('question', READ_MS, () => this.setPhase('answering', clockMs, () => this.reveal()));
   }
 
   onInput(playerId: string, raw: unknown) {
@@ -516,6 +525,7 @@ class PickEmCoop implements MiniGame {
       kind: this.kind,
       questionNumber: this.questionIndex + 1,
       totalQuestions: this.totalQuestions,
+      heading: this.embedding?.heading ?? null,
       topic: this.question.film,
       question: this.question.question,
       tiles: this.tiles(),
@@ -571,6 +581,45 @@ export const pickEmCoop: MiniGameDefinition = {
   info: PICK_EM_COOP,
   create: (ctx, modeId, options) => new PickEmCoop(ctx, modeId, options.puzzles),
 };
+
+// ---- One list inside another game ------------------------------------------------
+
+/** How a list shows inside another game: a heading in place of "List 1 of 1", and (co-op) a shorter clock. */
+export interface ListEmbedding {
+  heading: string;
+  clockMs?: number;
+}
+
+/** The team's clock for a list mixed in with Team Trivia's questions. */
+const EMBEDDED_COOP_MS = 90_000;
+
+export interface EmbeddedList {
+  game: MiniGame;
+  /** Right answers found so far (co-op). */
+  found(): number;
+}
+
+/** Whether a bank has any lists to mix in. */
+export const hasLists = (bankId: string) => (BANKS.get(bankId)?.length ?? 0) > 0;
+
+/**
+ * One list played inside another game (Trivia mixes them in with its questions). Its views
+ * are tagged with `asGame` so the phones and TV show them with Pick 'Em's own screens, and
+ * it calls ctx.finish() after its reveal.
+ */
+export function embeddedList(ctx: GameContext, bankId: string, coop: boolean, heading: string): EmbeddedList {
+  const asGame = coop ? PICK_EM_COOP.id : PICK_EM.id;
+  const tagged: GameContext = {
+    ...ctx,
+    sendHost: (view) => ctx.sendHost({ ...(view as object), asGame }),
+    sendPlayer: (id, view) => ctx.sendPlayer(id, { ...(view as object), asGame }),
+  };
+  if (coop) {
+    const game = new PickEmCoop(tagged, bankId, 1, { heading, clockMs: EMBEDDED_COOP_MS });
+    return { game, found: () => game.foundCount };
+  }
+  return { game: new PickEm(tagged, bankId, 1, { heading }), found: () => 0 };
+}
 
 /** For tooling: list count per bank, split into tap and typed lists. */
 export const pickBankSizes = () =>

@@ -27,6 +27,8 @@ export interface GameOptions {
   puzzles: number;
   /** WoochaWare debug: practice just this microgame. */
   microgame?: string;
+  /** Trivia: mix Pick 'Em lists in with the questions. */
+  mixLists?: boolean;
 }
 
 export interface MiniGameDefinition {

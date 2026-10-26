@@ -56,7 +56,8 @@ const sessionId =
 let joined: { code: string; name: string } | null = JSON.parse(localStorage.getItem(JOINED_KEY) ?? 'null');
 let playerId: string | null = null;
 let room: RoomState | null = null;
-let controller: { gameId: string; instance: Controller } | null = null;
+/** `ui` is whose screens are showing: usually the game itself, but a game can hand a question to another's (Trivia mixes in Pick 'Em lists). */
+let controller: { gameId: string; ui: string; instance: Controller } | null = null;
 let pendingView: unknown = null;
 
 function join(code: string, name: string, onError: (msg: string) => void) {
@@ -86,9 +87,21 @@ socket.on('room:state', (state) => {
   render();
 });
 
+const sendInput = (input: unknown) => socket.emit('game:input', input);
+const uiFor = (view: unknown, gameId: string) => (view as { asGame?: string } | null)?.asGame ?? gameId;
+
 socket.on('game:player', (view) => {
-  if (controller) controller.instance.update(view);
-  else pendingView = view;
+  if (!controller) {
+    pendingView = view;
+    return;
+  }
+  const ui = uiFor(view, controller.gameId);
+  if (ui !== controller.ui && CONTROLLERS[ui]) {
+    controller.instance.destroy();
+    app.replaceChildren();
+    controller = { ...controller, ui, instance: CONTROLLERS[ui](app, sendInput) };
+  }
+  controller.instance.update(view);
 });
 
 socket.on('room:closed', (reason) => {
@@ -135,8 +148,9 @@ function render() {
     if (controller?.gameId === room.gameId) return;
     controller?.instance.destroy();
     app.replaceChildren();
-    const instance = CONTROLLERS[room.gameId](app, (input) => socket.emit('game:input', input));
-    controller = { gameId: room.gameId, instance };
+    const ui = CONTROLLERS[uiFor(pendingView, room.gameId)] ? uiFor(pendingView, room.gameId) : room.gameId;
+    const instance = CONTROLLERS[ui](app, sendInput);
+    controller = { gameId: room.gameId, ui, instance };
     if (pendingView) instance.update(pendingView);
     pendingView = null;
     return;
@@ -301,7 +315,7 @@ function wheelSettings(isVip: boolean): Node[] {
       // Topics and formats only when there's a choice.
       modes.length > 1 && h('div', { class: 'muted' }, 'Topics: one is picked at random each time.'),
       modes.length > 1 && chips(modes, topics, 'topics'),
-      fmts.length > 1 && h('div', { class: 'muted' }, 'Formats: multiple choice questions, long lists, or both.'),
+      fmts.length > 1 && h('div', { class: 'muted' }, 'Formats: with both on, Pick \'Em lists are mixed in with the questions.'),
       fmts.length > 1 && chips(fmts, formats, 'formats'),
     );
   }

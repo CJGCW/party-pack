@@ -101,7 +101,7 @@ export class PickEmScene extends Phaser.Scene {
   private applyView(view: PickHostView) {
     this.view = view;
     this.phaseEndsAt = performance.now() + view.msLeft;
-    this.headerText.setText(`List ${view.questionNumber} of ${view.totalQuestions}  ·  ${view.packName}`);
+    this.headerText.setText(`${view.heading ?? `List ${view.questionNumber} of ${view.totalQuestions}`}  ·  ${view.packName}`);
     this.topicText.setText(view.topic.toUpperCase());
     this.questionText.setText(view.question);
     this.hintText.setVisible(view.phase !== 'gameEnd');

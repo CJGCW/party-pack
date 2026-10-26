@@ -67,7 +67,7 @@ export function createPickEmCoop(root: HTMLElement, send: (input: unknown) => vo
     const v = view;
     const typed = v.kind === 'typed';
     const revealing = v.phase === 'reveal' || v.phase === 'gameEnd';
-    headerEl.textContent = `List ${v.questionNumber}/${v.totalQuestions}`;
+    headerEl.textContent = v.heading ?? `List ${v.questionNumber}/${v.totalQuestions}`;
     foundEl.textContent = `${v.found}/${v.total} found`;
     topicEl.textContent = v.topic;
     questionEl.textContent = v.question;
