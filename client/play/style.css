@@ -578,3 +578,17 @@ button.secondary { background: var(--panel-light); }
 /* A hand: cards overlap so a full hand fits across the phone. */
 .pcard-hand { display: flex; justify-content: center; padding-top: 12px; }
 .pcard-hand .pcard + .pcard { margin-left: calc(var(--card-w, 64px) * -0.45); }
+
+/* ---------- Concentration ---------- */
+
+.cn { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px); }
+.cn-grid { display: grid; gap: 6px; justify-content: center; align-content: start; touch-action: manipulation; }
+.cn-blank { visibility: hidden; }
+.cn-open { box-shadow: 0 0 0 3px var(--accent), 0 4px 10px rgba(0, 0, 0, 0.4); }
+.cn-matched { opacity: 0.55; }
+.cn-miss { box-shadow: 0 0 0 3px var(--danger); animation: cn-shake 0.3s; }
+.cn-unfound { opacity: 0.85; box-shadow: 0 0 0 3px var(--danger); }
+@keyframes cn-shake {
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
