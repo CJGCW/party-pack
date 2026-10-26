@@ -62,7 +62,8 @@ export function winningPath(owners: (Team | null)[], team: Team, cols: number, r
 
 /**
  * 'pick': the team in control chooses a letter.
- * 'question': the question is up; anyone not locked out can buzz.
+ * 'question': the question is read out a letter at a time; anyone not locked out can buzz,
+ *   which stops the reading where it is.
  * 'answer': whoever buzzed types their answer.
  * 'result': whether they were right, and the answer.
  * 'boardEnd': a team linked its sides.
@@ -95,7 +96,12 @@ interface ViewBase {
   control: Team;
   /** The hexagon being played for. */
   current: number | null;
+  /** The whole question; only the first `revealed` characters have been read out so far. */
   question: string | null;
+  revealed: number;
+  /** Still being read: one more character every `charMs`, starting from `revealed`. */
+  reading: boolean;
+  charMs: number;
   /** Who buzzed, and which teams can't buzz on this question any more. */
   buzzer: { id: string; name: string; team: Team } | null;
   lockedOut: Team[];

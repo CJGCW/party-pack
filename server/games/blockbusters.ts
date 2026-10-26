@@ -16,7 +16,10 @@ import { shuffle, type Question } from './questions';
 import { triviaBank } from './trivia';
 
 const PICK_MS = 15_000;
-const BUZZ_MS = 12_000;
+/** Reading pace, about as fast as someone reading aloud. */
+const CHAR_MS = 60;
+/** Time left to buzz once the question has been read in full. */
+const BUZZ_MS = 8_000;
 /** Time to type an answer once you've buzzed. */
 const ANSWER_MS = 15_000;
 const RESULT_MS = 2_500;
@@ -97,6 +100,10 @@ class Blockbusters implements MiniGame {
   private current: number | null = null;
   private question: Question | null = null;
   private guess: string | null = null;
+  /** How much of the question has been read out: `readFrom` characters, plus more since `readStartedAt` while reading. */
+  private readFrom = 0;
+  private readStartedAt = 0;
+  private reading = false;
   private questionsOnHex = 0;
   private buzzer: string | null = null;
   private lockedOut = new Set<Team>();
@@ -181,14 +188,39 @@ class Blockbusters implements MiniGame {
     this.openBuzzers();
   }
 
-  private openBuzzers() {
+  /** Reads the question out (on from `from` characters), then leaves a moment to buzz. */
+  private openBuzzers(from = 0) {
     this.buzzer = null;
     this.guess = null;
-    this.setPhase('question', BUZZ_MS, () => this.noAnswer());
+    const length = this.question!.question.length;
+    this.readFrom = Math.min(from, length);
+    this.readStartedAt = Date.now();
+    this.reading = this.readFrom < length;
+    this.setPhase('question', (length - this.readFrom) * CHAR_MS + BUZZ_MS, () => this.noAnswer());
+  }
+
+  /** Characters of the question read out so far. */
+  private revealedNow() {
+    const length = this.question?.question.length ?? 0;
+    if (!this.reading) return Math.min(this.readFrom, length);
+    return Math.min(length, this.readFrom + Math.floor((Date.now() - this.readStartedAt) / CHAR_MS));
+  }
+
+  /** Stops reading (someone buzzed): the question stays as far as it got. */
+  private stopReading() {
+    this.readFrom = this.revealedNow();
+    this.reading = false;
+  }
+
+  /** At the end of a question, everyone sees all of it. */
+  private showWholeQuestion() {
+    this.readFrom = this.question?.question.length ?? 0;
+    this.reading = false;
   }
 
   /** Nobody (else) buzzed: show the answer, then another question or back to picking. */
   private noAnswer() {
+    this.showWholeQuestion();
     this.correct = null;
     this.buzzer = null;
     this.setPhase('result', RESULT_MS, () => (this.questionsOnHex < QUESTIONS_PER_HEX ? this.askQuestion() : this.startPick()));
@@ -206,6 +238,7 @@ class Blockbusters implements MiniGame {
     }
     if (this.phase === 'question' && input.type === 'buzz' && !this.lockedOut.has(team)) {
       this.buzzer = playerId;
+      this.stopReading();
       this.setPhase('answer', ANSWER_MS, () => this.answer(null));
       return;
     }
@@ -219,6 +252,7 @@ class Blockbusters implements MiniGame {
     this.guess = text;
     this.correct = !!text && isRightAnswer(text, this.question!.correct[0]);
     if (this.correct) {
+      this.showWholeQuestion();
       this.award(this.buzzer!, CORRECT_POINTS);
       this.hexes[this.current!].owner = team;
       this.control = team;
@@ -234,8 +268,11 @@ class Blockbusters implements MiniGame {
     // Wrong (or too slow): their team is out of this question; the other team gets a go.
     this.lockedOut.add(team);
     const bothOut = this.lockedOut.has('red') && this.lockedOut.has('white');
+    const handOver = !bothOut && this.hasPlayers(other(team));
+    // The other team hears the rest of the question read out; otherwise show it all.
+    if (!handOver) this.showWholeQuestion();
     this.setPhase('result', RESULT_MS, () => {
-      if (!bothOut && this.hasPlayers(other(team))) this.openBuzzers();
+      if (handOver) this.openBuzzers(this.readFrom);
       else if (this.questionsOnHex < QUESTIONS_PER_HEX) this.askQuestion();
       else this.startPick();
     });
@@ -286,6 +323,9 @@ class Blockbusters implements MiniGame {
       control: this.control,
       current: this.current,
       question: this.question?.question ?? null,
+      revealed: this.revealedNow(),
+      reading: this.phase === 'question' && this.reading,
+      charMs: CHAR_MS,
       guess: this.phase === 'result' ? this.guess : null,
       buzzer: buzzer ? { id: buzzer.id, name: buzzer.name, team: this.teams.get(buzzer.id)! } : null,
       lockedOut: [...this.lockedOut],

@@ -27,6 +27,9 @@ export class BlockbustersScene extends Phaser.Scene {
   private board!: Phaser.GameObjects.Container;
   private side!: Phaser.GameObjects.Container;
   private overlay!: Phaser.GameObjects.Container;
+  /** The question in the side card, typed out while it's being read. */
+  private questionText: Phaser.GameObjects.Text | null = null;
+  private viewAt = 0;
 
   constructor() {
     super(BlockbustersScene.KEY);
@@ -57,10 +60,18 @@ export class BlockbustersScene extends Phaser.Scene {
     const timed = v && ['pick', 'question', 'answer'].includes(v.phase);
     const secs = Math.max(0, Math.ceil((this.phaseEndsAt - performance.now()) / 1000));
     this.timerText.setText(timed ? String(secs) : '').setColor(secs <= 3 ? COLORS.danger : COLORS.text);
+    if (v?.question && this.questionText?.active) this.questionText.setText(v.question.slice(0, this.readSoFar(v)));
+  }
+
+  /** Characters of the question read out, carrying on locally while it's being read. */
+  private readSoFar(v: BlockbustersHostView) {
+    if (!v.question) return 0;
+    return v.reading ? Math.min(v.question.length, v.revealed + Math.floor((performance.now() - this.viewAt) / v.charMs)) : v.revealed;
   }
 
   private applyView(view: BlockbustersHostView) {
     this.view = view;
+    this.viewAt = performance.now();
     this.phaseEndsAt = performance.now() + view.msLeft;
     this.headerText.setText(`Board ${view.board} of ${view.totalBoards}   ·   ${view.topic}   ·   Red ${view.wins.red} – ${view.wins.white} White`);
     this.renderBoard(view);
@@ -125,6 +136,7 @@ export class BlockbustersScene extends Phaser.Scene {
 
   private renderSide(view: BlockbustersHostView) {
     this.side.removeAll(true);
+    this.questionText = null;
     const letter = view.current !== null ? view.hexes[view.current].letter : null;
     const add = (o: Phaser.GameObjects.GameObject) => this.side.add(o);
     let y = 170;
@@ -147,7 +159,13 @@ export class BlockbustersScene extends Phaser.Scene {
       add(text(this, mid, y + 260, view.winner ? 'the board!' : 'The board is full.', 36, COLORS.text, { fontStyle: '700' }));
     } else if (letter) {
       add(text(this, mid, y + 60, `"${letter}"`, 56, COLORS.accent, { fontStyle: '700' }));
-      add(text(this, mid, y + 190, view.question ?? '', 36, COLORS.text, { fontStyle: '700', align: 'center', wordWrap: { width: SIDE_W - 60 } }));
+      // Anchored at the top so the text grows downward as it's read.
+      this.questionText = text(this, mid, y + 120, view.question?.slice(0, this.readSoFar(view)) ?? '', 36, COLORS.text, {
+        fontStyle: '700',
+        align: 'center',
+        wordWrap: { width: SIDE_W - 60 },
+      }).setOrigin(0.5, 0);
+      add(this.questionText);
       let status = '';
       let statusColor: string = COLORS.muted;
       if (view.phase === 'question') {

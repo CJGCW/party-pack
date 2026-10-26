@@ -20,6 +20,11 @@ export function createBlockbusters(root: HTMLElement, send: (input: unknown) => 
   const boardEl = h('div', { class: 'bb-board' });
   const letterEl = h('div', { class: 'bb-letter' });
   const questionEl = h('div', { class: 'tv-question' });
+  /** Read so far, and the rest kept invisible so the text doesn't jump around as it grows. */
+  const readEl = h('span');
+  const unreadEl = h('span', { class: 'bb-unread' });
+  questionEl.append(readEl, unreadEl);
+  let viewAt = 0;
   const buzzBtn = h('button', { class: 'bb-buzz', type: 'button' }, 'BUZZ');
   const inputEl = h('input', { class: 'pe-input', type: 'text', autocomplete: 'off', autocapitalize: 'words', enterkeyhint: 'send', maxlength: '80', placeholder: 'Your answer' });
   const answerForm = h(
@@ -99,7 +104,7 @@ export function createBlockbusters(root: HTMLElement, send: (input: unknown) => 
     letterEl.hidden = !asking;
     letterEl.textContent = letter;
     questionEl.hidden = !asking || !v.question;
-    questionEl.textContent = v.question ? `${v.question} (starts with ${letter})` : '';
+    showQuestion();
     buzzBtn.hidden = v.phase !== 'question' || !v.myTeam;
     buzzBtn.disabled = !canBuzz();
 
@@ -140,6 +145,16 @@ export function createBlockbusters(root: HTMLElement, send: (input: unknown) => 
     }
   }
 
+  /** The question as far as it's been read, carrying on locally while it's being read. */
+  function showQuestion() {
+    const v = view;
+    if (!v?.question) return;
+    const read = v.reading ? Math.min(v.question.length, v.revealed + Math.floor((performance.now() - viewAt) / v.charMs)) : v.revealed;
+    readEl.textContent = v.question.slice(0, read);
+    unreadEl.textContent = v.question.slice(read);
+  }
+  const reader = setInterval(() => view?.reading && showQuestion(), 30);
+
   function tick() {
     if (!view) return;
     const secs = Math.max(0, Math.ceil((phaseEndsAt - performance.now()) / 1000));
@@ -152,12 +167,14 @@ export function createBlockbusters(root: HTMLElement, send: (input: unknown) => 
   return {
     update(raw) {
       view = raw as BlockbustersPlayerView;
+      viewAt = performance.now();
       phaseEndsAt = performance.now() + view.msLeft;
       render();
       tick();
     },
     destroy() {
       clearInterval(interval);
+      clearInterval(reader);
       root.replaceChildren();
     },
   };
