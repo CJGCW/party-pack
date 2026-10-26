@@ -31,11 +31,14 @@ const CHOICE_MS = 30_000;
 /** Time to type answers to a typed list. */
 const TYPED_MS = 60_000;
 
-/** A tap list has 8 to 12 options with at least two right and two wrong; a typed list has at least three answers. */
+/**
+ * A tap list has 9 or 12 options (full rows of three on the TV) with at least two right and
+ * two wrong; a typed list has at least three answers.
+ */
 function validList(q: Question) {
   const options = q.correct.length + q.wrong.length;
   if (q.list.length > 0) return options === 0 && q.list.length >= 3;
-  return q.correct.length >= 2 && q.wrong.length >= 2 && options >= 8 && options <= 12;
+  return q.correct.length >= 2 && q.wrong.length >= 2 && (options === 9 || options === 12);
 }
 
 /** Each file in ./pickem is a bank (a mode), in the trivia format. */

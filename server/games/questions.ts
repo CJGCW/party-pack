@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 //   W: Jeremy Irons
 //
 // A "FILM:" (or "TOPIC:") line is the banner for every question after it. A is a right answer and
-// each W is a wrong one: four in total for Trivia, 8 to 12 for Pick 'Em. More than one A makes
+// each W is a wrong one: four in total for Trivia, 9 or 12 for Pick 'Em. More than one A makes
 // it a select-all-that-apply question. Lines starting with # are comments.
 //
 // Pick 'Em also has typed lists: no A/W lines, but an L line per answer, with other

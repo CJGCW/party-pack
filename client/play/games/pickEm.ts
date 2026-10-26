@@ -117,6 +117,8 @@ export function createPickEm(root: HTMLElement, send: (input: unknown) => void):
     const revealing = v.phase === 'reveal' || v.phase === 'gameEnd';
     const correct = v.correctIndices ?? [];
     gridEl.hidden = v.phase === 'gameEnd' || v.options.length === 0;
+    // Nine options sit in rows of three, like the TV; twelve in rows of two.
+    gridEl.classList.toggle('three', v.options.length === 9);
     gridEl.replaceChildren(
       ...v.options.map((o, i) => {
         const isPicked = picked.includes(i);

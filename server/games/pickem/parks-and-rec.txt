@@ -1,5 +1,5 @@
 # Pick 'Em lists: Parks and Recreation. Same format as general.txt: TOPIC:, Q:, then A: for
-# each right answer and W: for each wrong one (8 to 12 options, at least two of each), or
+# each right answer and W: for each wrong one (9 or 12 options, at least two of each), or
 # L: lines for a typed list. Lines starting with # are comments.
 
 TOPIC: The Parks Department
@@ -15,6 +15,8 @@ W: Ann Perkins
 W: Mark Brendanawicz
 W: Joan Callamezzo
 W: Tammy Two
+W: Dave Sanderson
+W: Perd Hapley
 
 Q: Which of these are alter egos used by Parks and Rec characters?
 A: Burt Macklin
@@ -25,6 +27,7 @@ W: Ron Burgundy
 W: Sasha Fierce
 W: Jan Itor
 W: Tobias Fünke
+W: Hannah Montana
 
 TOPIC: Pawnee
 
@@ -39,6 +42,8 @@ W: Cheers
 W: MacLaren's
 W: Monk's Café
 W: Paddy's Pub
+W: The Krusty Krab
+W: Los Pollos Hermanos
 
 TOPIC: Family
 
@@ -51,6 +56,7 @@ W: April
 W: Donna
 W: Leslie
 W: Marlene
+W: Gayle
 
 Q: Which of these are the names of Leslie and Ben's triplets?
 A: Stephen
@@ -61,6 +67,7 @@ W: Nikolaj
 W: Cagney
 W: Izzy
 W: Jack
+W: Oliver
 
 TOPIC: Cast
 
@@ -89,6 +96,7 @@ W: The Low-Cal Calzone Zone
 W: Sweetums
 W: Gryzzl
 W: Paunch Burger
+W: Mouse Rat
 
 Q: Which of these does Ron Swanson love?
 A: Breakfast food
@@ -110,6 +118,7 @@ W: Joe Biden
 W: Ann
 W: Galentine's Day
 W: Pawnee
+W: Ben
 
 Q: Which of these jobs has Andy Dwyer had?
 A: Shoeshiner
@@ -120,6 +129,7 @@ W: Mayor
 W: Police officer
 W: Pediatric surgeon
 W: IRS agent
+W: Lawyer
 
 Q: Which of these men has Ann Perkins dated?
 A: Andy Dwyer
@@ -130,6 +140,7 @@ W: Ron Swanson
 W: Ben Wyatt
 W: Jerry Gergich
 W: Craig Middlebrooks
+W: Perd Hapley
 
 Q: Which of these were Andy's bands?
 A: Mouse Rat
@@ -140,6 +151,7 @@ W: The Cool Cats
 W: Rent-A-Swag
 W: Sweetums
 W: Gryzzl
+W: Paunch Burger
 
 TOPIC: Pawnee
 
@@ -152,6 +164,7 @@ W: Ethel Beavers
 W: Marcia Langman
 W: Bobby Newport
 W: Dennis Feinstein
+W: Ingrid de Forest
 
 Q: Which of these characters come from Eagleton?
 A: Craig Middlebrooks
@@ -162,6 +175,7 @@ W: Andy Dwyer
 W: April Ludgate
 W: Ann Perkins
 W: Jerry Gergich
+W: Donna Meagle
 
 Q: Which of these famous people appear as themselves?
 A: Michelle Obama
@@ -201,6 +215,7 @@ W: April
 W: Donna
 W: Diane
 W: Marlene
+W: Gayle
 
 Q: Which of these men has Leslie Knope dated?
 A: Ben
@@ -222,6 +237,7 @@ W: Donna
 W: Gayle
 W: Diane
 W: Ingrid de Forest
+W: Ethel Beavers
 
 # ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
 

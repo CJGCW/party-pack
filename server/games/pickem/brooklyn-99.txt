@@ -1,5 +1,5 @@
 # Pick 'Em lists: Brooklyn Nine-Nine. Same format as general.txt: TOPIC:, Q:, then A: for
-# each right answer and W: for each wrong one (8 to 12 options, at least two of each), or
+# each right answer and W: for each wrong one (9 or 12 options, at least two of each), or
 # L: lines for a typed list. Lines starting with # are comments.
 
 TOPIC: The Nine-Nine
@@ -27,6 +27,7 @@ W: Eagle!
 W: Literally
 W: Bazinga
 W: That's what she said
+W: How you doin'?
 
 TOPIC: Family
 
@@ -39,6 +40,7 @@ W: Mac
 W: Cheddar
 W: Genevieve
 W: Sharon
+W: Iggy
 
 TOPIC: Criminals
 
@@ -83,6 +85,7 @@ W: Cagney
 W: Genevieve
 W: Marcus
 W: Iggy
+W: Lynn
 
 Q: Which of these characters are part of Charles Boyle's family?
 A: Nikolaj
@@ -93,6 +96,7 @@ W: Mac
 W: Ava
 W: Sharon
 W: Marcus
+W: Debbie
 
 Q: Which of these characters are part of Captain Holt's family?
 A: Kevin
@@ -103,6 +107,7 @@ W: Genevieve
 W: Sharon
 W: Karen
 W: Nikolaj
+W: Mac
 
 Q: Which of these actors play Jake's parents?
 A: Katey Sagal
@@ -113,6 +118,7 @@ W: Stephen Root
 W: Niecy Nash
 W: Martin Mull
 W: Kyra Sedgwick
+W: Lin-Manuel Miranda
 
 TOPIC: The Nine-Nine
 
@@ -125,6 +131,7 @@ W: Doug Judy
 W: Kevin Cozner
 W: Adrian Pimento
 W: Charles Boyle
+W: Rosa Diaz
 
 Q: Which of these are true of Amy Santiago?
 A: She has seven brothers
@@ -135,6 +142,7 @@ W: She has a twin sister
 W: She hates paperwork
 W: She hates rules
 W: She's Jake's boss when the show starts
+W: She's an only child
 
 Q: Which of these happen in the series finale?
 A: Jake quits to be a stay-at-home dad
@@ -147,6 +155,8 @@ W: Rosa rejoins the NYPD
 W: Charles moves to Canada
 W: Holt retires
 W: Amy quits the NYPD
+W: Gina becomes captain
+W: Doug Judy joins the NYPD
 
 Q: Which of these are aliases or undercover names used by the squad?
 A: Greg Stickney
@@ -157,6 +167,7 @@ W: Janet Snakehole
 W: Duke Silver
 W: Johnny Karate
 W: Tobias Fünke
+W: Jan Itor
 
 TOPIC: Cast
 
@@ -185,6 +196,7 @@ W: Terry
 W: Doug Judy
 W: Hitchcock
 W: Scully
+W: Kevin
 
 # ----- Typed lists: one L line per answer; other accepted ways to write it after | -----
 

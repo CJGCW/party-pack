@@ -1,5 +1,5 @@
 # Pick 'Em lists: Disney & Pixar (theatrical animated films). Same format as general.txt:
-# TOPIC:, Q:, then A: for each right answer and W: for each wrong one (8 to 12 options,
+# TOPIC:, Q:, then A: for each right answer and W: for each wrong one (9 or 12 options,
 # at least two of each), or L: lines for a typed list. Lines starting with # are comments.
 
 TOPIC: Pixar
@@ -58,6 +58,7 @@ W: Sebastian
 W: Flounder
 W: Heihei
 W: Meeko
+W: Pua
 
 TOPIC: Disney Animation
 
@@ -73,6 +74,7 @@ W: Lord Farquaad
 W: Tai Lung
 W: Lord Business
 W: Vector
+W: Lord Shen
 
 Q: Which of these characters are official Disney Princesses?
 A: Ariel
@@ -116,6 +118,7 @@ W: Let It Go
 W: Colors of the Wind
 W: You've Got a Friend in Me
 W: How Far I'll Go
+W: Friend Like Me
 
 Q: Which of these songs won the Oscar for Best Original Song?
 A: Under the Sea
@@ -144,6 +147,8 @@ W: Rapunzel
 W: Flynn Rider
 W: Maui
 W: Pascal
+W: Moana
+W: Tiana
 
 Q: Which of these sidekicks are from Disney animated films?
 A: Abu
@@ -157,6 +162,7 @@ W: Donkey
 W: Puss in Boots
 W: Scrat
 W: Minion
+W: Gromit
 
 TOPIC: Pixar
 
@@ -237,6 +243,7 @@ W: Rapunzel
 W: Belle
 W: Aurora
 W: Jasmine
+W: Mulan
 
 Q: Which of these characters have blue hair?
 A: Hades
@@ -247,6 +254,7 @@ W: Elsa
 W: Merida
 W: Ariel
 W: Rapunzel
+W: Moana
 
 TOPIC: Family
 
@@ -305,6 +313,8 @@ W: Pongo
 W: Abu
 W: Meeko
 W: Sebastian
+W: Pluto
+W: Remy
 
 Q: Which of these characters are mice or rats?
 A: Remy

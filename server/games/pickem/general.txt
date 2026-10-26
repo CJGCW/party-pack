@@ -1,6 +1,6 @@
 # Pick 'Em lists: pick every right answer from a long list. Same format as the trivia
 # banks (TOPIC:, Q:, then A: for each right answer and W: for each wrong one), with
-# 8 to 12 options and at least two of each. Lines starting with # are comments.
+# 9 or 12 options and at least two of each. Lines starting with # are comments.
 
 TOPIC: Space
 

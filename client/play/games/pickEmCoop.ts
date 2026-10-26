@@ -75,6 +75,8 @@ export function createPickEmCoop(root: HTMLElement, send: (input: unknown) => vo
     hintEl.textContent = typed ? `Team list · type answers · wrong costs ${PENALTY_SECS} sec` : `Team list · tap the right ones · wrong costs ${PENALTY_SECS} sec`;
 
     gridEl.hidden = typed || v.tiles.length === 0 || v.phase === 'gameEnd';
+    // Nine options sit in rows of three, like the TV; twelve in rows of two.
+    gridEl.classList.toggle('three', v.tiles.length === 9);
     if (!typed) {
       gridEl.replaceChildren(
         ...v.tiles.map((t, i) => {

@@ -11,6 +11,14 @@ const GAP_X = 24;
 const GAP_Y = 16;
 const TILES_TOP = 450;
 
+/** Where tile `i` of `count` goes: rows of COLS, with a short last row (typed lists) centred. */
+function tileX(i: number, count: number) {
+  const row = Math.floor(i / COLS);
+  const inRow = row === Math.floor((count - 1) / COLS) ? count - row * COLS : COLS;
+  const rowW = inRow * TILE_W + (inRow - 1) * GAP_X;
+  return WIDTH / 2 - rowW / 2 + (i % COLS) * (TILE_W + GAP_X) + TILE_W / 2;
+}
+
 interface Tile {
   container: Phaser.GameObjects.Container;
   bg: Phaser.GameObjects.Graphics;
@@ -53,9 +61,8 @@ export class PickEmScene extends Phaser.Scene {
       fontStyle: '700',
     }).setLetterSpacing(2);
 
-    const totalW = COLS * TILE_W + (COLS - 1) * GAP_X;
     for (let i = 0; i < 12; i++) {
-      const x = WIDTH / 2 - totalW / 2 + (i % COLS) * (TILE_W + GAP_X) + TILE_W / 2;
+      const x = tileX(i, 12);
       const y = TILES_TOP + Math.floor(i / COLS) * (TILE_H + GAP_Y) + TILE_H / 2;
       const container = this.add.container(x, y).setAlpha(0);
       const bg = this.add.graphics();
@@ -116,6 +123,8 @@ export class PickEmScene extends Phaser.Scene {
     if (key === this.phaseKey) return;
     this.phaseKey = key;
     this.overlay.removeAll(true);
+    const count = view.kind === 'typed' ? view.slots : view.options.length;
+    this.tiles.forEach((tile, i) => tile.container.setX(tileX(i, Math.max(1, count))));
 
     if (view.phase === 'question') {
       for (const t of this.tiles) t.container.setAlpha(0);

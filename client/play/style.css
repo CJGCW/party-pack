@@ -444,6 +444,8 @@ button.secondary { background: var(--panel-light); }
 
 .pe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .pe-grid[hidden] { display: none; }
+.pe-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.pe-grid.three .pe-option { font-size: 14px; padding: 10px 4px; }
 .pe-option {
   font-size: 16px;
   padding: 12px 8px;

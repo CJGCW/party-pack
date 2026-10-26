@@ -13,6 +13,14 @@ const TILES_TOP = 372;
 const INK = '#140f2e';
 const PLAYERS_Y = 1010;
 
+/** Where tile `i` of `count` goes: rows of COLS, with a short last row (typed lists) centred. */
+function tileX(i: number, count: number) {
+  const row = Math.floor(i / COLS);
+  const inRow = row === Math.floor((count - 1) / COLS) ? count - row * COLS : COLS;
+  const rowW = inRow * TILE_W + (inRow - 1) * GAP_X;
+  return WIDTH / 2 - rowW / 2 + (i % COLS) * (TILE_W + GAP_X) + TILE_W / 2;
+}
+
 /**
  * The TV during Team Pick 'Em: the team's clock, the list filling in as answers are found
  * (each marked with who found it), and a feed of the latest picks and guesses.
@@ -120,9 +128,8 @@ export class PickEmCoopScene extends Phaser.Scene {
 
   private renderBoard(view: PickCoopHostView, dealIn: boolean) {
     this.board.removeAll(true);
-    const totalW = COLS * TILE_W + (COLS - 1) * GAP_X;
     view.tiles.forEach((tile, i) => {
-      const x = WIDTH / 2 - totalW / 2 + (i % COLS) * (TILE_W + GAP_X) + TILE_W / 2;
+      const x = tileX(i, view.tiles.length);
       const y = TILES_TOP + Math.floor(i / COLS) * (TILE_H + GAP_Y) + TILE_H / 2;
       const c = this.add.container(x, y);
       c.add(this.tileGraphics(tile));

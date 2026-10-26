@@ -1,5 +1,5 @@
 # Pick 'Em lists: Scrubs (seasons 1 to 8). Same format as general.txt: TOPIC:, Q:, then A:
-# for each right answer and W: for each wrong one (8 to 12 options, at least two of each),
+# for each right answer and W: for each wrong one (9 or 12 options, at least two of each),
 # or L: lines for a typed list. Lines starting with # are comments.
 
 TOPIC: Sacred Heart
@@ -41,6 +41,7 @@ W: The Todd
 W: Doug
 W: Jordan
 W: Elliot
+W: Carla
 
 TOPIC: Family
 
@@ -53,6 +54,7 @@ W: Dan
 W: Sam
 W: Izzy
 W: Kim
+W: Harrison
 
 TOPIC: Cast
 
@@ -81,6 +83,7 @@ W: Bambi
 W: Turkleton
 W: Chocolate Bear
 W: Tiger
+W: Eagle
 
 Q: Which of these nicknames are for J.D.?
 A: Newbie
@@ -91,6 +94,7 @@ W: Gandhi
 W: Bobbo
 W: Turkleton
 W: Chocolate Bear
+W: Big Ed
 
 TOPIC: Sacred Heart
 
@@ -103,6 +107,7 @@ W: Dr. Cox
 W: Elliot
 W: Dr. Kelso
 W: Jordan
+W: Carla
 
 Q: Which of these characters are interns in season 1?
 A: J.D.
@@ -113,6 +118,7 @@ W: Carla
 W: Dr. Kelso
 W: The Janitor
 W: Ted
+W: Laverne
 
 Q: Which of these characters are nurses?
 A: Carla
@@ -123,6 +129,7 @@ W: Jordan
 W: Molly
 W: Dr. Cox
 W: Ted
+W: Danni
 
 Q: Which of these networks aired Scrubs?
 A: NBC
@@ -133,6 +140,7 @@ W: HBO
 W: AMC
 W: The CW
 W: Showtime
+W: PBS
 
 TOPIC: Family
 
@@ -145,6 +153,7 @@ W: Jennifer Dylan
 W: Ben
 W: Danni
 W: Paige
+W: Harrison
 
 Q: Which of these characters are Dr. Kelso's family, often mentioned but never seen?
 A: Enid
@@ -155,6 +164,7 @@ W: Kim
 W: Danni
 W: Paige
 W: Izzy
+W: Jack
 
 TOPIC: Cast
 
@@ -183,6 +193,7 @@ W: Turk
 W: The Janitor
 W: Ted
 W: The Todd
+W: Doug
 
 Q: Which of these men does Elliot date in seasons 1 to 8?
 A: J.D.
