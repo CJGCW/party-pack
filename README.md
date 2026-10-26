@@ -33,6 +33,10 @@ HTTPS is only needed for WoochaWare. Setting `"woochaware": false` in `party-pac
 `PARTY_PACK_WOOCHAWARE=0`) turns WoochaWare off: it leaves the wheel and the debug picker, phones
 join over plain HTTP with no certificate warning, and WoochaWare debug mode is ignored even if it's on.
 
+Blockbusters themes are off for now (`"blockbustersThemes": false`, or `PARTY_PACK_BLOCKBUSTERS_THEMES=0`):
+Blockbusters plays General Knowledge only, as a plain slice on the wheel. Turned on, every question
+file in `server/games/blockbusters/` becomes a topic to choose under its slice.
+
 The join address shown on the TV is this computer's address on your home network. VPN and
 virtual-machine adapters (NordVPN, VirtualBox, WSL and so on) are skipped. If it still picks the
 wrong one, set `PARTY_PACK_HOST` to the right address (for example `PARTY_PACK_HOST=10.0.0.26`).

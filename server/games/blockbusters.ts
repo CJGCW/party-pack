@@ -11,7 +11,10 @@ import {
   type BlockbustersPlayerView,
   type Team,
 } from '../../shared/games/blockbusters';
+import { TRIVIA } from '../../shared/games/trivia';
+import type { GameInfo } from '../../shared/protocol';
 import { ROUND_SCORES_MS } from '../../shared/timing';
+import { config } from '../config';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 import { matchAnswer } from './pickEm';
 import { loadQuestionFile, shuffle, type Question } from './questions';
@@ -396,7 +399,24 @@ class Blockbusters implements MiniGame {
   }
 }
 
+/**
+ * With themes off (see config.blockbustersThemes), General Knowledge only. With them on, a topic
+ * per question file, named like the Trivia topic with the same id where there is one.
+ */
+function topics(): GameInfo['modes'] {
+  const general = BLOCKBUSTERS.modes[0];
+  if (!config.blockbustersThemes) return [general];
+  const titleCase = (id: string) => id.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return [...BANKS.keys()]
+    .sort((a, b) => Number(b === general.id) - Number(a === general.id) || a.localeCompare(b))
+    .map((id) =>
+      id === general.id
+        ? general
+        : { id, name: TRIVIA.modes.find((m) => m.id === id)?.name ?? titleCase(id), description: `${BANKS.get(id)!.length} questions.` },
+    );
+}
+
 export const blockbusters: MiniGameDefinition = {
-  info: BLOCKBUSTERS,
+  info: { ...BLOCKBUSTERS, modes: topics() },
   create: (ctx, modeId, options) => new Blockbusters(ctx, modeId, options.puzzles),
 };

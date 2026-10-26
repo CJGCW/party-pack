@@ -20,7 +20,6 @@ import {
   type WheelEntry,
 } from '../shared/protocol';
 import { PICK_EM, PICK_EM_COOP } from '../shared/games/pickEm';
-import { BLOCKBUSTERS } from '../shared/games/blockbusters';
 import { TRIVIA, TRIVIA_QUEST } from '../shared/games/trivia';
 import { STANDINGS_MS } from '../shared/timing';
 import { MICROGAMES, WOOCHAWARE, findMicrogame } from '../shared/games/woochaware';
@@ -66,9 +65,15 @@ const GROUPS = [
       { competitive: PICK_EM, coop: PICK_EM_COOP, label: "Pick 'Em lists" },
     ],
   },
-  // One slice with Trivia's topics; it has no co-op version, so no competitive/co-op choice.
-  { id: BLOCKBUSTERS.id, label: 'Blockbusters', formats: [{ competitive: BLOCKBUSTERS, coop: BLOCKBUSTERS, label: 'Blockbusters' }] },
+  // With themes on, Blockbusters is one slice with a choice of topics (it has no co-op version,
+  // so no competitive/co-op choice). With them off it's an ordinary slice.
+  ...(config.blockbustersThemes ? [blockbustersGroup()] : []),
 ];
+
+function blockbustersGroup() {
+  const info = findGame('blockbusters')!.info;
+  return { id: info.id, label: info.name, formats: [{ competitive: info, coop: info, label: info.name }] };
+}
 type Group = (typeof GROUPS)[number];
 const groupFormats = (group: Group): GroupFormat[] =>
   group.formats.map((f) => ({
@@ -98,8 +103,8 @@ const WHEEL_ENTRIES: WheelEntry[] = GAMES.flatMap((g): WheelEntry[] => {
     id: `${g.info.id}:${m.id}`,
     gameId: g.info.id,
     modeId: m.id,
-    // Name the mode unless it's the generic one (e.g. "Pick 'Em · General Knowledge", but just "Letter Drop").
-    label: m.id === 'standard' ? g.info.name : `${g.info.name} · ${m.name}`,
+    // Name the mode unless it's the generic or only one (e.g. "Word Rush · Hard", but just "Letter Drop").
+    label: m.id === 'standard' || g.info.modes.length === 1 ? g.info.name : `${g.info.name} · ${m.name}`,
   }));
 });
 

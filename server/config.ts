@@ -21,16 +21,23 @@ export interface Config {
    * always plain HTTP.
    */
   woochaware: boolean;
+  /**
+   * Blockbusters themes on or off. Off (for now, while the game itself is being tuned),
+   * Blockbusters plays General Knowledge only. On, every question file in
+   * server/games/blockbusters is a topic, chosen under its slice on the wheel.
+   */
+  blockbustersThemes: boolean;
 }
 
-const DEFAULTS: Config = { debugMode: false, woochaDebug: false, woochaware: true };
+const DEFAULTS: Config = { debugMode: false, woochaDebug: false, woochaware: true, blockbustersThemes: false };
 const CONFIG_FILE = resolve(import.meta.dirname, '..', 'party-pack.config.json');
 
 /**
  * Settings come from party-pack.config.json, and environment variables override
  * them (PARTY_PACK_DEBUG=1 turns on debug mode, as `npm run dev:debug` does, and
  * PARTY_PACK_WOOCHA_DEBUG=1 turns on WoochaWare debug, as `npm run dev:woocha` does;
- * PARTY_PACK_WOOCHAWARE=0 turns WoochaWare and HTTPS off).
+ * PARTY_PACK_WOOCHAWARE=0 turns WoochaWare and HTTPS off, and PARTY_PACK_BLOCKBUSTERS_THEMES=1
+ * turns Blockbusters themes on).
  */
 function loadConfig(): Config {
   let fromFile: Partial<Config> = {};
@@ -49,6 +56,8 @@ function loadConfig(): Config {
   if (woochaEnv !== undefined) config.woochaDebug = /^(1|true|yes|on)$/i.test(woochaEnv);
   const woochawareEnv = process.env.PARTY_PACK_WOOCHAWARE;
   if (woochawareEnv !== undefined) config.woochaware = /^(1|true|yes|on)$/i.test(woochawareEnv);
+  const themesEnv = process.env.PARTY_PACK_BLOCKBUSTERS_THEMES;
+  if (themesEnv !== undefined) config.blockbustersThemes = /^(1|true|yes|on)$/i.test(themesEnv);
   // With WoochaWare off there's nothing to debug, so its debug mode can't take over the lobby.
   if (!config.woochaware) config.woochaDebug = false;
   return config;
