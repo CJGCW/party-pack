@@ -1894,3 +1894,479 @@ A: Pythagorean Theorem | Pythagoras' Theorem | Pythagoras Theorem
 
 Q: What sequence starts 1, 1, 2, 3, 5, 8, 13?
 A: Fibonacci Sequence | Fibonacci Numbers | Fibonacci
+
+TOPIC: One-Word Answers
+
+Q: Which is the coldest and windiest continent?
+A: Antarctica
+
+Q: What is the largest artery in the human body?
+A: Aorta
+
+Q: What is the capital city of Greece?
+A: Athens
+
+Q: Which Greek goddess of love was said to rise from the sea foam?
+A: Aphrodite
+
+Q: Which sport is played with a bow and arrows at a target?
+A: Archery
+
+Q: Which fruit is the main ingredient of guacamole?
+A: Avocado
+
+Q: Which legendary island city was said to sink beneath the sea?
+A: Atlantis
+
+Q: What is the largest country in South America?
+A: Brazil
+
+Q: What is the capital city of Germany?
+A: Berlin
+
+Q: Which instrument, with a bag and drones, is a symbol of Scotland?
+A: Bagpipes
+
+Q: What long, thin loaf of bread is a symbol of France?
+A: Baguette
+
+Q: Which racket sport is played with a shuttlecock?
+A: Badminton
+
+Q: What does a caterpillar turn into?
+A: Butterfly
+
+Q: Which superhero is the secret identity of Bruce Wayne?
+A: Batman
+
+Q: Which writing system of raised dots is read by touch?
+A: Braille
+
+Q: Which tall grass makes up most of a giant panda's diet?
+A: Bamboo
+
+Q: What is the capital city of Australia?
+A: Canberra
+
+Q: What is the fastest land animal?
+A: Cheetah
+
+Q: What is the capital city of Egypt?
+A: Cairo
+
+Q: In which board game do you try to checkmate your opponent's king?
+A: Chess
+
+Q: Which fairy-tale servant girl leaves a glass slipper at the ball?
+A: Cinderella
+
+Q: Which metal has the chemical symbol Cu?
+A: Copper
+
+Q: Which lizard is famous for changing colour?
+A: Chameleon
+
+Q: Which crescent-shaped flaky pastry is a French breakfast favourite?
+A: Croissant
+
+Q: In Greek myth, what kind of giant has just one eye in the middle of its forehead?
+A: Cyclops
+
+Q: What is the capital city of Ireland?
+A: Dublin
+
+Q: What is the hardest natural substance on Earth?
+A: Diamond
+
+Q: Which flightless bird from Mauritius became extinct in the 17th century?
+A: Dodo
+
+Q: Which Hindu festival of lights is celebrated every autumn?
+A: Diwali
+
+Q: Which country gave the world LEGO bricks?
+A: Denmark
+
+Q: In which pub game is 180 the highest score with three throws?
+A: Darts
+
+Q: Which intelligent sea mammal was the star of the TV show Flipper?
+A: Dolphin
+
+Q: Which count is the vampire in Bram Stoker's 1897 novel?
+A: Dracula
+
+Q: Which country is home to the pyramids of Giza?
+A: Egypt
+
+Q: What is the name of King Arthur's sword?
+A: Excalibur
+
+Q: What is the imaginary line around the middle of the Earth at 0° latitude?
+A: Equator
+
+Q: What is the largest land animal?
+A: Elephant
+
+Q: Which Christian festival celebrates the resurrection of Jesus?
+A: Easter
+
+Q: What is the capital city of Scotland?
+A: Edinburgh
+
+Q: Which green gemstone is the birthstone for May?
+A: Emerald
+
+Q: Which European country is nicknamed "the Hexagon" because of its shape?
+A: France
+
+Q: Which 2013 Disney film features the sisters Elsa and Anna?
+A: Frozen
+
+Q: What is the longest bone in the human body?
+A: Femur
+
+Q: Which pink wading bird often stands on one leg?
+A: Flamingo
+
+Q: Which Olympic sport uses a foil, an épée and a sabre?
+A: Fencing
+
+Q: On which temperature scale does water freeze at 32 degrees?
+A: Fahrenheit
+
+Q: Which metal has the chemical symbol Au?
+A: Gold
+
+Q: What force keeps the planets in orbit around the Sun?
+A: Gravity
+
+Q: What is the tallest animal in the world?
+A: Giraffe
+
+Q: What is the largest island in the world?
+A: Greenland
+
+Q: Which giant monster from Japanese films first stomped through Tokyo in 1954?
+A: Godzilla
+
+Q: Which Hogwarts house is Harry Potter sorted into?
+A: Gryffindor
+
+Q: What bulb are vampires said to be afraid of?
+A: Garlic
+
+Q: Which gas, lighter than air, makes party balloons float?
+A: Helium
+
+Q: Which school of witchcraft and wizardry does Harry Potter attend?
+A: Hogwarts
+
+Q: Which Shakespeare play is about a prince of Denmark?
+A: Hamlet
+
+Q: Which holiday on 31 October is known for trick-or-treating?
+A: Halloween
+
+Q: What sweet food do bees make from nectar?
+A: Honey
+
+Q: Which US state, made up of Pacific islands, joined the union in 1959?
+A: Hawaii
+
+Q: Which country's capital is Reykjavik?
+A: Iceland
+
+Q: Which European country is shaped like a boot?
+A: Italy
+
+Q: What dome-shaped house is built from blocks of snow?
+A: Igloo
+
+Q: What is the coloured part of the eye?
+A: Iris
+
+Q: Which hormone made by the pancreas controls blood sugar?
+A: Insulin
+
+Q: Which metal has the chemical symbol Fe?
+A: Iron
+
+Q: What is the largest planet in our Solar System?
+A: Jupiter
+
+Q: Which country is known as the "Land of the Rising Sun"?
+A: Japan
+
+Q: Which 1975 Steven Spielberg film is about a great white shark?
+A: Jaws
+
+Q: Which Caribbean country is the home of Usain Bolt and Bob Marley?
+A: Jamaica
+
+Q: Which Japanese martial art's name means "the gentle way"?
+A: Judo
+
+Q: Which Australian animal carries its baby, a joey, in a pouch?
+A: Kangaroo
+
+Q: Which grey Australian marsupial lives in eucalyptus trees?
+A: Koala
+
+Q: Which country's capital is Nairobi?
+A: Kenya
+
+Q: Which martial art's name means "empty hand" in Japanese?
+A: Karate
+
+Q: What is the name of Superman's home planet?
+A: Krypton
+
+Q: What is the capital city of the United Kingdom?
+A: London
+
+Q: Which big cat is called the "king of the jungle"?
+A: Lion
+
+Q: What is the capital city of Portugal?
+A: Lisbon
+
+Q: Which organs do we use to breathe?
+A: Lungs
+
+Q: What flash of electricity in the sky comes before thunder?
+A: Lightning
+
+Q: Which planet is known as the Red Planet?
+A: Mars
+
+Q: Which planet is closest to the Sun?
+A: Mercury
+
+Q: What is the capital city of Spain?
+A: Madrid
+
+Q: Which board game has players buying properties like Park Lane and Mayfair?
+A: Monopoly
+
+Q: Which snake-haired Gorgon turned people to stone?
+A: Medusa
+
+Q: Which insect spreads malaria?
+A: Mosquito
+
+Q: What is the capital city of Russia?
+A: Moscow
+
+Q: What is a body wrapped in bandages in an Egyptian tomb called?
+A: Mummy
+
+Q: Which gas makes up most of the Earth's atmosphere?
+A: Nitrogen
+
+Q: Which planet is farthest from the Sun?
+A: Neptune
+
+Q: Which Scandinavian country is famous for its fjords?
+A: Norway
+
+Q: What sweet liquid do bees collect from flowers?
+A: Nectar
+
+Q: Which Arctic whale with a long spiral tusk is called the "unicorn of the sea"?
+A: Narwhal
+
+Q: Which sea creature has eight arms and three hearts?
+A: Octopus
+
+Q: Which gas do we need to breathe, with the chemical symbol O?
+A: Oxygen
+
+Q: Which mountain was the home of the Greek gods?
+A: Olympus | Mount Olympus
+
+Q: What is the largest bird in the world?
+A: Ostrich
+
+Q: What colour do you get by mixing red and yellow?
+A: Orange
+
+Q: What is the capital city of Norway?
+A: Oslo
+
+Q: Which city is home to the Eiffel Tower?
+A: Paris
+
+Q: Which flightless black-and-white bird lives mostly in the Southern Hemisphere?
+A: Penguin
+
+Q: Which dwarf planet lost its planet status in 2006?
+A: Pluto
+
+Q: Which instrument usually has 88 black and white keys?
+A: Piano
+
+Q: Which wooden puppet's nose grows when he tells a lie?
+A: Pinocchio
+
+Q: Which winged horse of Greek myth sprang from Medusa?
+A: Pegasus
+
+Q: Which country's capital is Lisbon?
+A: Portugal
+
+Q: Which mostly French-speaking province is the largest in Canada?
+A: Quebec | Québec
+
+Q: Which common crystal is used to keep time in many watches?
+A: Quartz
+
+Q: Which sport is played on broomsticks in the Harry Potter books?
+A: Quidditch
+
+Q: Which small, smiling marsupial lives on Rottnest Island in Western Australia?
+A: Quokka
+
+Q: Which city is home to the Colosseum?
+A: Rome
+
+Q: What is the largest country in the world by area?
+A: Russia
+
+Q: Which sport is said to have been invented at a school of the same name in England?
+A: Rugby
+
+Q: Which fairy-tale girl lets down her long hair from a tower?
+A: Rapunzel
+
+Q: What arc of colours appears when sunlight shines through rain?
+A: Rainbow
+
+Q: Which animals pull Santa's sleigh?
+A: Reindeer
+
+Q: Which planet is famous for its bright rings?
+A: Saturn
+
+Q: Which Japanese dish is made of vinegared rice, often with raw fish?
+A: Sushi
+
+Q: Which green ogre lives in a swamp in a 2001 DreamWorks film?
+A: Shrek
+
+Q: What do the 206 bones in an adult human body make up?
+A: Skeleton
+
+Q: Which cue sport is played with 15 red balls and six colours?
+A: Snooker
+
+Q: Which country is famous for paella and flamenco?
+A: Spain
+
+Q: Which blue gemstone is the birthstone for September?
+A: Sapphire
+
+Q: What is the capital city of Japan?
+A: Tokyo
+
+Q: Which ship sank on its first voyage in 1912 after hitting an iceberg?
+A: Titanic
+
+Q: Which sport is played at Wimbledon?
+A: Tennis
+
+Q: Which Norse god of thunder wields a hammer?
+A: Thor
+
+Q: What is the name for a giant sea wave caused by an undersea earthquake?
+A: Tsunami
+
+Q: What is a violently spinning column of air that touches the ground?
+A: Tornado
+
+Q: Which bird is traditionally eaten at Thanksgiving?
+A: Turkey
+
+Q: Which Canadian city is home to the CN Tower?
+A: Toronto
+
+Q: Which planet spins on its side?
+A: Uranus
+
+Q: Which country's capital is Kyiv?
+A: Ukraine
+
+Q: Which mythical horse with a single horn is Scotland's national animal?
+A: Unicorn
+
+Q: Which small four-stringed guitar is linked with Hawaii?
+A: Ukulele
+
+Q: Which planet is the hottest in our Solar System?
+A: Venus
+
+Q: What is the capital city of Austria?
+A: Vienna
+
+Q: Which Italian city is famous for its canals and gondolas?
+A: Venice
+
+Q: What is a mountain that can erupt with lava called?
+A: Volcano
+
+Q: Which four-stringed instrument is played with a bow and tucked under the chin?
+A: Violin
+
+Q: Which country has a red dragon on its flag?
+A: Wales
+
+Q: Which Arctic animal has long tusks and whiskers?
+A: Walrus
+
+Q: Which tennis tournament is played on grass in London every summer?
+A: Wimbledon
+
+Q: Which X-Men hero has metal claws that come out of his hands?
+A: Wolverine
+
+Q: Which 1969 music festival was held on a dairy farm in New York State?
+A: Woodstock
+
+Q: At which 1815 battle was Napoleon finally defeated?
+A: Waterloo
+
+Q: Which instrument has wooden bars that you hit with mallets?
+A: Xylophone
+
+Q: Which games console did Microsoft launch in 2001?
+A: Xbox
+
+Q: What is the ape-like creature of Himalayan legend also called the Abominable Snowman?
+A: Yeti
+
+Q: Which Indian practice of postures and breathing is popular around the world?
+A: Yoga
+
+Q: What is the currency of Japan?
+A: Yen
+
+Q: Which small green Jedi Master trained Luke Skywalker?
+A: Yoda
+
+Q: Which toy goes up and down on a string?
+A: Yo-yo | Yoyo
+
+Q: Who is the king of the Greek gods?
+A: Zeus
+
+Q: Which African animal looks like a horse with black and white stripes?
+A: Zebra
+
+Q: Which African country was formerly called Rhodesia?
+A: Zimbabwe
+
+Q: What number do you get when you multiply any number by nothing?
+A: Zero
+
+Q: What do Americans call the vegetable the British call a courgette?
+A: Zucchini
