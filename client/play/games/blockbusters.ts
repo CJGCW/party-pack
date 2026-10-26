@@ -1,4 +1,4 @@
-import type { BlockbustersInput, BlockbustersPlayerView, Team } from '../../../shared/games/blockbusters';
+import { frameBands, type BlockbustersInput, type BlockbustersPlayerView, type Team } from '../../../shared/games/blockbusters';
 import { h } from '../dom';
 import type { Controller } from '../main';
 
@@ -65,25 +65,42 @@ export function createBlockbusters(root: HTMLElement, send: (input: unknown) => 
   }
 
   /** Flat-topped hexagons in columns, odd columns half a hexagon lower, sized to the phone. */
+  /**
+   * Like the show: Red's bands top and bottom, White's down the sides (meeting on the corner
+   * diagonals) fill the notches round the outer hexagons; between hexagons the lines are dark.
+   */
   function renderBoard(v: BlockbustersPlayerView) {
+    const padRatio = 0.42;
     const width = Math.min(window.innerWidth, 520) - 40;
-    const r = width / (1.5 * v.cols + 0.5);
+    const r = width / (1.5 * v.cols + 0.5 + padRatio * 2);
+    const pad = r * padRatio;
     const hexH = Math.sqrt(3) * r;
+    const height = hexH * (v.rows + 0.5) + pad * 2;
     boardEl.style.width = `${width}px`;
-    boardEl.style.height = `${hexH * (v.rows + 0.5)}px`;
+    boardEl.style.height = `${height}px`;
+    const bands = frameBands(width, height);
     const pickable = canPick();
+    const place = (el: HTMLElement, i: number) => {
+      const col = i % v.cols;
+      const row = Math.floor(i / v.cols);
+      el.style.cssText = `left:${pad + col * 1.5 * r}px;top:${pad + row * hexH + (col % 2 ? hexH / 2 : 0)}px;width:${2 * r}px;height:${hexH}px;font-size:${r * 0.8}px`;
+      return el;
+    };
     boardEl.replaceChildren(
+      ...(['top', 'bottom', 'left', 'right'] as const).map((side) => {
+        const band = h('div', { class: `bb-band ${side}` });
+        band.style.clipPath = `polygon(${bands[side].map(([x, y]) => `${x}px ${y}px`).join(', ')})`;
+        return band;
+      }),
+      ...v.hexes.map((_, i) => place(h('div', { class: 'bb-hex-back' }), i)),
       ...v.hexes.map((hex, i) => {
-        const col = i % v.cols;
-        const row = Math.floor(i / v.cols);
         const cls = ['bb-hex'];
         if (hex.owner) cls.push(hex.owner);
         else if (pickable) cls.push('pickable');
         if (i === v.current && !hex.owner) cls.push('current');
         if (v.winningPath.includes(i)) cls.push('path');
-        const el = h('div', { class: cls.join(' ') }, hex.letter);
+        const el = place(h('div', { class: cls.join(' ') }, hex.letter), i);
         el.dataset.index = String(i);
-        el.style.cssText = `left:${col * 1.5 * r}px;top:${row * hexH + (col % 2 ? hexH / 2 : 0)}px;width:${2 * r}px;height:${hexH}px;font-size:${r * 0.8}px`;
         return el;
       }),
     );

@@ -599,14 +599,27 @@ button.secondary { background: var(--panel-light); }
 .bb-team { padding: 2px 10px; border-radius: 999px; font-weight: 700; }
 .bb-team.red { background: var(--danger); color: var(--bg); }
 .bb-team.white { background: #f2f0ff; color: var(--bg); }
-/* The board, with Red's edges (top and bottom) and White's (left and right) drawn round it. */
+/* The board, framed as on the show: Red's bands top and bottom and White's down the sides,
+   meeting on 45° lines from the corners; the dark full-size hexagons behind make the lines between. */
 .bb-board {
   position: relative;
   align-self: center;
   margin: 8px 0;
-  box-shadow: 0 -6px 0 var(--danger), 0 6px 0 var(--danger), -6px 0 0 #f2f0ff, 6px 0 0 #f2f0ff;
-  border-radius: 4px;
+  border: 6px solid #0b0820;
+  border-radius: 12px;
+  box-sizing: content-box;
+  overflow: hidden;
   touch-action: manipulation;
+}
+.bb-band { position: absolute; inset: 0; }
+/* Their shapes (clip-path) are set from frameBands, to suit the board's proportions. */
+.bb-band.top, .bb-band.bottom { background: var(--danger); }
+.bb-band.left, .bb-band.right { background: #f2f0ff; }
+.bb-hex-back {
+  position: absolute;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  background: #0b0820;
+  transform: scale(1.02);
 }
 .bb-board[hidden], .bb-letter[hidden], .bb-buzz[hidden] { display: none; }
 .bb-hex {
@@ -618,8 +631,8 @@ button.secondary { background: var(--panel-light); }
   background: var(--panel-light);
   color: var(--accent);
   font-weight: 700;
-  /* A little gap between hexagons. */
-  transform: scale(0.94);
+  /* Inside its dark backing, which shows round it as the lines between hexagons. */
+  transform: scale(0.9);
 }
 .bb-hex.pickable { background: #5a4dc0; color: #fff; cursor: pointer; }
 .bb-hex.current { background: var(--accent); color: var(--bg); }

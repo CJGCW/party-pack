@@ -61,6 +61,24 @@ export function winningPath(owners: (Team | null)[], team: Team, cols: number, r
 }
 
 /**
+ * The frame's four bands for a w x h board: Red's top and bottom, White's left and right. They
+ * meet on 45° lines from the corners, so every point belongs to the edge it's nearest.
+ */
+export function frameBands(w: number, h: number): Record<'top' | 'bottom' | 'left' | 'right', [number, number][]> {
+  const d = Math.min(w, h) / 2;
+  const a: [number, number] = [d, d];
+  const b: [number, number] = [w - d, d];
+  const c: [number, number] = [w - d, h - d];
+  const e: [number, number] = [d, h - d];
+  return {
+    top: [[0, 0], [w, 0], b, a],
+    right: [[w, 0], [w, h], c, b],
+    bottom: [[w, h], [0, h], e, c],
+    left: [[0, h], [0, 0], a, e],
+  };
+}
+
+/**
  * 'pick': the team in control chooses a letter.
  * 'question': the question is read out a letter at a time; anyone not locked out can buzz,
  *   which stops the reading where it is.
