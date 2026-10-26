@@ -1,0 +1,318 @@
+# Blockbusters questions. Each hexagon shows the answer's initials: one letter per capitalised
+# word ("Albert Einstein" -> AE), skipping a leading "The" and small lower-case words like "of",
+# "da" and "van" ("Statue of Liberty" -> SL). A word in capitals gives every letter ("DNA" ->
+# DNA, "H2O" -> HO), and hyphens split words ("X-Ray" -> XR).
+#
+# Format: TOPIC:, then Q: for the question and A: for the answer. Other accepted answers go after
+# | on the A: line; the first one gives the initials. Lines starting with # are comments.
+
+TOPIC: Famous People
+
+Q: Which physicist developed the Theory of Relativity?
+A: Albert Einstein
+
+Q: Who was the 44th President of the United States?
+A: Barack Obama
+
+Q: Which English naturalist wrote On the Origin of Species?
+A: Charles Darwin
+
+Q: Who is widely known as the "King of Pop"?
+A: Michael Jackson
+
+Q: Which English playwright wrote Romeo and Juliet?
+A: William Shakespeare
+
+Q: Which civil rights leader gave the "I Have a Dream" speech?
+A: Martin Luther King | Martin Luther King Jr
+
+Q: Who painted the Mona Lisa?
+A: Leonardo da Vinci
+
+Q: Who was the first person to walk on the Moon?
+A: Neil Armstrong
+
+Q: Which American inventor is credited with the phonograph and a practical light bulb?
+A: Thomas Edison
+
+Q: Who was the first President of the United States?
+A: George Washington
+
+Q: Which French military leader crowned himself Emperor in 1804?
+A: Napoleon Bonaparte
+
+Q: Which South African leader spent 27 years in prison before becoming president?
+A: Nelson Mandela
+
+Q: Which Polish-French scientist was the first woman to win a Nobel Prize?
+A: Marie Curie
+
+Q: Which British prime minister led the country through most of World War II?
+A: Winston Churchill
+
+Q: Which German composer kept writing music after going deaf, including the "Ode to Joy" symphony?
+A: Ludwig van Beethoven
+
+Q: Who co-founded Microsoft with Paul Allen?
+A: Bill Gates
+
+Q: Who co-founded Apple and unveiled the iPhone in 2007?
+A: Steve Jobs
+
+Q: Which Italian astronomer was put on trial for teaching that the Earth goes round the Sun?
+A: Galileo Galilei
+
+Q: Which "Queen of Soul" had a hit with "Respect"?
+A: Aretha Franklin
+
+Q: Which singer is known as the "King of Rock and Roll"?
+A: Elvis Presley
+
+Q: Which boxer said he would "float like a butterfly, sting like a bee"?
+A: Muhammad Ali
+
+Q: Who was the first woman to fly solo across the Atlantic Ocean?
+A: Amelia Earhart
+
+Q: Which US president issued the Emancipation Proclamation?
+A: Abraham Lincoln
+
+Q: Which Austrian composer wrote the opera The Magic Flute?
+A: Wolfgang Amadeus Mozart
+
+Q: Which English scientist described the laws of motion and universal gravitation?
+A: Isaac Newton
+
+Q: Which Dutch painter of The Starry Night cut off part of his own ear?
+A: Vincent van Gogh
+
+TOPIC: Geography & Places
+
+Q: What massive, steep-sided canyon was carved by the Colorado River in Arizona?
+A: Grand Canyon
+
+Q: Which major American city is known as "The Big Apple"?
+A: New York City
+
+Q: Which ocean is the largest and deepest on Earth?
+A: Pacific Ocean
+
+Q: Which sea separates northeastern Africa from the Arabian Peninsula?
+A: Red Sea
+
+Q: Which island nation includes England, Scotland, Wales and Northern Ireland?
+A: United Kingdom
+
+Q: What famous iron lattice tower stands on the Champ de Mars in Paris?
+A: Eiffel Tower
+
+Q: What is the highest mountain above sea level, in the Himalayas?
+A: Mount Everest
+
+Q: Which famous waterfalls sit on the border between Ontario, Canada, and New York, USA?
+A: Niagara Falls
+
+Q: What is the largest hot desert in the world, covering much of North Africa?
+A: Sahara Desert
+
+Q: Which mighty river flows through the rainforest of South America?
+A: Amazon River
+
+Q: What is the nickname of the Great Bell in the clock tower of London's Houses of Parliament?
+A: Big Ben
+
+Q: What ancient wall stretches thousands of miles across northern China?
+A: Great Wall of China | Great Wall
+
+Q: Which statue in New York Harbor was a gift from France?
+A: Statue of Liberty
+
+Q: What is the smallest country in the world?
+A: Vatican City
+
+Q: What is the world's largest coral reef system, off the coast of Queensland, Australia?
+A: Great Barrier Reef
+
+Q: Which California city is home to the Golden Gate Bridge?
+A: San Francisco
+
+Q: Which Brazilian city is famous for its Carnival and the Christ the Redeemer statue?
+A: Rio de Janeiro
+
+Q: What is the largest of the three pyramids at Giza in Egypt?
+A: Great Pyramid | Great Pyramid of Giza
+
+Q: Which New York square hosts the famous New Year's Eve ball drop?
+A: Times Square
+
+Q: Which US national park, mostly in Wyoming, was the world's first national park?
+A: Yellowstone National Park
+
+Q: Which island country lies about 1,200 miles southeast of Australia?
+A: New Zealand
+
+Q: What is the capital city of Argentina?
+A: Buenos Aires
+
+Q: Which country contains the cities of Cape Town and Johannesburg?
+A: South Africa
+
+Q: Which African lake, the largest on the continent, is a source of the White Nile?
+A: Lake Victoria
+
+Q: Which white marble mausoleum in Agra, India, was built by Shah Jahan for his wife?
+A: Taj Mahal
+
+Q: What salt lake between Israel and Jordan is so salty that people float easily in it?
+A: Dead Sea
+
+Q: Which ocean did the Titanic sink in?
+A: Atlantic Ocean
+
+Q: What is the smallest and shallowest of the world's oceans, around the North Pole?
+A: Arctic Ocean
+
+TOPIC: Science & Nature
+
+Q: What force is exerted by the weight of the atmosphere?
+A: Barometric Pressure | Atmospheric Pressure | Air Pressure
+
+Q: What gas do humans exhale that plants use for photosynthesis?
+A: Carbon Dioxide | CO2
+
+Q: What is the gradual increase in the Earth's overall temperature called?
+A: Global Warming
+
+Q: What is the name of the galaxy that contains our Solar System?
+A: Milky Way
+
+Q: What layer of Earth's atmosphere protects us from harmful ultraviolet rays?
+A: Ozone Layer
+
+Q: What is the double-helix molecule that carries the genetic instructions for living things?
+A: DNA | Deoxyribonucleic Acid
+
+Q: What is the chemical formula for a single molecule of pure water?
+A: H2O
+
+Q: What process do plants use to turn sunlight, water and carbon dioxide into oxygen and sugar?
+A: Photosynthesis
+
+Q: What do we call the Sun and all the objects held in orbit around it by gravity?
+A: Solar System
+
+Q: What form of high-energy radiation is used in hospitals to take pictures of bones?
+A: X-Ray | X-Rays
+
+Q: What stream of charged particles from the Sun causes the auroras?
+A: Solar Wind
+
+Q: What is the common name for the aurora borealis?
+A: Northern Lights
+
+Q: What scientific theory says the universe began expanding from a hot, dense state?
+A: Big Bang | Big Bang Theory
+
+Q: What is a region of space where gravity is so strong that not even light can escape?
+A: Black Hole
+
+Q: Which cells in the blood carry oxygen around the body?
+A: Red Blood Cells | Red Blood Cell
+
+Q: What is the fastest speed in the universe, about 300,000 kilometres per second?
+A: Speed of Light
+
+Q: What scale has traditionally been used to describe the magnitude of earthquakes?
+A: Richter Scale
+
+Q: What is the name for the slow movement of the continents across the Earth's surface?
+A: Continental Drift
+
+Q: What giant storm on Jupiter has been raging for hundreds of years?
+A: Great Red Spot
+
+Q: What device on a roof turns sunlight directly into electricity?
+A: Solar Panel | Solar Panels
+
+Q: Which famous comet returns to view from Earth about every 76 years?
+A: Halley's Comet | Halleys Comet
+
+Q: What kind of renewable energy comes from turbines turned by moving air?
+A: Wind Power | Wind Energy
+
+TOPIC: Entertainment & Pop Culture
+
+Q: Which English rock band sang "Hey Jude" and "Yesterday"?
+A: The Beatles
+
+Q: Who is the young wizard created by J.K. Rowling?
+A: Harry Potter
+
+Q: Which Marvel superhero is the alter ego of billionaire Tony Stark?
+A: Iron Man
+
+Q: Which Disney animated film features the characters Simba, Nala and Mufasa?
+A: The Lion King
+
+Q: Which epic space opera franchise was created by George Lucas in 1977?
+A: Star Wars
+
+Q: Which TV drama follows chemistry teacher Walter White as he becomes the drug kingpin Heisenberg?
+A: Breaking Bad
+
+Q: Who is the deep-voiced villain in black armour in Star Wars?
+A: Darth Vader
+
+Q: Which video game series lets players commit crimes in cities like Los Santos and Liberty City?
+A: Grand Theft Auto | GTA
+
+Q: Who is the British secret agent known by his code number, 007?
+A: James Bond
+
+Q: Which 1994 Quentin Tarantino film features Marsellus Wallace, Vincent Vega and a mysterious briefcase?
+A: Pulp Fiction
+
+Q: Which sitcom follows physicist Sheldon Cooper and his friends?
+A: The Big Bang Theory | Big Bang Theory
+
+Q: Which superhero is the secret identity of Peter Parker?
+A: Spider-Man | Spiderman
+
+Q: Which Disney character has a girlfriend named Minnie?
+A: Mickey Mouse
+
+Q: Which pop star sang "Shake It Off" and "Love Story"?
+A: Taylor Swift
+
+Q: Which Pixar film follows a cowboy doll named Woody?
+A: Toy Story
+
+Q: Which children's TV show is set on a street with Big Bird, Elmo and the Cookie Monster?
+A: Sesame Street
+
+Q: Who is the square, yellow sea sponge who lives in Bikini Bottom?
+A: SpongeBob SquarePants | Spongebob Squarepants
+
+Q: Which fictional detective lives at 221B Baker Street?
+A: Sherlock Holmes
+
+Q: Which J.R.R. Tolkien story follows Frodo's quest to destroy the One Ring?
+A: The Lord of the Rings | Lord of the Rings
+
+Q: Which Steven Spielberg film has dinosaurs brought back to life on an island theme park?
+A: Jurassic Park
+
+Q: Which 1939 film follows Dorothy down the Yellow Brick Road?
+A: The Wizard of Oz | Wizard of Oz
+
+Q: Which yellow arcade character eats dots while running from ghosts?
+A: Pac-Man | Pacman
+
+Q: Which science-fiction series follows the crew of the starship Enterprise?
+A: Star Trek
+
+Q: Who is the headmaster of Hogwarts for most of the Harry Potter books?
+A: Albus Dumbledore
+
+Q: Which TV series is about the battle for the Iron Throne of Westeros?
+A: Game of Thrones

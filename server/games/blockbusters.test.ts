@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { boardSize, neighbours, winningPath, type Team } from '../../shared/games/blockbusters';
-import { answerLetter, isRightAnswer, pickLetters, questionsByLetter } from './blockbusters';
-import { triviaBank } from './trivia';
+import { answerInitials, isRightAnswer, pickLetters, questionsByInitials } from './blockbusters';
 
 /** A board from a picture: R and W are owned hexagons, anything else is open. Rows top to bottom. */
 const board = (...rows: string[]) => rows.join('').split('').map((c): Team | null => (c === 'R' ? 'red' : c === 'W' ? 'white' : null));
@@ -45,27 +44,34 @@ describe('Blockbusters', () => {
     }
   });
 
-  it("takes the letter from the answer's first word", () => {
-    assert.equal(answerLetter('The Lion King'), 'L');
-    assert.equal(answerLetter('"Superman" by Lazlo Bane'), 'S');
-    assert.equal(answerLetter('2001'), null);
+  it("takes the initials from the answer's words", () => {
+    assert.equal(answerInitials('Albert Einstein'), 'AE');
+    assert.equal(answerInitials('The Lion King'), 'LK');
+    assert.equal(answerInitials('New York City'), 'NYC');
+    assert.equal(answerInitials('Statue of Liberty'), 'SL');
+    assert.equal(answerInitials('Vincent van Gogh'), 'VG');
+    assert.equal(answerInitials('DNA | Deoxyribonucleic Acid'), 'DNA');
+    assert.equal(answerInitials('H2O'), 'HO');
+    assert.equal(answerInitials('X-Ray | X-Rays'), 'XR');
+    assert.equal(answerInitials("Halley's Comet"), 'HC');
   });
 
-  it('picks different letters that all have questions', () => {
-    const byLetter = questionsByLetter(triviaBank('general'));
-    const letters = pickLetters(byLetter, 20);
-    assert.equal(letters.length, 20);
-    assert.equal(new Set(letters).size, 20);
-    assert.ok(letters.every((l) => byLetter.has(l)));
+  it('picks different initials that all have questions', () => {
+    const byInitials = questionsByInitials('general');
+    assert.ok(byInitials.size >= 40, `only ${byInitials.size} different initials`);
+    const keys = pickLetters(byInitials, 20);
+    assert.equal(keys.length, 20);
+    assert.equal(new Set(keys).size, 20);
+    assert.ok(keys.every((k) => byInitials.has(k)));
   });
 
-  it('accepts typed answers with small slips and short forms', () => {
-    assert.ok(isRightAnswer('wellington', 'Wellington'));
-    assert.ok(isRightAnswer('Welington', 'Wellington'));
-    assert.ok(isRightAnswer('shakespeare', 'William Shakespeare'));
-    assert.ok(isRightAnswer('pound sterling', 'The pound sterling'));
-    assert.ok(isRightAnswer('superman', '"Superman" by Lazlo Bane'));
-    assert.ok(!isRightAnswer('Auckland', 'Wellington'));
-    assert.ok(!isRightAnswer('William', 'William Shakespeare'));
+  it('accepts the whole answer, any listed form, and small slips', () => {
+    assert.ok(isRightAnswer('albert einstein', 'Albert Einstein'));
+    assert.ok(isRightAnswer('Albert Einstien', 'Albert Einstein'));
+    assert.ok(isRightAnswer('lion king', 'The Lion King'));
+    assert.ok(isRightAnswer('spiderman', 'Spider-Man | Spiderman'));
+    assert.ok(isRightAnswer('deoxyribonucleic acid', 'DNA | Deoxyribonucleic Acid'));
+    assert.ok(!isRightAnswer('Einstein', 'Albert Einstein'));
+    assert.ok(!isRightAnswer('Isaac Newton', 'Albert Einstein'));
   });
 });

@@ -1,3 +1,5 @@
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   BLOCKBUSTERS,
   boardSize,
@@ -12,8 +14,7 @@ import {
 import { ROUND_SCORES_MS } from '../../shared/timing';
 import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 import { matchAnswer } from './pickEm';
-import { shuffle, type Question } from './questions';
-import { triviaBank } from './trivia';
+import { loadQuestionFile, shuffle, type Question } from './questions';
 
 const PICK_MS = 15_000;
 /** Reading pace, about as fast as someone reading aloud. */
@@ -35,47 +36,64 @@ const WIN_POINTS = 500;
 
 const other = (team: Team): Team => (team === 'red' ? 'white' : 'red');
 
-/** The letter a question's answer starts with, ignoring "The", "A" and "An" and any quotes. */
-export function answerLetter(answer: string): string | null {
-  const word = answer.replace(/^[^A-Za-z0-9]+/, '').replace(/^(the|a|an)\s+/i, '').replace(/^[^A-Za-z]+/, '');
-  const letter = word[0]?.toUpperCase();
-  return letter && /[A-Z]/.test(letter) ? letter : null;
-}
+/** The answer as shown, and the other ways to type it ("Spider-Man | Spiderman"). */
+const answerParts = (answer: string) => answer.split('|').map((part) => part.trim()).filter(Boolean);
+
+/** The answer as shown (its first form). */
+export const shownAnswer = (answer: string) => answerParts(answer)[0] ?? answer;
 
 /**
- * Ways to type an answer that count as right (on top of the matcher forgiving case, accents and
- * small typos): without a leading "The", just the quoted part of a song or film title, without
- * a bracketed note, and a name's last word ("Shakespeare" for "William Shakespeare").
+ * The initials on an answer's hexagon: one letter per capitalised word ("Albert Einstein" -> AE),
+ * skipping a leading "The" and small lower-case words ("Statue of Liberty" -> SL, "Vincent van
+ * Gogh" -> VG). A word in capitals gives every letter ("DNA" -> DNA, "H2O" -> HO), and hyphens
+ * split words ("X-Ray" -> XR).
  */
+export function answerInitials(answer: string): string {
+  const words = shownAnswer(answer).replace(/^(the|a|an)\s+/i, '').split(/[\s-]+/);
+  let initials = '';
+  for (const word of words) {
+    const clean = word.replace(/[^A-Za-z0-9]/g, '');
+    if (/^[A-Z0-9]{2,}$/.test(clean)) initials += clean.replace(/[0-9]/g, '');
+    else if (/^[A-Z]/.test(clean)) initials += clean[0];
+  }
+  return initials;
+}
+
+/** Ways to type an answer that count as right: any of its forms, with or without a leading "The" (the matcher forgives case, accents and small typos). */
 export function answerForms(answer: string): string[] {
-  const forms = new Set([answer]);
-  const bare = answer.replace(/^(the|a|an)\s+/i, '');
-  forms.add(bare);
-  const quoted = /"([^"]+)"/.exec(answer);
-  if (quoted) forms.add(quoted[1]);
-  const unbracketed = answer.replace(/\s*\([^)]*\)/g, '').trim();
-  if (unbracketed) forms.add(unbracketed);
-  const words = bare.split(/\s+/);
-  const last = words.at(-1)!;
-  if (words.length >= 2 && words.length <= 3 && words.every((w) => /^[A-Z]/.test(w)) && last.length >= 4) forms.add(last);
+  const forms = new Set<string>();
+  for (const part of answerParts(answer)) {
+    forms.add(part);
+    forms.add(part.replace(/^(the|a|an)\s+/i, ''));
+  }
   return [...forms];
 }
 
 /** Whether a typed answer is right. */
 export const isRightAnswer = (text: string, answer: string) => matchAnswer(text, [answerForms(answer)]) === 0;
 
-/** A bank's single-answer questions by the first letter of their answer. */
-export function questionsByLetter(questions: readonly Question[]) {
-  const byLetter = new Map<string, Question[]>();
-  for (const q of questions) {
-    if (q.correct.length !== 1 || q.list.length > 0) continue;
-    const letter = answerLetter(q.correct[0]);
-    if (letter) byLetter.set(letter, [...(byLetter.get(letter) ?? []), q]);
+/** Each file in ./blockbusters is a bank (a mode): questions with one answer each, as Q: and A: lines. */
+const BANK_DIR = join(import.meta.dirname, 'blockbusters');
+const BANKS = new Map<string, Question[]>(
+  readdirSync(BANK_DIR)
+    .filter((f) => f.endsWith('.txt'))
+    .map((f) => [
+      f.replace(/\.txt$/, ''),
+      loadQuestionFile(join(BANK_DIR, f), (q) => q.correct.length === 1 && q.wrong.length === 0 && q.list.length === 0 && answerInitials(q.correct[0]).length > 0, 'blockbusters'),
+    ]),
+);
+
+/** A bank's questions, by the initials of their answers. */
+export function questionsByInitials(bankId: string) {
+  const byInitials = new Map<string, Question[]>();
+  for (const q of BANKS.get(bankId) ?? []) {
+    const initials = answerInitials(q.correct[0]);
+    byInitials.set(initials, [...(byInitials.get(initials) ?? []), q]);
   }
-  return byLetter;
+  return byInitials;
 }
 
-/** Letters for a board, all different, favouring letters with more questions to choose from. */
+/** Initials for a board, all different, favouring ones with more questions to choose from. */
 export function pickLetters(byLetter: Map<string, Question[]>, count: number): string[] {
   const pool = [...byLetter].map(([letter, qs]) => ({ letter, weight: Math.min(4, qs.length) }));
   const letters: string[] = [];
@@ -123,7 +141,7 @@ class Blockbusters implements MiniGame {
     private readonly bankId: string,
     private readonly totalBoards: number,
   ) {
-    this.byLetter = questionsByLetter(triviaBank(bankId));
+    this.byLetter = questionsByInitials(bankId);
   }
 
   start() {
@@ -172,7 +190,7 @@ class Blockbusters implements MiniGame {
     this.askQuestion();
   }
 
-  /** A question whose answer starts with the hexagon's letter, preferring ones not yet asked. */
+  /** A question whose answer has the hexagon's initials, preferring ones not yet asked. */
   private askQuestion() {
     const letter = this.hexes[this.current!].letter;
     const candidates = this.byLetter.get(letter) ?? [];
@@ -330,7 +348,7 @@ class Blockbusters implements MiniGame {
       buzzer: buzzer ? { id: buzzer.id, name: buzzer.name, team: this.teams.get(buzzer.id)! } : null,
       lockedOut: [...this.lockedOut],
       correct: this.phase === 'result' ? this.correct : null,
-      answer: this.phase === 'result' ? (this.question?.correct[0] ?? null) : null,
+      answer: this.phase === 'result' && this.question ? shownAnswer(this.question.correct[0]) : null,
       winner: this.winner,
       winningPath: this.path,
       wins: { ...this.wins },

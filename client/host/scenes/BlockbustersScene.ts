@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { frameBands, type BlockbustersHostView, type Team } from '../../../shared/games/blockbusters';
+import { frameCells, hexCentre, initialsScale, type BlockbustersHostView, type Team } from '../../../shared/games/blockbusters';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
 import { COLORS, WIDTH, addBackdrop, hex, text } from '../theme';
@@ -29,6 +29,8 @@ export class BlockbustersScene extends Phaser.Scene {
   private board!: Phaser.GameObjects.Container;
   private side!: Phaser.GameObjects.Container;
   private overlay!: Phaser.GameObjects.Container;
+  /** Clips the frame's ring of hexagons to the frame (remade with the board). */
+  private frameMask: Phaser.GameObjects.Graphics | null = null;
   /** The question in the side card, typed out while it's being read. */
   private questionText: Phaser.GameObjects.Text | null = null;
   private viewAt = 0;
@@ -89,9 +91,9 @@ export class BlockbustersScene extends Phaser.Scene {
     // The current hexagon pulses; stop it before redrawing (round scores add theirs afterwards).
     this.tweens.killAll();
     this.board.removeAll(true);
-    // The hexagons sit in a frame, as on the show: Red's bands along the top and bottom and
-    // White's down the sides, meeting on 45° lines from the corners. The bands fill the
-    // notches round the outer hexagons; between hexagons the gaps are dark.
+    // The hexagons sit in a frame, as on the show: a ring of red hexagons above and below and
+    // white ones down the sides, clipped to the frame, so the bands follow the hexagons' edges.
+    // Between the board's own hexagons the lines are dark.
     const padRatio = 0.42;
     const frame = 14;
     const r = Math.min(
@@ -113,19 +115,26 @@ export class BlockbustersScene extends Phaser.Scene {
     const g = this.add.graphics();
     g.fillStyle(FRAME, 1);
     g.fillRoundedRect(x0 - frame, y0 - frame, x1 - x0 + frame * 2, y1 - y0 + frame * 2, 18);
-    const bands = frameBands(x1 - x0, y1 - y0);
-    for (const side of ['top', 'bottom', 'left', 'right'] as const) {
-      g.fillStyle(side === 'top' || side === 'bottom' ? RED : WHITE, 1);
-      g.fillPoints(bands[side].map(([x, y]) => new V(x0 + x, y0 + y)), true);
-    }
     this.board.add(g);
     const hexPoints = (cx: number, cy: number, scale: number) =>
       Array.from({ length: 6 }, (_, k) => new V(cx + r * scale * Math.cos((Math.PI / 3) * k), cy + r * scale * Math.sin((Math.PI / 3) * k)));
-    const centre = (i: number) => {
-      const col = i % view.cols;
-      const row = Math.floor(i / view.cols);
-      return { cx: left + r + col * 1.5 * r, cy: top + hexH / 2 + row * hexH + (col % 2 ? hexH / 2 : 0) };
+    const at = (col: number, row: number) => {
+      const { x, y } = hexCentre(col, row, r);
+      return { cx: left + x, cy: top + y };
     };
+    const centre = (i: number) => at(i % view.cols, Math.floor(i / view.cols));
+
+    this.frameMask?.destroy();
+    this.frameMask = this.make.graphics({}, false);
+    this.frameMask.fillRect(x0, y0, x1 - x0, y1 - y0);
+    const ring = this.add.graphics();
+    for (const cell of frameCells(view.cols, view.rows)) {
+      const { cx, cy } = at(cell.col, cell.row);
+      ring.fillStyle(cell.team === 'red' ? RED : WHITE, 1);
+      ring.fillPoints(hexPoints(cx, cy, 1.02), true);
+    }
+    ring.setMask(this.frameMask.createGeometryMask());
+    this.board.add(ring);
     // A dark full-size hexagon behind each cell: the lines between hexagons.
     const back = this.add.graphics();
     back.fillStyle(FRAME, 1);
@@ -151,7 +160,7 @@ export class BlockbustersScene extends Phaser.Scene {
       }
       this.board.add(shape);
       const letterColor = hx.owner || current ? INK : COLORS.accent;
-      this.board.add(text(this, cx, cy, hx.letter, r * 0.8, letterColor, { fontStyle: '700' }));
+      this.board.add(text(this, cx, cy, hx.letter, r * initialsScale(hx.letter), letterColor, { fontStyle: '700' }));
       if (current && view.phase !== 'pick') {
         this.tweens.add({ targets: shape, alpha: 0.6, duration: 450, yoyo: true, repeat: -1 });
       }

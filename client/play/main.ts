@@ -271,7 +271,8 @@ function wheelSettings(isVip: boolean): Node[] {
       h('span', { class: 'check' }, on ? '✓' : ''),
       entry.label,
     );
-    return entry.group && on ? [toggle, groupOptions(entry)] : [toggle];
+    const options = entry.group && on ? groupOptions(entry) : null;
+    return options ? [toggle, options] : [toggle];
   });
 
   /** Under a group's toggle (e.g. Trivia): competitive, co-op or both, and which topics if there's a choice. */
@@ -302,6 +303,7 @@ function wheelSettings(isVip: boolean): Node[] {
     const styles: [PlayStyle, string][] = [['competitive', 'Competitive'], ['coop', 'Co-op'], ['both', 'Both']];
     // Only games with a co-op version get the competitive/co-op choice.
     const hasCoop = fmts.some((f) => f.coop !== f.competitive);
+    if (!hasCoop && modes.length < 2 && fmts.length < 2) return null;
     return h(
       'div',
       { class: 'group-options' },

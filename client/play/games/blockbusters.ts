@@ -1,4 +1,4 @@
-import { frameBands, type BlockbustersInput, type BlockbustersPlayerView, type Team } from '../../../shared/games/blockbusters';
+import { frameCells, hexCentre, initialsScale, type BlockbustersInput, type BlockbustersPlayerView, type Team } from '../../../shared/games/blockbusters';
 import { h } from '../dom';
 import type { Controller } from '../main';
 
@@ -64,10 +64,10 @@ export function createBlockbusters(root: HTMLElement, send: (input: unknown) => 
     statusEl.className = `tu-status ${kind}`;
   }
 
-  /** Flat-topped hexagons in columns, odd columns half a hexagon lower, sized to the phone. */
   /**
-   * Like the show: Red's bands top and bottom, White's down the sides (meeting on the corner
-   * diagonals) fill the notches round the outer hexagons; between hexagons the lines are dark.
+   * Flat-topped hexagons in columns, odd columns half a hexagon lower, sized to the phone. Framed
+   * like the show by a ring of red hexagons above and below and white down the sides (clipped
+   * by the board's edge), so the bands follow the hexagons' edges; between them the lines are dark.
    */
   function renderBoard(v: BlockbustersPlayerView) {
     const padRatio = 0.42;
@@ -78,20 +78,15 @@ export function createBlockbusters(root: HTMLElement, send: (input: unknown) => 
     const height = hexH * (v.rows + 0.5) + pad * 2;
     boardEl.style.width = `${width}px`;
     boardEl.style.height = `${height}px`;
-    const bands = frameBands(width, height);
     const pickable = canPick();
-    const place = (el: HTMLElement, i: number) => {
-      const col = i % v.cols;
-      const row = Math.floor(i / v.cols);
-      el.style.cssText = `left:${pad + col * 1.5 * r}px;top:${pad + row * hexH + (col % 2 ? hexH / 2 : 0)}px;width:${2 * r}px;height:${hexH}px;font-size:${r * 0.8}px`;
+    const placeAt = (el: HTMLElement, col: number, row: number, fontScale = 0.8) => {
+      const { x, y } = hexCentre(col, row, r);
+      el.style.cssText = `left:${pad + x - r}px;top:${pad + y - hexH / 2}px;width:${2 * r}px;height:${hexH}px;font-size:${r * fontScale}px`;
       return el;
     };
+    const place = (el: HTMLElement, i: number) => placeAt(el, i % v.cols, Math.floor(i / v.cols), initialsScale(v.hexes[i].letter));
     boardEl.replaceChildren(
-      ...(['top', 'bottom', 'left', 'right'] as const).map((side) => {
-        const band = h('div', { class: `bb-band ${side}` });
-        band.style.clipPath = `polygon(${bands[side].map(([x, y]) => `${x}px ${y}px`).join(', ')})`;
-        return band;
-      }),
+      ...frameCells(v.cols, v.rows).map((cell) => placeAt(h('div', { class: `bb-ring ${cell.team}` }), cell.col, cell.row)),
       ...v.hexes.map((_, i) => place(h('div', { class: 'bb-hex-back' }), i)),
       ...v.hexes.map((hex, i) => {
         const cls = ['bb-hex'];
@@ -120,6 +115,7 @@ export function createBlockbusters(root: HTMLElement, send: (input: unknown) => 
     const letter = v.current !== null ? v.hexes[v.current].letter : '';
     letterEl.hidden = !asking;
     letterEl.textContent = letter;
+    letterEl.style.fontSize = `${Math.round(60 * initialsScale(letter))}px`;
     questionEl.hidden = !asking || !v.question;
     showQuestion();
     buzzBtn.hidden = v.phase !== 'question' || !v.myTeam;
@@ -144,7 +140,7 @@ export function createBlockbusters(root: HTMLElement, send: (input: unknown) => 
         else setStatus(v.lockedOut.length ? 'The other team missed it. Your chance: buzz!' : 'Know it? Buzz in!');
         break;
       case 'answer':
-        if (amBuzzer) setStatus(`Type your answer: it starts with ${letter}.`, 'good');
+        if (amBuzzer) setStatus(`Type the whole answer: initials ${letter.split('').join(' ')}.`, 'good');
         else setStatus(`${v.buzzer?.name} (${TEAM_NAME[v.buzzer!.team]}) buzzed in…`);
         break;
       case 'result':

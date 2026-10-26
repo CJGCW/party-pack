@@ -1,14 +1,12 @@
 import type { GameInfo } from '../protocol';
-import { TRIVIA } from './trivia';
-
-/** Its question banks are Trivia's, so it has the same topics. */
+/** Each mode is a question bank in server/games/blockbusters. */
 export const BLOCKBUSTERS: GameInfo = {
   id: 'blockbusters',
   name: 'Blockbusters',
-  description: 'Two teams race across a board of letters. Answer a question that starts with a letter to take its hexagon; first to link their sides wins.',
+  description: "Two teams race across a board of initials. Answer a question whose answer has a hexagon's initials to take it; first to link their sides wins.",
   minPlayers: 2,
   maxPlayers: 8,
-  modes: TRIVIA.modes,
+  modes: [{ id: 'general', name: 'General Knowledge', description: 'Famous people, places, science and pop culture.' }],
 };
 
 /**
@@ -61,21 +59,30 @@ export function winningPath(owners: (Team | null)[], team: Team, cols: number, r
 }
 
 /**
- * The frame's four bands for a w x h board: Red's top and bottom, White's left and right. They
- * meet on 45° lines from the corners, so every point belongs to the edge it's nearest.
+ * Where a cell's centre is, for hexagons of radius `r` with the board's top-left corner at (0, 0).
+ * Odd columns sit half a hexagon lower. Works for the frame's cells outside the board too.
  */
-export function frameBands(w: number, h: number): Record<'top' | 'bottom' | 'left' | 'right', [number, number][]> {
-  const d = Math.min(w, h) / 2;
-  const a: [number, number] = [d, d];
-  const b: [number, number] = [w - d, d];
-  const c: [number, number] = [w - d, h - d];
-  const e: [number, number] = [d, h - d];
-  return {
-    top: [[0, 0], [w, 0], b, a],
-    right: [[w, 0], [w, h], c, b],
-    bottom: [[w, h], [0, h], e, c],
-    left: [[0, h], [0, 0], a, e],
-  };
+export function hexCentre(col: number, row: number, r: number) {
+  const hexH = Math.sqrt(3) * r;
+  const odd = Math.abs(col % 2) === 1;
+  return { x: r + col * 1.5 * r, y: hexH / 2 + row * hexH + (odd ? hexH / 2 : 0) };
+}
+
+/**
+ * The ring of hexagons round the board that makes its frame, as on the show: Red's rows above and
+ * below, White's columns down each side (corners included). They tile with the board's own
+ * hexagons, so the bands, and the line where red meets white, follow hexagon edges. Draw them
+ * clipped to the frame.
+ */
+export function frameCells(cols: number, rows: number): { col: number; row: number; team: Team }[] {
+  const cells: { col: number; row: number; team: Team }[] = [];
+  for (let col = -1; col <= cols; col++) {
+    for (let row = -2; row <= rows + 1; row++) {
+      if (col >= 0 && col < cols && row >= 0 && row < rows) continue;
+      cells.push({ col, row, team: col < 0 || col >= cols ? 'white' : 'red' });
+    }
+  }
+  return cells;
 }
 
 /**
@@ -88,7 +95,11 @@ export function frameBands(w: number, h: number): Record<'top' | 'bottom' | 'lef
  */
 export type BlockbustersPhase = 'pick' | 'question' | 'answer' | 'result' | 'boardEnd' | 'gameEnd';
 
+/** Text size for a hexagon's initials, as a share of its radius: smaller for two or three letters. */
+export const initialsScale = (initials: string) => [0.8, 0.8, 0.62, 0.46][Math.min(3, initials.length)];
+
 export interface BlockbustersHex {
+  /** The initials of the answer (one or more letters, e.g. "AE" for Albert Einstein). */
   letter: string;
   owner: Team | null;
 }
