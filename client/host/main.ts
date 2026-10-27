@@ -24,6 +24,7 @@ import { TossUpScene } from './scenes/TossUpScene';
 import { TriviaScene } from './scenes/TriviaScene';
 import { WoochaWareScene } from './scenes/WoochaWareScene';
 import { WordleRaceScene } from './scenes/WordleRaceScene';
+import { TV_ADDONS } from './addons';
 import { HEIGHT, WIDTH } from './theme';
 
 /** Host scene for each mini game, keyed by game id. Add new games here. */
@@ -67,6 +68,11 @@ game.scene.add(BlockbustersScene.KEY, BlockbustersScene, false);
 game.scene.add(ConcentrationScene.KEY, ConcentrationScene, false);
 game.scene.add(RackAttackScene.KEY, RackAttackScene, false);
 game.scene.add(WoochaWareScene.KEY, WoochaWareScene, false);
+// Machine-local add-on games (see ./addons).
+for (const addOn of TV_ADDONS) {
+  GAME_SCENES[addOn.gameId] = addOn.Scene.KEY;
+  game.scene.add(addOn.Scene.KEY, addOn.Scene, false);
+}
 game.events.once(Phaser.Core.Events.READY, () => {
   if (net.room) showSceneFor(net.room);
   else game.scene.start(LobbyScene.KEY);

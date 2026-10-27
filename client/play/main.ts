@@ -9,6 +9,7 @@ import { TOSS_UP } from '../../shared/games/tossUp';
 import { TRIVIA, TRIVIA_QUEST } from '../../shared/games/trivia';
 import { WOOCHAWARE } from '../../shared/games/woochaware';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
+import { PHONE_ADDONS } from './addons';
 import { h } from './dom';
 import { needsMotionPermission, requestMotionPermission } from './motion';
 import { createBlockbusters } from './games/blockbusters';
@@ -43,6 +44,8 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [RACK_ATTACK.id]: createRackAttack,
   [WOOCHAWARE.id]: createWoochaWare,
 };
+// Machine-local add-on games (see ./addons).
+for (const addOn of PHONE_ADDONS) CONTROLLERS[addOn.gameId] = addOn.create;
 
 const SESSION_KEY = 'party-pack-session';
 const JOINED_KEY = 'party-pack-joined';
