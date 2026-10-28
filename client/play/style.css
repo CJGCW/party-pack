@@ -597,6 +597,34 @@ button.secondary { background: var(--panel-light); }
   75% { transform: translateX(4px); }
 }
 
+/* ---------- Twenty-One ---------- */
+
+.to { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px); }
+.to-hand { padding: 12px 0 4px; }
+/* Your face-down cards: outlined, so you know the others can't see them. */
+.to-hole { box-shadow: 0 0 0 3px var(--muted), 0 2px 6px rgba(0, 0, 0, 0.35); }
+.to-note { text-align: center; font-size: 14px; color: var(--muted); }
+.to-note[hidden], .to-buttons[hidden] { display: none; }
+.to-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.to-buttons button { font-size: 26px; padding: 18px 6px; }
+.to-table { display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-bottom: 8px; }
+.to-seat {
+  display: grid;
+  grid-template-columns: 12px auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--panel);
+  font-size: 16px;
+}
+.to-seat.turn { box-shadow: 0 0 0 2px var(--accent); }
+.to-seat.bust { opacity: 0.6; }
+.to-dot { width: 12px; height: 12px; border-radius: 50%; }
+.to-cards { justify-self: end; letter-spacing: 0.04em; }
+.to-state { grid-column: 2 / 4; color: var(--muted); font-size: 14px; }
+
 /* ---------- Blockbusters ---------- */
 
 .bb { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px); }

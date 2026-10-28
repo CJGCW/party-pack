@@ -3,6 +3,7 @@ import type { RoomState } from '../../shared/protocol';
 import { CLUE_CREW } from '../../shared/games/clueCrew';
 import { BLOCKBUSTERS } from '../../shared/games/blockbusters';
 import { CONCENTRATION } from '../../shared/games/concentration';
+import { TWENTY_ONE } from '../../shared/games/twentyOne';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
@@ -22,6 +23,7 @@ import { SpinnerScene } from './scenes/SpinnerScene';
 import { StandingsScene } from './scenes/StandingsScene';
 import { TossUpScene } from './scenes/TossUpScene';
 import { TriviaScene } from './scenes/TriviaScene';
+import { TwentyOneScene } from './scenes/TwentyOneScene';
 import { WoochaWareScene } from './scenes/WoochaWareScene';
 import { WordleRaceScene } from './scenes/WordleRaceScene';
 import { TV_ADDONS } from './addons';
@@ -38,6 +40,7 @@ const GAME_SCENES: Record<string, string> = {
   [CLUE_CREW.id]: ClueCrewScene.KEY,
   [BLOCKBUSTERS.id]: BlockbustersScene.KEY,
   [CONCENTRATION.id]: ConcentrationScene.KEY,
+  [TWENTY_ONE.id]: TwentyOneScene.KEY,
   [RACK_ATTACK.id]: RackAttackScene.KEY,
   [WOOCHAWARE.id]: WoochaWareScene.KEY,
 };
@@ -66,6 +69,7 @@ game.scene.add(PickEmCoopScene.KEY, PickEmCoopScene, false);
 game.scene.add(ClueCrewScene.KEY, ClueCrewScene, false);
 game.scene.add(BlockbustersScene.KEY, BlockbustersScene, false);
 game.scene.add(ConcentrationScene.KEY, ConcentrationScene, false);
+game.scene.add(TwentyOneScene.KEY, TwentyOneScene, false);
 game.scene.add(RackAttackScene.KEY, RackAttackScene, false);
 game.scene.add(WoochaWareScene.KEY, WoochaWareScene, false);
 // Machine-local add-on games (see ./addons).

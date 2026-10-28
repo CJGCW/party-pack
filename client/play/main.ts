@@ -3,6 +3,7 @@ import { ANY_OPTION, MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_
 import { CLUE_CREW } from '../../shared/games/clueCrew';
 import { BLOCKBUSTERS } from '../../shared/games/blockbusters';
 import { CONCENTRATION } from '../../shared/games/concentration';
+import { TWENTY_ONE } from '../../shared/games/twentyOne';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
@@ -15,6 +16,7 @@ import { needsMotionPermission, requestMotionPermission } from './motion';
 import { createBlockbusters } from './games/blockbusters';
 import { createClueCrew } from './games/clueCrew';
 import { createConcentration } from './games/concentration';
+import { createTwentyOne } from './games/twentyOne';
 import { createPickEm } from './games/pickEm';
 import { createPickEmCoop } from './games/pickEmCoop';
 import { createRackAttack } from './games/rackAttack';
@@ -41,6 +43,7 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [CLUE_CREW.id]: createClueCrew,
   [BLOCKBUSTERS.id]: createBlockbusters,
   [CONCENTRATION.id]: createConcentration,
+  [TWENTY_ONE.id]: createTwentyOne,
   [RACK_ATTACK.id]: createRackAttack,
   [WOOCHAWARE.id]: createWoochaWare,
 };

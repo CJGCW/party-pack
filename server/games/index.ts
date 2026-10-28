@@ -8,12 +8,13 @@ import { pickEm, pickEmCoop } from './pickEm';
 import { tossUp } from './tossUp';
 import { rackAttack } from './rackAttack';
 import { trivia, triviaQuest } from './trivia';
+import { twentyOne } from './twentyOne';
 import { woochaware } from './woochaware';
 import { wordleRace } from './wordleRace';
 
 /** Every mini game in the pack. Add new games here. WoochaWare can be turned off in the config. */
 export const GAMES: MiniGameDefinition[] = [
-  wordleRace, tossUp, trivia, triviaQuest, pickEm, pickEmCoop, rackAttack, clueCrew, concentration, blockbusters,
+  wordleRace, tossUp, trivia, triviaQuest, pickEm, pickEmCoop, rackAttack, clueCrew, concentration, blockbusters, twentyOne,
   ...(config.woochaware ? [woochaware] : []),
   // Machine-local add-ons, if any (see ./addons).
   ...(await loadAddOns()),
