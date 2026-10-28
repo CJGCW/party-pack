@@ -262,6 +262,10 @@ button.secondary { background: var(--panel-light); }
   border-radius: 0 12px 12px 0;
   background: rgba(0, 0, 0, 0.18);
 }
+/* A game whose choices stand in for its toggle (one of them turns it off). */
+.group-options.titled { margin-left: 0; }
+.group-options.off { border-left-color: var(--panel-light); }
+.choice-title { font-size: 20px; }
 .segmented { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(0, 0, 0, 0.25); }
 .segmented button { flex: 1; padding: 10px 4px; font-size: 16px; background: transparent; box-shadow: none; opacity: 0.75; }
 .segmented button.on { background: var(--accent); color: var(--bg); opacity: 1; }
@@ -660,3 +664,23 @@ button.secondary { background: var(--panel-light); }
 .bb-buzz:disabled { opacity: 0.35; }
 /* The rest of a question not read out yet: takes its space, so the text doesn't jump as it grows. */
 .bb-unread { visibility: hidden; }
+
+/* The VIP's "Flag this question" box, pinned to the bottom in trivia-style games. */
+.flag-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.flag-bar[hidden] { display: none; }
+.flag-bar input { width: 18px; height: 18px; margin: 0; }
+body.has-flag-bar { padding-bottom: 56px; }

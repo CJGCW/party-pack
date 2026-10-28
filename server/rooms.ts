@@ -9,6 +9,7 @@ import {
   MIN_PUZZLES,
   MIN_ROUNDS,
   PLAYER_COLORS,
+  ANY_OPTION,
   type ClientToServerEvents,
   type PlayerInfo,
   type RoomState,
@@ -24,8 +25,9 @@ import { TRIVIA, TRIVIA_QUEST } from '../shared/games/trivia';
 import { STANDINGS_MS } from '../shared/timing';
 import { MICROGAMES, WOOCHAWARE, findMicrogame } from '../shared/games/woochaware';
 import { config } from './config';
+import { removeFlag, saveFlag, type FlagRecord } from './flags';
 import { GAMES, findGame } from './games';
-import type { MiniGame } from './games/MiniGame';
+import type { GameOptions, MiniGame, RoundResult } from './games/MiniGame';
 
 export interface SocketData {
   roomCode?: string;
@@ -92,12 +94,13 @@ const groupTopics = (group: Group) => {
 const GROUPED_GAMES = new Set(GROUPS.flatMap((g) => g.formats.flatMap((f) => [f.competitive.id, f.coop.id])));
 const PLAY_STYLES: PlayStyle[] = ['competitive', 'coop', 'both'];
 
-/** Every game/mode combination, each a possible slice on the wheel, plus one slice per group. */
+/** Every game/mode combination, each a possible slice on the wheel, plus one slice per group or game with lobby choices. */
 const WHEEL_ENTRIES: WheelEntry[] = GAMES.flatMap((g): WheelEntry[] => {
   const group = GROUPS.find((gr) => gr.id === g.info.id);
   if (group) {
     return [{ id: group.id, gameId: g.info.id, modeId: '', label: group.label, group: { topics: groupTopics(group), formats: groupFormats(group) } }];
   }
+  if (g.info.choices) return [{ id: g.info.id, gameId: g.info.id, modeId: '', label: g.info.name, choices: g.info.choices, afterRounds: g.info.afterRounds }];
   if (GROUPED_GAMES.has(g.info.id)) return [];
   return g.info.modes.map((m) => ({
     id: `${g.info.id}:${m.id}`,
@@ -126,6 +129,10 @@ export class Room {
     groups: Object.fromEntries(
       GROUPS.map((g) => [g.id, { style: 'both', topics: groupTopics(g).map((t) => t.id), formats: groupFormats(g).map((f) => f.id) }]),
     ),
+    // "Both"/"Any" for every choice to start with.
+    choices: Object.fromEntries(
+      WHEEL_ENTRIES.flatMap((e) => (e.choices ? [[e.id, Object.fromEntries(e.choices.map((c) => [c.id, ANY_OPTION]))]] : [])),
+    ),
     rounds: DEFAULT_ROUNDS,
     puzzlesPerRound: DEFAULT_PUZZLES,
   };
@@ -133,6 +140,11 @@ export class Room {
   private spin: { entries: WheelEntry[]; targetIndex: number; endsAt: number } | null = null;
   private resultsEndAt = 0;
   private standings: { previousScores: Record<string, number>; endsAt: number } | null = null;
+  /** The question on screen that the VIP can flag, saved as it would be; and whether it is flagged. */
+  private flaggable: { record: Omit<FlagRecord, 'flaggedAt'>; flagged: boolean } | null = null;
+  private nextFlagKey = 1;
+  /** The current game is one played after a round (not a wheel game). */
+  private afterRound = false;
   /** Scores when the current game started, so standings can show what changed. */
   private roundStartScores: Record<string, number> = {};
   private phaseTimer: NodeJS.Timeout | null = null;
@@ -249,6 +261,7 @@ export class Room {
     this.cancelCleanup();
     this.broadcastState();
     this.game?.syncPlayer(player.id);
+    socket.emit('game:flaggable', this.flaggableView());
     return player;
   }
 
@@ -296,7 +309,8 @@ export class Room {
     const validIds = new Set(WHEEL_ENTRIES.map((e) => e.id));
     const enabled = Array.isArray(next?.enabled) ? next.enabled.filter((id) => validIds.has(id)) : [];
     const rounds = Math.round(Number(next?.rounds));
-    if (enabled.length === 0) return 'Pick at least one game.';
+    // Games played after rounds don't count: there has to be something on the wheel.
+    if (!enabled.some((id) => !WHEEL_ENTRIES.find((e) => e.id === id)?.afterRounds)) return 'Pick at least one game.';
     if (!(rounds >= MIN_ROUNDS && rounds <= MAX_ROUNDS)) return `Rounds must be ${MIN_ROUNDS}-${MAX_ROUNDS}.`;
     // Older clients may not send this; keep the current value then.
     const puzzles = next?.puzzlesPerRound === undefined ? this.settings.puzzlesPerRound : Math.round(Number(next.puzzlesPerRound));
@@ -315,7 +329,19 @@ export class Room {
       if (formats.length === 0) return `Pick at least one ${g.label} format.`;
       groups[g.id] = { style, topics, formats };
     }
-    this.settings = { enabled: [...new Set(enabled)], groups, rounds, puzzlesPerRound: puzzles };
+    // Lobby choices: the same, an option id or "any" per row.
+    const choices: Record<string, Record<string, string>> = {};
+    for (const e of WHEEL_ENTRIES) {
+      if (!e.choices) continue;
+      choices[e.id] = Object.fromEntries(
+        e.choices.map((c) => {
+          const sent = next?.choices?.[e.id]?.[c.id];
+          const valid = sent === ANY_OPTION || c.options.some((o) => o.id === sent);
+          return [c.id, valid ? sent! : this.settings.choices[e.id][c.id]];
+        }),
+      );
+    }
+    this.settings = { enabled: [...new Set(enabled)], groups, choices, rounds, puzzlesPerRound: puzzles };
     this.broadcastState();
     return null;
   }
@@ -326,7 +352,7 @@ export class Room {
     const players = this.connectedCount();
     // Only games that suit this many players can go on the wheel.
     const pool = WHEEL_ENTRIES.filter((e) => {
-      if (!this.settings.enabled.includes(e.id)) return false;
+      if (!this.settings.enabled.includes(e.id) || e.afterRounds) return false;
       const info = findGame(e.gameId)!.info;
       return players >= info.minPlayers && players <= info.maxPlayers;
     });
@@ -348,7 +374,9 @@ export class Room {
     this.setPhaseTimer(SPIN_MS + SPIN_RESULT_MS, () => {
       const entry = this.spin!.entries[targetIndex];
       this.spin = null;
-      const { gameId, modeId, mixLists } = entry.group ? this.pickFromGroup(entry.id, entry.group) : { ...entry, mixLists: false };
+      const { gameId, modeId, mixLists } = entry.group
+        ? this.pickFromGroup(entry.id, entry.group)
+        : { ...entry, modeId: entry.choices ? this.pickFromChoices(entry.id, entry.choices) : entry.modeId, mixLists: false };
       const error = this.launchGame(gameId, modeId, undefined, mixLists);
       // E.g. players left during the spin so the game no longer fits: end the session.
       if (error) this.returnToLobby();
@@ -375,6 +403,16 @@ export class Room {
     return { gameId: coop ? format.coop : format.competitive, modeId: topic, mixLists: false };
   }
 
+  /** A slice with lobby choices came up: its mode is the chosen options (any "Both" picked at random), joined with '-'. */
+  private pickFromChoices(id: string, choices: NonNullable<WheelEntry['choices']>) {
+    return choices
+      .map((c) => {
+        const value = this.settings.choices[id]?.[c.id] ?? ANY_OPTION;
+        return value === ANY_OPTION ? pick(c.options).id : value;
+      })
+      .join('-');
+  }
+
   /** Debug mode only: play one specific game (or, in WoochaWare debug, one microgame). */
   startGame(gameId: string, modeId?: string, microgameId?: string): string | null {
     if (config.woochaDebug) {
@@ -387,7 +425,7 @@ export class Room {
     return this.launchGame(gameId, modeId, config.woochaDebug ? microgameId : undefined);
   }
 
-  private launchGame(gameId: string, modeId?: string, microgameId?: string, mixLists = false): string | null {
+  private launchGame(gameId: string, modeId?: string, microgameId?: string, mixLists = false, afterRound?: Pick<GameOptions, 'choices' | 'roundResult'>): string | null {
     const def = findGame(gameId);
     if (!def) return 'Unknown game.';
     const mode = modeId ? def.info.modes.find((m) => m.id === modeId) : def.info.modes[0];
@@ -397,7 +435,10 @@ export class Room {
     if (count > def.info.maxPlayers) return `${def.info.name} allows at most ${def.info.maxPlayers} players.`;
 
     this.gameId = gameId;
-    this.roundStartScores = Object.fromEntries([...this.players.values()].map((p) => [p.id, p.score]));
+    this.setFlaggable(null);
+    // A game played after a round leaves the round's starting scores, so the standings still show the round.
+    this.afterRound = !!afterRound;
+    if (!afterRound) this.roundStartScores = Object.fromEntries([...this.players.values()].map((p) => [p.id, p.score]));
     const game = def.create(
       {
         players: () => [...this.players.values()].map(publicPlayer),
@@ -415,9 +456,14 @@ export class Room {
           // Only end the game that is still current, in case it already ended.
           if (this.game === game) this.gameFinished();
         },
+        showingQuestion: (question) => {
+          if (this.game !== game) return;
+          const id = `${this.code}-${Date.now().toString(36)}-${this.nextFlagKey++}`;
+          this.setFlaggable({ id, game: def.info.name, mode: mode.name, ...question });
+        },
       },
       mode.id,
-      { puzzles: this.settings.puzzlesPerRound, microgame: microgameId, mixLists },
+      { puzzles: this.settings.puzzlesPerRound, microgame: microgameId, mixLists, ...afterRound },
     );
     this.game = game;
     this.broadcastState();
@@ -429,8 +475,36 @@ export class Room {
     this.game?.dispose();
     this.game = null;
     this.gameId = null;
-    if (this.session) this.showStandings();
-    else this.returnToLobby();
+    this.setFlaggable(null);
+    if (!this.session) return this.returnToLobby();
+    // After a wheel game, any game that's played after rounds; then the standings.
+    if (!this.afterRound && this.startAfterRound()) return;
+    this.showStandings();
+  }
+
+  /** Starts the game played after rounds, if one is on and there's something to play for. */
+  private startAfterRound() {
+    const entry = WHEEL_ENTRIES.find((e) => e.afterRounds && this.settings.enabled.includes(e.id));
+    if (!entry) return false;
+    const def = findGame(entry.gameId)!;
+    const options = { puzzles: this.settings.puzzlesPerRound, choices: this.settings.choices[entry.id], roundResult: this.roundResult() };
+    if (def.skipAfterRound?.(options)) return false;
+    return this.launchGame(entry.gameId, undefined, undefined, false, options) === null;
+  }
+
+  /**
+   * Who won and lost the round just played, by points from it: the most (if anyone scored), and
+   * the fewest (unless everyone tied). Only players still here.
+   */
+  private roundResult(): RoundResult {
+    const gains = [...this.players.values()].filter((p) => p.connected).map((p) => ({ id: p.id, gain: p.score - (this.roundStartScores[p.id] ?? 0) }));
+    if (!gains.length) return { winners: [], losers: [] };
+    const best = Math.max(...gains.map((g) => g.gain));
+    const worst = Math.min(...gains.map((g) => g.gain));
+    return {
+      winners: best > 0 ? gains.filter((g) => g.gain === best).map((g) => g.id) : [],
+      losers: worst < best ? gains.filter((g) => g.gain === worst).map((g) => g.id) : [],
+    };
   }
 
   /** Running totals after a round, animated on the TV, then the next spin or the final results. */
@@ -452,12 +526,40 @@ export class Room {
     this.broadcastState();
   }
 
+  // ---- Flagging questions for review ------------------------------------------
+
+  private flaggableView() {
+    return this.flaggable ? { key: this.flaggable.record.id, flagged: this.flaggable.flagged } : null;
+  }
+
+  /** A new question on screen (or none): tell the phones, so the VIP's can offer to flag it. */
+  private setFlaggable(record: Omit<FlagRecord, 'flaggedAt'> | null) {
+    if (!record && !this.flaggable) return;
+    this.flaggable = record ? { record, flagged: false } : null;
+    this.io.to(this.playerChannel).emit('game:flaggable', this.flaggableView());
+  }
+
+  /** VIP only: flags (or unflags) the question on screen, saving it for review (or taking it out). */
+  flagQuestion(socket: ClientSocket, key: string, flagged: boolean): string | null {
+    if (!this.players.get(socket.data.playerId ?? '')?.isVip) return 'Only the VIP can flag questions.';
+    const current = this.flaggable;
+    if (!current || current.record.id !== key) return 'That question has gone.';
+    if (current.flagged !== !!flagged) {
+      if (flagged) saveFlag({ ...current.record, flaggedAt: new Date().toISOString() });
+      else removeFlag(key);
+      current.flagged = !!flagged;
+    }
+    this.io.to(this.playerChannel).emit('game:flaggable', this.flaggableView());
+    return null;
+  }
+
   /** Abandons whatever is running (game, spin, session) and goes back to the lobby. */
   returnToLobby() {
     this.clearPhaseTimer();
     this.game?.dispose();
     this.game = null;
     this.gameId = null;
+    this.setFlaggable(null);
     this.session = null;
     this.spin = null;
     this.standings = null;

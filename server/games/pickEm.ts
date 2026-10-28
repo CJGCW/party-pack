@@ -20,7 +20,7 @@ import {
 } from '../../shared/games/pickEm';
 import { PUZZLE_POINTS, puzzlePoints } from '../../shared/scoring';
 import { PUZZLE_RESULT_MS, ROUND_SCORES_MS } from '../../shared/timing';
-import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
+import type { GameContext, MiniGame, MiniGameDefinition, QuestionForReview } from './MiniGame';
 import { loadQuestionFile, shuffle, type Question } from './questions';
 
 /** The question alone, before the options (or the text box) appear. */
@@ -50,6 +50,12 @@ const BANKS = new Map<string, Question[]>(
 
 /** Dealt from a shuffled deck per bank, so lists don't repeat until all are used. */
 const decks = new Map<string, Question[]>();
+/** A list as saved for review if it's flagged: typed lists' answers are their first (shown) forms. */
+function forReview(q: Question): QuestionForReview {
+  const answers = q.list.length ? q.list.map((forms) => forms[0]) : q.correct;
+  return { banner: q.film, question: q.question, answers, wrong: q.list.length ? undefined : q.wrong };
+}
+
 function dealQuestion(bankId: string): Question {
   let deck = decks.get(bankId);
   if (!deck || deck.length === 0) {
@@ -163,6 +169,7 @@ class PickEm implements MiniGame {
   private startQuestion(index: number) {
     this.questionIndex = index;
     this.question = dealQuestion(this.bankId);
+    this.ctx.showingQuestion(forReview(this.question));
     this.options = shuffle([...this.question.correct, ...this.question.wrong]);
     this.correctIndices = this.options.flatMap((o, i) => (this.question.correct.includes(o) ? [i] : []));
     this.picks.clear();
@@ -419,6 +426,7 @@ class PickEmCoop implements MiniGame {
   private startQuestion(index: number) {
     this.questionIndex = index;
     this.question = dealQuestion(this.bankId);
+    this.ctx.showingQuestion(forReview(this.question));
     this.options = shuffle([...this.question.correct, ...this.question.wrong]);
     this.foundBy.clear();
     this.wrongPicks.clear();

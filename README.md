@@ -51,6 +51,12 @@ has only one puzzle), then a standings screen counts the running totals up and r
 as they overtake each other (4s),
 before the next spin or the final results. These lengths are in `shared/timing.ts`. Press **Esc** on the host screen to abandon a session.
 
+In the question games (Trivia, Team Trivia, Pick 'Em, Team Pick 'Em and Blockbusters) the VIP's phone
+has a **Flag this question** box. Ticking it saves the question on screen, with its answers, game and
+topic, to `flagged-questions.jsonl` in the project folder (one JSON object per line; git-ignored) for
+review; unticking it takes it back out. A game reports each question with `ctx.showingQuestion(...)`,
+and the answers only go to that file, never to the phones.
+
 ### Debug mode
 
 For testing a specific game, debug mode replaces the wheel with the old picker: the VIP (or
@@ -152,6 +158,7 @@ picks the ones it can't.
 server/            Node + Express + Socket.IO (authoritative game logic)
   index.ts         HTTP/socket entry point; serves the client through Vite in dev
   rooms.ts         Rooms, players, VIP, reconnects, starting/ending games
+  flags.ts         Questions the VIP flagged for review (flagged-questions.jsonl)
   games/           One file per mini game, plus the registry (games/index.ts)
 shared/            Types shared by server and clients
   protocol.ts      Socket events, room/player types

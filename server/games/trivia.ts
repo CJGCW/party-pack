@@ -128,6 +128,7 @@ class Trivia implements MiniGame {
       return;
     }
     this.question = dealQuestion(this.bankId);
+    this.ctx.showingQuestion({ banner: this.question.film, question: this.question.question, answers: this.question.correct, wrong: this.question.wrong });
     this.answers = shuffle([...this.question.correct, ...this.question.wrong]);
     this.correctIndices = this.answers.flatMap((a, i) => (this.question.correct.includes(a) ? [i] : []));
     this.picks.clear();

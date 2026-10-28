@@ -94,6 +94,14 @@ export class LobbyScene extends Phaser.Scene {
 
     // Groups say which version, how many topics, and the format if only one: "Trivia (co-op, 3 topics, Pick 'Em lists)".
     const groupNote = (e: WheelEntry) => {
+      // Lobby choices: what was picked in each row, e.g. "(Easy / Hard)".
+      if (e.choices) {
+        const picked = e.choices.map((c) => {
+          const value = state.settings.choices?.[e.id]?.[c.id];
+          return c.options.find((o) => o.id === value)?.label ?? c.options.map((o) => o.label).join(' / ');
+        });
+        return `${e.label} (${picked.join(', ')})`;
+      }
       const settings = state.settings.groups[e.id];
       if (!settings) return e.label;
       const hasCoop = e.group?.formats.some((f) => f.coop !== f.competitive) ?? false;
@@ -105,14 +113,18 @@ export class LobbyScene extends Phaser.Scene {
       }
       return notes.length ? `${e.label} (${notes.join(', ')})` : e.label;
     };
-    const labels = state.wheelEntries.filter((e) => state.settings.enabled.includes(e.id)).map(groupNote);
+    const chosen = state.wheelEntries.filter((e) => state.settings.enabled.includes(e.id));
+    const labels = chosen.filter((e) => !e.afterRounds).map(groupNote);
+    // Games played after every round, rather than on the wheel.
+    const after = chosen.filter((e) => e.afterRounds).map(groupNote);
     const rounds = state.settings.rounds;
-    card.add(
-      text(this, -210, -28, `On the wheel: ${labels.join(',  ')}`, 28, COLORS.text, {
-        wordWrap: { width: 760 },
-        align: 'center',
-      }),
-    );
+    const games = text(this, -210, -28, `On the wheel: ${labels.join(',  ')}${after.length ? `\nAfter each round: ${after.join(',  ')}` : ''}`, 28, COLORS.text, {
+      wordWrap: { width: 760 },
+      align: 'center',
+    });
+    // A long list shrinks to fit above the rounds line.
+    for (let size = 26; games.height > 84 && size >= 16; size -= 2) games.setFontSize(size);
+    card.add(games);
     const puzzles = state.settings.puzzlesPerRound;
     const summary = `${rounds} ${rounds === 1 ? 'round' : 'rounds'}  ·  ${puzzles} ${puzzles === 1 ? 'puzzle' : 'puzzles'} each`;
     card.add(text(this, -210, 38, summary, 34, COLORS.accent, { fontStyle: '700' }));

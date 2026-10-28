@@ -19,7 +19,8 @@ import type { GameContext, MiniGame, MiniGameDefinition } from './MiniGame';
 import { matchAnswer } from './pickEm';
 import { loadQuestionFile, shuffle, type Question } from './questions';
 
-const PICK_MS = 15_000;
+/** Time for the team in control to pick a hexagon (then one is picked for them). */
+const PICK_MS = 30_000;
 /** Reading pace, about as fast as someone reading aloud. */
 const CHAR_MS = 60;
 /** Time left to buzz once the question has been read in full. */
@@ -193,15 +194,26 @@ class Blockbusters implements MiniGame {
     this.askQuestion();
   }
 
-  /** A question whose answer has the hexagon's initials, preferring ones not yet asked. */
+  /**
+   * A question whose answer has the hexagon's initials, never one already asked. If those
+   * initials have run out of questions, the hexagon gets new initials (not already on the board)
+   * that still have some.
+   */
   private askQuestion() {
-    const letter = this.hexes[this.current!].letter;
-    const candidates = this.byLetter.get(letter) ?? [];
-    const fresh = candidates.filter((q) => !this.asked.has(q));
-    const question = shuffle([...(fresh.length ? fresh : candidates)])[0] ?? null;
+    const hex = this.hexes[this.current!];
+    const unasked = (letter: string) => (this.byLetter.get(letter) ?? []).filter((q) => !this.asked.has(q));
+    if (!unasked(hex.letter).length) {
+      const onBoard = new Set(this.hexes.map((h) => h.letter));
+      const spare = [...this.byLetter.keys()].filter((l) => !onBoard.has(l) && unasked(l).length);
+      if (spare.length) hex.letter = spare[Math.floor(Math.random() * spare.length)];
+    }
+    // Every question in the bank asked (a very long game): reuse them rather than stop.
+    const fresh = unasked(hex.letter);
+    const question = shuffle([...(fresh.length ? fresh : (this.byLetter.get(hex.letter) ?? []))])[0] ?? null;
     if (!question) return this.startPick();
     this.asked.add(question);
     this.question = question;
+    this.ctx.showingQuestion({ banner: hex.letter, question: question.question, answers: question.correct });
     this.questionsOnHex++;
     this.buzzer = null;
     this.correct = null;

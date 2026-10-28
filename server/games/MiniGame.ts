@@ -9,6 +9,20 @@ export interface GameContext {
   addScore(playerId: string, points: number): void;
   /** Ends the game and returns everyone to the lobby. */
   finish(): void;
+  /**
+   * Trivia-style games: a question is now on screen (it stays current until the next one), so
+   * the VIP can flag it for review. The answers only go to the review file, never to phones.
+   */
+  showingQuestion(question: QuestionForReview): void;
+}
+
+/** A question as saved for review if it's flagged. */
+export interface QuestionForReview {
+  /** E.g. the film or topic banner, or Blockbusters' initials. */
+  banner?: string;
+  question: string;
+  answers: string[];
+  wrong?: string[];
 }
 
 export interface MiniGame {
@@ -29,10 +43,22 @@ export interface GameOptions {
   microgame?: string;
   /** Trivia: mix Pick 'Em lists in with the questions. */
   mixLists?: boolean;
+  /** Games with lobby choices played after rounds: the choices as picked (choice id → option id or ANY_OPTION). */
+  choices?: Record<string, string>;
+  /** Games played after rounds: who won and who lost the round just played. */
+  roundResult?: RoundResult;
+}
+
+/** The round just played: the players with the most points from it, and those with the fewest. */
+export interface RoundResult {
+  winners: string[];
+  losers: string[];
 }
 
 export interface MiniGameDefinition {
   info: GameInfo;
   /** `modeId` is always one of `info.modes`. */
   create(ctx: GameContext, modeId: string, options: GameOptions): MiniGame;
+  /** Games played after rounds: whether there's nothing to play for this round (e.g. nobody won), so it's skipped. */
+  skipAfterRound?(options: GameOptions): boolean;
 }

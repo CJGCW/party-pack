@@ -24,7 +24,29 @@ export interface GameInfo {
   maxPlayers: number;
   /** Ways to play, e.g. difficulty. The first one is the default. */
   modes: GameMode[];
+  /**
+   * Choices the VIP makes in the lobby instead of one wheel slice per mode: the game gets a
+   * single slice, and when it comes up its mode is the chosen option ids joined with '-' (so
+   * there must be a mode for every combination). "Both"/"Any" picks one at random each time.
+   */
+  choices?: GameChoice[];
+  /**
+   * Not on the wheel: when it's on in the lobby, it's played after every wheel game, with that
+   * round's winners and losers (see GameOptions.roundResult).
+   */
+  afterRounds?: boolean;
 }
+
+/** One row of a game's lobby choices, e.g. Easy / Hard. */
+export interface GameChoice {
+  id: string;
+  options: { id: string; label: string }[];
+  /** Adds a "Neither"/"None" option, which takes the game off the wheel (and hides the rows after it). */
+  canTurnOff?: boolean;
+}
+
+/** A choice row's value: one of its option ids, or this for "Both"/"Any". */
+export const ANY_OPTION = 'any';
 
 export interface PlayerInfo {
   id: string;
@@ -59,6 +81,10 @@ export interface WheelEntry {
    * `settings.groups[id]` picks competitive or co-op, and which topics and formats can come up.
    */
   group?: { topics: { id: string; label: string }[]; formats: GroupFormat[] };
+  /** A game with lobby choices (one slice for all its modes); `settings.choices[id]` has the VIP's picks. */
+  choices?: GameChoice[];
+  /** Played after every round instead of being on the wheel (GameInfo.afterRounds). */
+  afterRounds?: boolean;
 }
 
 /**
@@ -91,6 +117,8 @@ export interface SessionSettings {
   enabled: string[];
   /** Per group slice (keyed by its entry id). Missing ones are left as they are. */
   groups: Record<string, GroupSettings>;
+  /** Per slice with choices (keyed by its entry id): choice id → option id or ANY_OPTION. */
+  choices: Record<string, Record<string, string>>;
   rounds: number;
   /** How many puzzles each game has, whichever game the wheel picks. */
   puzzlesPerRound: number;
@@ -163,10 +191,20 @@ export interface ClientToServerEvents {
   'room:backToLobby': () => void;
   /** Mini-game specific input from a phone. */
   'game:input': (input: unknown) => void;
+  /** VIP: flag (or unflag) the question on screen for review. */
+  'game:flag': (req: { key: string; flagged: boolean }, ack: Ack) => void;
+}
+
+/** The question on screen in a trivia-style game, which the VIP can flag for review. */
+export interface FlaggableQuestion {
+  key: string;
+  flagged: boolean;
 }
 
 export interface ServerToClientEvents {
   'room:state': (state: RoomState) => void;
+  /** The question on screen that can be flagged, or null when there isn't one. */
+  'game:flaggable': (question: FlaggableQuestion | null) => void;
   'room:closed': (reason: string) => void;
   /** This player joined again from another tab or device, so this connection is closed. */
   'player:replaced': () => void;

@@ -1,5 +1,5 @@
 import { io, type Socket } from 'socket.io-client';
-import { MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type GroupSettings, type RoomState, type PlayStyle, type WheelEntry, type ServerToClientEvents } from '../../shared/protocol';
+import { ANY_OPTION, MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type FlaggableQuestion, type GroupSettings, type RoomState, type PlayStyle, type WheelEntry, type ServerToClientEvents } from '../../shared/protocol';
 import { CLUE_CREW } from '../../shared/games/clueCrew';
 import { BLOCKBUSTERS } from '../../shared/games/blockbusters';
 import { CONCENTRATION } from '../../shared/games/concentration';
@@ -94,7 +94,34 @@ socket.on('connect', () => {
 socket.on('room:state', (state) => {
   room = state;
   render();
+  renderFlag();
 });
+
+// ---- Flagging questions: in trivia-style games, the VIP can flag the question on screen for review. ----
+let flaggable: FlaggableQuestion | null = null;
+const flagBox = h('input', { type: 'checkbox' }) as HTMLInputElement;
+const flagBar = h('label', { class: 'flag-bar', hidden: true }, flagBox, 'Flag this question');
+document.body.append(flagBar);
+flagBox.addEventListener('change', () => {
+  if (!flaggable) return;
+  const wanted = flagBox.checked;
+  socket.emit('game:flag', { key: flaggable.key, flagged: wanted }, (res) => {
+    // Didn't take (e.g. the next question already came up): show what the server has.
+    if (!res.ok) flagBox.checked = !wanted;
+  });
+});
+socket.on('game:flaggable', (question) => {
+  flaggable = question;
+  renderFlag();
+});
+/** Shown to the VIP while there's a question to flag. */
+function renderFlag() {
+  const isVip = !!room?.players.find((p) => p.id === playerId)?.isVip;
+  const show = !!flaggable && isVip && room?.phase === 'game';
+  flagBar.hidden = !show;
+  document.body.classList.toggle('has-flag-bar', show);
+  if (flaggable) flagBox.checked = flaggable.flagged;
+}
 
 const sendInput = (input: unknown) => socket.emit('game:input', input);
 const uiFor = (view: unknown, gameId: string) => (view as { asGame?: string } | null)?.asGame ?? gameId;
@@ -117,6 +144,8 @@ socket.on('room:closed', (reason) => {
   joined = null;
   playerId = null;
   room = null;
+  flaggable = null;
+  renderFlag();
   localStorage.removeItem(JOINED_KEY);
   renderJoin(reason);
 });
@@ -261,6 +290,8 @@ function wheelSettings(isVip: boolean): Node[] {
 
   const toggles = wheelEntries.flatMap((entry) => {
     const on = settings.enabled.includes(entry.id);
+    // A game whose choices include "Neither" has no toggle: that choice turns it off.
+    if (entry.choices?.some((c) => c.canTurnOff)) return [choiceOptions(entry, on, true)];
     const toggle = h(
       'button',
       {
@@ -274,9 +305,48 @@ function wheelSettings(isVip: boolean): Node[] {
       h('span', { class: 'check' }, on ? '✓' : ''),
       entry.label,
     );
-    const options = entry.group && on ? groupOptions(entry) : null;
+    const options = !on ? null : entry.group ? groupOptions(entry) : entry.choices ? choiceOptions(entry, on, false) : null;
     return options ? [toggle, options] : [toggle];
   });
+
+  /**
+   * A game's lobby choices (e.g. Easy / Hard / Both): a row of buttons each. With
+   * `titled`, it stands in for the toggle, so it has the game's name, and a row with "Neither"
+   * turns the game off (hiding the rows after it); picking anything else turns it back on.
+   */
+  function choiceOptions(entry: WheelEntry, on: boolean, titled: boolean) {
+    const values = settings.choices[entry.id] ?? {};
+    const choose = (choiceId: string, value: string) =>
+      save({
+        ...settings,
+        enabled: on ? settings.enabled : [...settings.enabled, entry.id],
+        choices: { ...settings.choices, [entry.id]: { ...values, [choiceId]: value } },
+      });
+    const turnOff = () => save({ ...settings, enabled: settings.enabled.filter((id) => id !== entry.id) });
+    const button = (label: string, chosen: boolean, onclick: () => void) => h('button', { class: chosen ? 'on' : '', disabled: !isVip, onclick }, label);
+    const rows: Node[] = [];
+    for (const choice of entry.choices ?? []) {
+      const value = values[choice.id] ?? ANY_OPTION;
+      const two = choice.options.length === 2;
+      rows.push(
+        h(
+          'div',
+          { class: 'segmented' },
+          ...choice.options.map((o) => button(o.label, on && value === o.id, () => choose(choice.id, o.id))),
+          button(two ? 'Both' : 'Any', on && value === ANY_OPTION, () => choose(choice.id, ANY_OPTION)),
+          !!choice.canTurnOff && button(two ? 'Neither' : 'None', !on, turnOff),
+        ),
+      );
+      if (choice.canTurnOff && !on) break;
+    }
+    return h(
+      'div',
+      { class: `group-options${titled ? ' titled' : ''}${on ? '' : ' off'}` },
+      titled && h('div', { class: 'choice-title' }, entry.label),
+      !!entry.afterRounds && h('div', { class: 'muted' }, 'Not on the wheel: played after every round.'),
+      ...rows,
+    );
+  }
 
   /** Under a group's toggle (e.g. Trivia): competitive, co-op or both, and which topics if there's a choice. */
   function groupOptions(entry: WheelEntry) {

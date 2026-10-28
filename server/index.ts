@@ -105,6 +105,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('game:input', (input) => roomOf()?.handleInput(socket, input));
+  socket.on('game:flag', ({ key, flagged }, ack) => {
+    const room = roomOf();
+    const error = room ? room.flagQuestion(socket, String(key), !!flagged) : 'Not in a room.';
+    ack(error ? { ok: false, error } : { ok: true });
+  });
 
   socket.on('disconnect', () => roomOf()?.handleDisconnect(socket));
 });

@@ -6,3 +6,6 @@ dist/
 
 # Machine-local add-ons (see server/games/addons.ts)
 /local/
+
+# Questions the VIP flagged for review (see server/flags.ts)
+flagged-questions.jsonl
