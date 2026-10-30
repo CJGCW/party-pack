@@ -828,6 +828,35 @@ body.gave-up #app { opacity: 0.4; pointer-events: none; filter: grayscale(0.5); 
   background: #e8e8f0;
 }
 .pd-hint { text-align: center; color: var(--muted); font-size: 17px; }
+
+/* ---------- Spiral Shot (reuses Peg Drop's layout) ---------- */
+
+.ss-dial {
+  position: relative;
+  width: min(280px, 72vw);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--panel-light), var(--empty) 72%);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.08);
+  touch-action: none;
+}
+.ss-arrow {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  width: 16px;
+  height: 46%;
+  margin-left: -8px;
+  border-radius: 8px;
+  transform-origin: 50% 100%;
+  background: linear-gradient(rgba(255, 209, 102, 0.2), var(--accent));
+}
+.ss-ball { position: absolute; border-radius: 50%; box-shadow: inset -6px -8px 0 rgba(0, 0, 0, 0.22), inset 6px 6px 0 rgba(255, 255, 255, 0.35); }
+.ss-current { left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border: 4px solid #140f2e; }
+.ss-next { right: 8%; bottom: 8%; width: 34px; height: 34px; }
+.ss-swap { background: var(--accent); color: var(--bg); }
+.pd-buttons .ss-swap { grid-column: 2; }
 .pd-buttons { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: auto; padding-bottom: 8px; }
 .pd-buttons .pd-fire { grid-column: 2; }
 .pd-buttons button { font-size: 22px; padding: 22px 6px; }

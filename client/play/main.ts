@@ -8,6 +8,7 @@ import { TWENTY_ONE } from '../../shared/games/twentyOne';
 import { LONGEST_WORD } from '../../shared/games/longestWord';
 import { MAZE_RACE } from '../../shared/games/mazeRace';
 import { PEG_DROP } from '../../shared/games/pegDrop';
+import { SPIRAL_SHOT } from '../../shared/games/spiralShot';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
@@ -27,6 +28,7 @@ import { createTwentyOne } from './games/twentyOne';
 import { createLongestWord } from './games/longestWord';
 import { createMazeRace } from './games/mazeRace';
 import { createPegDrop } from './games/pegDrop';
+import { createSpiralShot } from './games/spiralShot';
 import { createPickEm } from './games/pickEm';
 import { createPickEmCoop } from './games/pickEmCoop';
 import { createRackAttack } from './games/rackAttack';
@@ -58,6 +60,7 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [LONGEST_WORD.id]: createLongestWord,
   [PEG_DROP.id]: createPegDrop,
   [MAZE_RACE.id]: createMazeRace,
+  [SPIRAL_SHOT.id]: createSpiralShot,
   [EXTERNAL.id]: createExternal,
   [WOOCHAWARE.id]: createWoochaWare,
 };
@@ -310,7 +313,7 @@ function renderLobby() {
     h('h2', {}, "You're in!"),
   ];
   // After a refresh the permission has to be asked for again, from a tap (WoochaWare and Peg Drop use it).
-  if (needsMotionPermission() && room!.games.some((g) => g.id === WOOCHAWARE.id || g.id === PEG_DROP.id)) {
+  if (needsMotionPermission() && room!.games.some((g) => [WOOCHAWARE.id, PEG_DROP.id, SPIRAL_SHOT.id].includes(g.id))) {
     children.push(
       h(
         'button',
