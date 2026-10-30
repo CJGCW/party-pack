@@ -9,6 +9,7 @@ import { LONGEST_WORD } from '../../shared/games/longestWord';
 import { MAZE_RACE } from '../../shared/games/mazeRace';
 import { PEG_DROP } from '../../shared/games/pegDrop';
 import { SPIRAL_SHOT } from '../../shared/games/spiralShot';
+import { STAR_SPLAT } from '../../shared/games/starSplat';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
@@ -25,6 +26,7 @@ import { LongestWordScene } from './scenes/LongestWordScene';
 import { MazeRaceScene } from './scenes/MazeRaceScene';
 import { PegDropScene } from './scenes/PegDropScene';
 import { SpiralShotScene } from './scenes/SpiralShotScene';
+import { StarSplatScene } from './scenes/StarSplatScene';
 import { PickEmCoopScene } from './scenes/PickEmCoopScene';
 import { PickEmScene } from './scenes/PickEmScene';
 import { RackAttackScene } from './scenes/RackAttackScene';
@@ -56,6 +58,7 @@ const GAME_SCENES: Record<string, string> = {
   [PEG_DROP.id]: PegDropScene.KEY,
   [MAZE_RACE.id]: MazeRaceScene.KEY,
   [SPIRAL_SHOT.id]: SpiralShotScene.KEY,
+  [STAR_SPLAT.id]: StarSplatScene.KEY,
   [EXTERNAL.id]: ExternalScene.KEY,
   [WOOCHAWARE.id]: WoochaWareScene.KEY,
 };
@@ -90,6 +93,7 @@ game.scene.add(LongestWordScene.KEY, LongestWordScene, false);
 game.scene.add(PegDropScene.KEY, PegDropScene, false);
 game.scene.add(MazeRaceScene.KEY, MazeRaceScene, false);
 game.scene.add(SpiralShotScene.KEY, SpiralShotScene, false);
+game.scene.add(StarSplatScene.KEY, StarSplatScene, false);
 game.scene.add(ExternalScene.KEY, ExternalScene, false);
 game.scene.add(WoochaWareScene.KEY, WoochaWareScene, false);
 // Machine-local add-on games (see ./addons).

@@ -9,6 +9,7 @@ import { LONGEST_WORD } from '../../shared/games/longestWord';
 import { MAZE_RACE } from '../../shared/games/mazeRace';
 import { PEG_DROP } from '../../shared/games/pegDrop';
 import { SPIRAL_SHOT } from '../../shared/games/spiralShot';
+import { STAR_SPLAT } from '../../shared/games/starSplat';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
@@ -29,6 +30,7 @@ import { createLongestWord } from './games/longestWord';
 import { createMazeRace } from './games/mazeRace';
 import { createPegDrop } from './games/pegDrop';
 import { createSpiralShot } from './games/spiralShot';
+import { createStarSplat } from './games/starSplat';
 import { createPickEm } from './games/pickEm';
 import { createPickEmCoop } from './games/pickEmCoop';
 import { createRackAttack } from './games/rackAttack';
@@ -61,6 +63,7 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [PEG_DROP.id]: createPegDrop,
   [MAZE_RACE.id]: createMazeRace,
   [SPIRAL_SHOT.id]: createSpiralShot,
+  [STAR_SPLAT.id]: createStarSplat,
   [EXTERNAL.id]: createExternal,
   [WOOCHAWARE.id]: createWoochaWare,
 };

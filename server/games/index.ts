@@ -9,6 +9,7 @@ import { longestWord } from './longestWord';
 import { mazeRace } from './mazeRace';
 import { pegDrop } from './pegDrop';
 import { spiralShot } from './spiralShot';
+import { starSplat } from './starSplat';
 import { pickEm, pickEmCoop } from './pickEm';
 import { tossUp } from './tossUp';
 import { rackAttack } from './rackAttack';
@@ -19,7 +20,7 @@ import { wordleRace } from './wordleRace';
 
 /** Every mini game in the pack. Add new games here. WoochaWare can be turned off in the config. */
 export const GAMES: MiniGameDefinition[] = [
-  wordleRace, tossUp, trivia, triviaQuest, pickEm, pickEmCoop, rackAttack, clueCrew, concentration, blockbusters, twentyOne, longestWord, pegDrop, mazeRace, spiralShot,
+  wordleRace, tossUp, trivia, triviaQuest, pickEm, pickEmCoop, rackAttack, clueCrew, concentration, blockbusters, twentyOne, longestWord, pegDrop, mazeRace, spiralShot, starSplat,
   ...(config.woochaware ? [woochaware] : []),
   // Machine-local add-ons, if any (see ./addons).
   ...(await loadAddOns()),
