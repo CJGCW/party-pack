@@ -129,6 +129,8 @@ class Blockbusters implements MiniGame {
   private questionsOnHex = 0;
   private buzzer: string | null = null;
   private lockedOut = new Set<Team>();
+  /** Players who gave up on this question: once a whole team has, it's out of the question. */
+  private passed = new Set<string>();
   private correct: boolean | null = null;
   private winner: Team | null = null;
   private path: number[] = [];
@@ -218,6 +220,7 @@ class Blockbusters implements MiniGame {
     this.buzzer = null;
     this.correct = null;
     this.lockedOut.clear();
+    this.passed.clear();
     this.openBuzzers();
   }
 
@@ -269,7 +272,7 @@ class Blockbusters implements MiniGame {
       if (Number.isInteger(input.index) && hex && !hex.owner) this.choose(input.index);
       return;
     }
-    if (this.phase === 'question' && input.type === 'buzz' && !this.lockedOut.has(team)) {
+    if (this.phase === 'question' && input.type === 'buzz' && !this.lockedOut.has(team) && !this.passed.has(playerId)) {
       this.buzzer = playerId;
       this.stopReading();
       this.setPhase('answer', ANSWER_MS, () => this.answer(null));
@@ -278,6 +281,31 @@ class Blockbusters implements MiniGame {
     if (this.phase === 'answer' && input.type === 'answer' && playerId === this.buzzer && typeof input.text === 'string') {
       this.answer(input.text.trim().slice(0, 80));
     }
+  }
+
+  /**
+   * Giving up: the buzzer answering gives the question away (as a wrong answer would). Before
+   * anyone buzzes, a player sits the question out, and once their whole team has, the team's
+   * out of it: the other team gets it to themselves, or if they're out too, nobody gets it.
+   */
+  giveUp(playerId: string) {
+    if (!this.canGiveUp(playerId)) return;
+    if (this.phase === 'answer') return this.answer(null);
+    const team = this.teams.get(playerId)!;
+    this.passed.add(playerId);
+    const teammates = this.ctx.players().filter((p) => p.connected && this.teams.get(p.id) === team);
+    if (teammates.every((p) => this.passed.has(p.id))) {
+      this.lockedOut.add(team);
+      if (this.lockedOut.has(other(team)) || !this.hasPlayers(other(team))) return this.noAnswer();
+    }
+    this.syncAll();
+  }
+
+  private canGiveUp(playerId: string) {
+    const team = this.teams.get(playerId);
+    if (!team) return false;
+    if (this.phase === 'answer') return this.buzzer === playerId;
+    return this.phase === 'question' && !this.lockedOut.has(team) && !this.passed.has(playerId);
   }
 
   private answer(text: string | null) {
@@ -394,6 +422,8 @@ class Blockbusters implements MiniGame {
       ...this.base(),
       myTeam: this.teams.get(playerId) ?? null,
       isBuzzer: this.buzzer === playerId,
+      canGiveUp: this.canGiveUp(playerId),
+      gaveUp: this.phase === 'question' && this.passed.has(playerId) && !this.lockedOut.has(this.teams.get(playerId)!),
       gamePoints: this.gamePoints.get(playerId) ?? 0,
       score: player.score,
     };

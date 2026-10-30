@@ -138,6 +138,8 @@ class PickEm implements MiniGame {
   private found = new Map<string, number[]>();
   private lastGuess = new Map<string, PickGuessResult>();
   private done = new Set<string>();
+  /** Who gave up on this list (they score what they'd found, or nothing on a tap list). */
+  private gaveUp = new Set<string>();
   private results = new Map<string, { right: number; wrong: number; points: number }>();
   private gamePoints = new Map<string, number>();
   private phaseEndsAt = 0;
@@ -176,6 +178,7 @@ class PickEm implements MiniGame {
     this.found.clear();
     this.lastGuess.clear();
     this.done.clear();
+    this.gaveUp.clear();
     this.results.clear();
     const answerMs = this.kind === 'typed' ? TYPED_MS : CHOICE_MS;
     this.setPhase('question', READ_MS, () => this.setPhase('answering', answerMs, () => this.reveal()));
@@ -214,6 +217,19 @@ class PickEm implements MiniGame {
     // Everyone has found everything: no need to wait.
     if (result === 'right' && this.found.get(playerId)!.length === this.question.list.length) this.done.add(playerId);
     this.revealIfAllDone();
+  }
+
+  giveUp(playerId: string) {
+    if (!this.canGiveUp(playerId)) return;
+    this.gaveUp.add(playerId);
+    if (this.kind === 'choice') this.picks.set(playerId, []);
+    else this.done.add(playerId);
+    this.revealIfAllDone();
+  }
+
+  private canGiveUp(playerId: string) {
+    const finished = this.kind === 'choice' ? this.picks.has(playerId) : this.done.has(playerId);
+    return (this.phase === 'question' || this.phase === 'answering') && !finished;
   }
 
   private revealIfAllDone() {
@@ -333,6 +349,8 @@ class PickEm implements MiniGame {
       gamePoints: this.gamePoints.get(playerId) ?? 0,
       score: player.score,
       msLeft: this.msLeft(),
+      canGiveUp: this.canGiveUp(playerId),
+      gaveUp: !this.revealing && this.gaveUp.has(playerId),
     };
     this.ctx.sendPlayer(playerId, view);
   }
@@ -377,6 +395,8 @@ class PickEmCoop implements MiniGame {
   private feed: CoopEvent[] = [];
   private lastGuess = new Map<string, CoopEvent>();
   private cleared: boolean | null = null;
+  /** Who's given up on this list: it ends early once everyone has. */
+  private gaveUp = new Set<string>();
   private gamePoints = new Map<string, number>();
   private phaseEndsAt = 0;
   private timer: NodeJS.Timeout | null = null;
@@ -434,6 +454,7 @@ class PickEmCoop implements MiniGame {
     this.penalties = 0;
     this.feed = [];
     this.lastGuess.clear();
+    this.gaveUp.clear();
     this.cleared = null;
     const clockMs = this.embedding?.clockMs ?? COOP_START_MS;
     this.setPhase('question', READ_MS, () => this.setPhase('answering', clockMs, () => this.reveal()));
@@ -442,7 +463,7 @@ class PickEmCoop implements MiniGame {
   onInput(playerId: string, raw: unknown) {
     const input = raw as PickCoopInput;
     const player = this.ctx.players().find((p) => p.id === playerId);
-    if (this.phase !== 'answering' || !input || !player) return;
+    if (this.phase !== 'answering' || !input || !player || this.gaveUp.has(playerId)) return;
     const seq = Number(input.seq) || 0;
     let text: string;
     let result: CoopEvent['result'];
@@ -494,6 +515,18 @@ class PickEmCoop implements MiniGame {
       this.schedule(() => this.reveal());
     }
     this.syncAll();
+  }
+
+  giveUp(playerId: string) {
+    if (!this.canGiveUp(playerId)) return;
+    this.gaveUp.add(playerId);
+    const connected = this.ctx.players().filter((p) => p.connected);
+    if (connected.every((p) => this.gaveUp.has(p.id))) this.reveal();
+    else this.syncAll();
+  }
+
+  private canGiveUp(playerId: string) {
+    return (this.phase === 'question' || this.phase === 'answering') && !this.gaveUp.has(playerId);
   }
 
   private award(playerId: string, points: number) {
@@ -578,6 +611,8 @@ class PickEmCoop implements MiniGame {
       lastGuess: this.lastGuess.get(playerId) ?? null,
       gamePoints: this.gamePoints.get(playerId) ?? 0,
       score: player.score,
+      canGiveUp: this.canGiveUp(playerId),
+      gaveUp: (this.phase === 'question' || this.phase === 'answering') && this.gaveUp.has(playerId),
     };
     this.ctx.sendPlayer(playerId, view);
   }

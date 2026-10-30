@@ -35,6 +35,33 @@ export interface GameInfo {
    * round's winners and losers (see GameOptions.roundResult).
    */
   afterRounds?: boolean;
+  /**
+   * With afterRounds: it's only played after a round someone calls it for. Once the wheel stops,
+   * players get a moment to call one of these options (each at most once a round), using up one
+   * of their calls for the session. The calls made reach the game as GameOptions.calls.
+   */
+  calls?: CallInfo;
+}
+
+export interface CallInfo {
+  /** What can be called, e.g. two kinds of round. */
+  options: { id: string; label: string }[];
+  /** Calls each player gets per session (the server can override it: MiniGameDefinition.callsPerPlayer). */
+  perPlayer: number;
+}
+
+/** While the wheel's result shows: players calling the after-round game (see GameInfo.calls). */
+export interface CallState {
+  /** What can be called this round (the lobby choices may leave some out). */
+  options: { id: string; label: string }[];
+  /** What's been called, and by whom. */
+  called: { playerId: string; option: string }[];
+  /** Players who can call this round (still here, with calls left). */
+  eligible: string[];
+  /** Players who've called or said no this round. */
+  decided: string[];
+  /** Calls each player has left this session. */
+  left: Record<string, number>;
 }
 
 /** One row of a game's lobby choices, e.g. Easy / Hard. */
@@ -122,6 +149,8 @@ export interface SessionSettings {
   rounds: number;
   /** How many puzzles each game has, whichever game the wheel picks. */
   puzzlesPerRound: number;
+  /** Games played away from the app (board games, cards…), each a slice of its own (see shared/games/external.ts). */
+  externalGames: string[];
 }
 
 export interface SpinState {
@@ -133,8 +162,10 @@ export interface SpinState {
   spinMs: number;
   /** Milliseconds until the wheel stops (0 once it has stopped). */
   stopsInMs: number;
-  /** Milliseconds until the chosen game starts (spin plus a pause to show it). */
+  /** Milliseconds until the chosen game starts (spin plus a pause to show it, or the time to call). */
   msLeft: number;
+  /** Present when there's an after-round game players can call this round. */
+  call: CallState | null;
 }
 
 export interface StandingsState {
@@ -193,6 +224,21 @@ export interface ClientToServerEvents {
   'game:input': (input: unknown) => void;
   /** VIP: flag (or unflag) the question on screen for review. */
   'game:flag': (req: { key: string; flagged: boolean }, ack: Ack) => void;
+  /** A player held down "I give up" (in games whose views offer it: see GiveUpView). */
+  'game:giveUp': () => void;
+  /** After the wheel stops: call the after-round game with one of its options, or (null) say no (see GameInfo.calls). */
+  'room:call': (req: { option: string | null }, ack: Ack) => void;
+}
+
+/**
+ * Fields a trivia or word game's player view adds for the phone's "I give up" button, which
+ * the phone shows (and handles) for every game alike: hold it down to forfeit this puzzle.
+ */
+export interface GiveUpView {
+  /** Giving up is allowed right now. */
+  canGiveUp?: boolean;
+  /** This player has given up on the puzzle in play (false again once it's over). */
+  gaveUp?: boolean;
 }
 
 /** The question on screen in a trivia-style game, which the VIP can flag for review. */

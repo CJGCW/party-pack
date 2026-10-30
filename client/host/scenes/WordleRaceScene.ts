@@ -210,6 +210,8 @@ export class WordleRaceScene extends Phaser.Scene {
 
     if (p.solved) {
       board.status.setText(`Solved!  +${p.roundPoints}`).setColor(COLORS.accent);
+    } else if (p.gaveUp) {
+      board.status.setText('Gave up').setColor(COLORS.danger);
     } else {
       const n = p.rows.length;
       board.status.setText(`${n} ${n === 1 ? 'guess' : 'guesses'}`).setColor(COLORS.muted);

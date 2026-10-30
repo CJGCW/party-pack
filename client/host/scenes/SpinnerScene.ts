@@ -1,13 +1,17 @@
 import Phaser from 'phaser';
-import type { RoomState, SpinState } from '../../../shared/protocol';
+import type { CallState, RoomState, SpinState } from '../../../shared/protocol';
 import { listen, net } from '../net';
-import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, hex, text } from '../theme';
+import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, hex, panel, text } from '../theme';
 
 const CENTER_X = WIDTH / 2;
 const CENTER_Y = 590;
 const RADIUS = 360;
 /** Full turns before slowing to a stop. */
 const TURNS = 6;
+
+/** The calls panel, right of the wheel. */
+const CALL_X = CENTER_X + RADIUS + 90;
+const CALL_W = WIDTH - CALL_X - 40;
 
 const SLICE_COLORS = ['#ff5d73', '#5ec8f2', '#ffd166', '#8b7cf6', '#6ee7b7', '#f472d0', '#ffb347', '#4cc9a0'];
 
@@ -24,6 +28,11 @@ export class SpinnerScene extends Phaser.Scene {
   private announce!: Phaser.GameObjects.Container;
   /** Everything drawn for the current spin, rebuilt each round. */
   private layer!: Phaser.GameObjects.Container;
+  /** Players calling the after-round game, once the wheel stops. */
+  private callLayer!: Phaser.GameObjects.Container;
+  private callTimer: Phaser.GameObjects.Text | null = null;
+  private callEndsAt = 0;
+  private callShowTimer: Phaser.Time.TimerEvent | null = null;
 
   constructor() {
     super(SpinnerScene.KEY);
@@ -36,12 +45,15 @@ export class SpinnerScene extends Phaser.Scene {
     addBackdrop(this);
     this.layer = this.add.container(0, 0);
     this.announce = this.add.container(CENTER_X, CENTER_Y).setDepth(30);
+    this.callLayer = this.add.container(0, 0).setDepth(20);
+    this.callTimer = null;
 
     listen(this, 'room', (s: RoomState) => this.applyState(s));
     if (net.room) this.applyState(net.room);
   }
 
   update() {
+    this.callTimer?.setText(`Starting in ${Math.max(0, Math.ceil((this.callEndsAt - performance.now()) / 1000))}`);
     if (!this.wheel) return;
     // Flick the arrow each time a slice boundary passes under it, like a real wheel's clicker.
     const slice = this.sliceUnderArrow();
@@ -58,10 +70,51 @@ export class SpinnerScene extends Phaser.Scene {
   private applyState(state: RoomState) {
     if (!state.spin || !state.session) return;
     const key = `${state.session.round}`;
-    if (key === this.spinKey) return;
-    this.spinKey = key;
-    this.buildWheel(state.spin, state);
-    this.startSpin(state.spin);
+    if (key !== this.spinKey) {
+      this.spinKey = key;
+      this.buildWheel(state.spin, state);
+      this.startSpin(state.spin);
+    }
+    this.renderCalls(state.spin.call, state);
+    this.callEndsAt = performance.now() + state.spin.msLeft;
+    // The calls show once the wheel stops.
+    this.callShowTimer?.remove();
+    this.callLayer.setVisible(state.spin.stopsInMs <= 0);
+    if (state.spin.stopsInMs > 0) this.callShowTimer = this.time.delayedCall(state.spin.stopsInMs, () => this.callLayer.setVisible(true));
+  }
+
+  /** Who's called what (the after-round game, see GameInfo.calls), and who can still call. */
+  private renderCalls(call: CallState | null, state: RoomState) {
+    this.callLayer.removeAll(true);
+    this.callTimer = null;
+    if (!call) return;
+    const cx = CALL_X + CALL_W / 2;
+    const name = (id: string) => state.players.find((p) => p.id === id);
+    const label = (id: string) => call.options.find((o) => o.id === id)?.label ?? id;
+    const waiting = call.eligible.filter((id) => !call.decided.includes(id));
+    const lines = call.called.length + waiting.length;
+    const h = 200 + Math.max(1, call.called.length) * 90 + (waiting.length ? 110 : 0);
+    const top = CENTER_Y - h / 2;
+    this.callLayer.add(panel(this, CALL_X, top, CALL_W, h));
+    this.callLayer.add(text(this, cx, top + 50, 'CALL THIS ROUND?', 34, COLORS.accent, { fontStyle: '700' }).setLetterSpacing(3));
+    let y = top + 130;
+    if (!call.called.length) {
+      this.callLayer.add(text(this, cx, y, lines ? 'No calls yet' : 'No calls', 32, COLORS.muted));
+      y += 90;
+    }
+    for (const c of call.called) {
+      const who = name(c.playerId);
+      this.callLayer.add(text(this, cx, y - 18, who?.name ?? '?', 36, who?.color ?? COLORS.text, { fontStyle: '700' }));
+      this.callLayer.add(text(this, cx, y + 22, `called a ${label(c.option)}!`, 30, COLORS.text));
+      y += 90;
+    }
+    if (waiting.length) {
+      const names = waiting.map((id) => name(id)?.name ?? '?').join(', ');
+      this.callLayer.add(text(this, cx, y + 10, `Deciding: ${names}`, 26, COLORS.muted, { wordWrap: { width: CALL_W - 40 }, align: 'center' }));
+      y += 110;
+    }
+    this.callTimer = text(this, cx, top + h - 40, '', 28, COLORS.muted);
+    this.callLayer.add(this.callTimer);
   }
 
   private sliceUnderArrow(): number {

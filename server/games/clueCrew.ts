@@ -187,6 +187,11 @@ class ClueCrew implements MiniGame {
     else this.syncAll();
   }
 
+  /** The clue-giver giving up: no clue this turn, on to the next player. */
+  giveUp(playerId: string) {
+    if (this.phase === 'clue' && playerId === this.giverId) this.nextTurn();
+  }
+
   private guessers() {
     return this.ctx.players().filter((p) => p.connected && p.id !== this.giverId);
   }
@@ -299,6 +304,7 @@ class ClueCrew implements MiniGame {
       myTargetsLeft: this.targetsLeftFor(playerId),
       myVote: this.votes.get(playerId) ?? null,
       clueError: playerId === this.giverId ? this.clueError : null,
+      canGiveUp: this.phase === 'clue' && playerId === this.giverId,
       gamePoints: this.gamePoints.get(playerId) ?? 0,
       score: player.score,
     };

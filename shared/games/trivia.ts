@@ -1,4 +1,4 @@
-import type { GameInfo } from '../protocol';
+import type { GameInfo, GiveUpView } from '../protocol';
 
 /** Each question bank is a mode: a topic the VIP can choose under the Trivia slice on the wheel. */
 export const TRIVIA: GameInfo = {
@@ -116,7 +116,7 @@ export interface TriviaHostView {
   team?: TeamState;
 }
 
-export interface TriviaPlayerView {
+export interface TriviaPlayerView extends GiveUpView {
   phase: TriviaPhase;
   questionNumber: number;
   totalQuestions: number;

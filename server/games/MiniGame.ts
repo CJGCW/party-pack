@@ -28,6 +28,8 @@ export interface QuestionForReview {
 export interface MiniGame {
   start(): void;
   onInput(playerId: string, input: unknown): void;
+  /** The player held down "I give up": they forfeit the puzzle or turn in play (see GiveUpView). */
+  giveUp?(playerId: string): void;
   /** Re-send current views, e.g. after the host or a player reconnects. */
   syncHost(): void;
   syncPlayer(playerId: string): void;
@@ -47,6 +49,10 @@ export interface GameOptions {
   choices?: Record<string, string>;
   /** Games played after rounds: who won and who lost the round just played. */
   roundResult?: RoundResult;
+  /** A game played away from the app: its name. */
+  externalGame?: string;
+  /** A callable game played after rounds (GameInfo.calls): the options players called this round. */
+  calls?: string[];
 }
 
 /** The round just played: the players with the most points from it, and those with the fewest. */
@@ -61,4 +67,8 @@ export interface MiniGameDefinition {
   create(ctx: GameContext, modeId: string, options: GameOptions): MiniGame;
   /** Games played after rounds: whether there's nothing to play for this round (e.g. nobody won), so it's skipped. */
   skipAfterRound?(options: GameOptions): boolean;
+  /** Callable games (GameInfo.calls): calls each player gets, asked at the start of each session (e.g. read from a file). */
+  callsPerPlayer?(): number;
+  /** Callable games: which options can be called, given the lobby choices (all of them if missing). */
+  callOptions?(choices: Record<string, string> | undefined): string[];
 }

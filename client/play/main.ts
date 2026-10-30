@@ -1,9 +1,12 @@
 import { io, type Socket } from 'socket.io-client';
-import { ANY_OPTION, MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type FlaggableQuestion, type GroupSettings, type RoomState, type PlayStyle, type WheelEntry, type ServerToClientEvents } from '../../shared/protocol';
+import { ANY_OPTION, MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type FlaggableQuestion, type GiveUpView, type CallState, type GroupSettings, type RoomState, type PlayStyle, type WheelEntry, type ServerToClientEvents } from '../../shared/protocol';
 import { CLUE_CREW } from '../../shared/games/clueCrew';
 import { BLOCKBUSTERS } from '../../shared/games/blockbusters';
 import { CONCENTRATION } from '../../shared/games/concentration';
+import { EXTERNAL, MAX_EXTERNAL_GAMES, parseExternalGames } from '../../shared/games/external';
 import { TWENTY_ONE } from '../../shared/games/twentyOne';
+import { LONGEST_WORD } from '../../shared/games/longestWord';
+import { PEG_DROP } from '../../shared/games/pegDrop';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
@@ -12,11 +15,16 @@ import { WOOCHAWARE } from '../../shared/games/woochaware';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
 import { PHONE_ADDONS } from './addons';
 import { h } from './dom';
+import { createGiveUpBar } from './giveUp';
 import { needsMotionPermission, requestMotionPermission } from './motion';
+import { renderServerPicker, serverLabel, serverUrl } from './server';
 import { createBlockbusters } from './games/blockbusters';
 import { createClueCrew } from './games/clueCrew';
 import { createConcentration } from './games/concentration';
+import { createExternal } from './games/external';
 import { createTwentyOne } from './games/twentyOne';
+import { createLongestWord } from './games/longestWord';
+import { createPegDrop } from './games/pegDrop';
 import { createPickEm } from './games/pickEm';
 import { createPickEmCoop } from './games/pickEmCoop';
 import { createRackAttack } from './games/rackAttack';
@@ -45,6 +53,9 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [CONCENTRATION.id]: createConcentration,
   [TWENTY_ONE.id]: createTwentyOne,
   [RACK_ATTACK.id]: createRackAttack,
+  [LONGEST_WORD.id]: createLongestWord,
+  [PEG_DROP.id]: createPegDrop,
+  [EXTERNAL.id]: createExternal,
   [WOOCHAWARE.id]: createWoochaWare,
 };
 // Machine-local add-on games (see ./addons).
@@ -54,7 +65,15 @@ const SESSION_KEY = 'party-pack-session';
 const JOINED_KEY = 'party-pack-joined';
 
 const app = document.getElementById('app')!;
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io();
+const server = serverUrl();
+// The app connects to the server it's been given; until then it asks for one (see ./server).
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(server ?? '', {
+  autoConnect: server !== null,
+  // A wrong address in the app should say so soon, not after the default 20 seconds.
+  ...(server ? { timeout: 5000 } : {}),
+});
+if (server === null) renderServerPicker(app);
+else if (server) app.replaceChildren(h('div', { class: 'center' }, h('h2', {}, `Connecting to ${serverLabel(server)}…`)));
 
 // crypto.randomUUID isn't available on plain-http LAN pages, so roll our own id.
 const sessionId =
@@ -94,6 +113,14 @@ socket.on('connect', () => {
   else renderJoin();
 });
 
+// The app can't fall back on the page having loaded, so say when the server can't be reached.
+// Socket.IO keeps retrying meanwhile, so this clears itself once the server's up.
+if (server) {
+  socket.on('connect_error', () => {
+    if (server && !joined && !document.getElementById('server')) renderServerPicker(app, `Can’t reach ${serverLabel(server)}. Is the server running?`);
+  });
+}
+
 socket.on('room:state', (state) => {
   room = state;
   render();
@@ -127,9 +154,12 @@ function renderFlag() {
 }
 
 const sendInput = (input: unknown) => socket.emit('game:input', input);
+// Trivia and word games: hold down "I give up" to forfeit the puzzle (shown when the game's view allows it).
+const giveUpBar = createGiveUpBar(() => socket.emit('game:giveUp'));
 const uiFor = (view: unknown, gameId: string) => (view as { asGame?: string } | null)?.asGame ?? gameId;
 
 socket.on('game:player', (view) => {
+  giveUpBar.update(view as GiveUpView);
   if (!controller) {
     pendingView = view;
     return;
@@ -150,12 +180,14 @@ socket.on('room:closed', (reason) => {
   flaggable = null;
   renderFlag();
   localStorage.removeItem(JOINED_KEY);
+  giveUpBar.update(null);
   renderJoin(reason);
 });
 
 // Drop the game UI while offline; it's rebuilt from the server's view after rejoining,
 // so a guess that was in flight can't leave the controller stuck waiting.
 socket.on('disconnect', () => {
+  giveUpBar.update(null);
   controller?.instance.destroy();
   controller = null;
   room = null;
@@ -199,6 +231,7 @@ function render() {
 
   controller?.instance.destroy();
   controller = null;
+  giveUpBar.update(null);
   if (room.phase === 'spinning') renderSpinning();
   else if (room.phase === 'standings') renderStandings();
   else if (room.phase === 'results') renderResults();
@@ -254,20 +287,27 @@ function renderJoin(error = '') {
     errorEl,
   );
 
-  app.replaceChildren(h('h1', {}, 'PARTY PACK'), h('p', {}, 'Enter the code shown on the TV'), form);
+  app.replaceChildren(
+    h('h1', {}, 'PARTY PACK'),
+    h('p', {}, 'Enter the code shown on the TV'),
+    form,
+    ...(server ? [h('button', { class: 'secondary server-link', onclick: () => renderServerPicker(app) }, `Server: ${serverLabel(server)}`)] : []),
+  );
   (codeInput.value ? nameInput : codeInput).focus();
 }
 
 let spinTimer: ReturnType<typeof setTimeout> | null = null;
 
 function renderLobby() {
+  // Don't redraw under the VIP while they're typing the other games (it's saved, and redrawn, when they tap away).
+  if (document.activeElement?.classList.contains('ext-input')) return;
   const player = me()!;
   const children: (Node | string)[] = [
     h('div', { class: 'badge' }, player.name),
     h('h2', {}, "You're in!"),
   ];
-  // After a refresh the permission has to be asked for again, from a tap (only WoochaWare uses it).
-  if (needsMotionPermission() && room!.games.some((g) => g.id === WOOCHAWARE.id)) {
+  // After a refresh the permission has to be asked for again, from a tap (WoochaWare and Peg Drop use it).
+  if (needsMotionPermission() && room!.games.some((g) => g.id === WOOCHAWARE.id || g.id === PEG_DROP.id)) {
     children.push(
       h(
         'button',
@@ -417,11 +457,32 @@ function wheelSettings(isVip: boolean): Node[] {
       h('button', { class: 'secondary', disabled: !isVip || value >= max, onclick: () => set(value + 1) }, '+'),
     );
 
+  // Games played away from the app: each name its own slice.
+  const otherGames = isVip
+    ? (() => {
+        const box = h('textarea', { class: 'ext-input', rows: '3', placeholder: 'Catan, Uno, Charades' }) as HTMLTextAreaElement;
+        box.value = settings.externalGames.join(', ');
+        box.addEventListener('blur', () => {
+          const externalGames = parseExternalGames(box.value);
+          if (JSON.stringify(externalGames) !== JSON.stringify(settings.externalGames)) save({ ...settings, externalGames });
+          else render();
+        });
+        return box;
+      })()
+    : h('div', {}, settings.externalGames.length ? settings.externalGames.join(', ') : 'None');
+
   const card = h(
     'div',
     { class: 'game-card' },
     h('h2', {}, 'Games on the wheel'),
     ...toggles,
+    h('h2', {}, 'Other games'),
+    h(
+      'div',
+      { class: 'muted' },
+      `Games you play away from the app (board games, cards…), separated by commas, up to ${MAX_EXTERNAL_GAMES}. Each gets its own slice; when one comes up, the app waits until the VIP marks it finished. No points.`,
+    ),
+    otherGames,
     h('h2', {}, 'Rounds'),
     h('div', { class: 'muted' }, 'The wheel spins once per round.'),
     stepper(settings.rounds, MIN_ROUNDS, MAX_ROUNDS, 'round', (rounds) => save({ ...settings, rounds })),
@@ -451,6 +512,8 @@ function renderSpinning() {
   const spin = room!.spin!;
   const session = room!.session;
   const status = h('h2', {}, 'Spinning the wheel…');
+  const call = spin.call ? callButtons(spin.call, spin.msLeft) : null;
+  if (call) call.hidden = spin.stopsInMs > 0;
   app.replaceChildren(
     h(
       'div',
@@ -459,13 +522,53 @@ function renderSpinning() {
       h('div', { class: 'spin-emoji' }, '🎡'),
       status,
       h('p', {}, 'Watch the TV!'),
+      call ?? '',
     ),
   );
-  // Only reveal the game once the wheel on the TV has stopped.
+  // Only reveal the game (and the chance to call) once the wheel on the TV has stopped.
   if (spinTimer) clearTimeout(spinTimer);
   spinTimer = setTimeout(() => {
     status.textContent = `Next up: ${spin.entries[spin.targetIndex].label}`;
+    if (call) call.hidden = false;
   }, spin.stopsInMs);
+}
+
+/** "Starting in 8s", counting down until it's gone from the page. */
+function countdown(msLeft: number) {
+  const endsAt = performance.now() + msLeft;
+  const el = h('div', { class: 'muted' });
+  const tick = () => (el.textContent = `Starting in ${Math.max(0, Math.ceil((endsAt - performance.now()) / 1000))}s`);
+  tick();
+  const timer = setInterval(() => (el.isConnected ? tick() : clearInterval(timer)), 250);
+  return el;
+}
+
+/** After the wheel stops: call the after-round game for this round (see GameInfo.calls), or say no. */
+function callButtons(call: CallState, msLeft: number): HTMLElement {
+  const label = (id: string) => call.options.find((o) => o.id === id)?.label ?? id;
+  const name = (id: string) => room!.players.find((p) => p.id === id)?.name ?? '?';
+  const left = call.left[playerId!] ?? 0;
+  const canCall = call.eligible.includes(playerId!) && !call.decided.includes(playerId!);
+  const errorEl = h('div', { class: 'error' });
+  const send = (option: string | null) =>
+    socket.emit('room:call', { option }, (res) => {
+      if (!res.ok) errorEl.textContent = res.error;
+    });
+  const children: (Node | string)[] = call.called.map((c) => h('div', { class: 'call-made' }, `${name(c.playerId)} called a ${label(c.option)}!`));
+  if (canCall) {
+    children.push(
+      h('div', {}, `Call this round? You have ${left} ${left === 1 ? 'call' : 'calls'} left.`),
+      ...call.options.map((o) =>
+        h('button', { class: 'call-button', disabled: call.called.some((c) => c.option === o.id), onclick: () => send(o.id) }, o.label),
+      ),
+      h('button', { class: 'secondary', onclick: () => send(null) }, 'No thanks'),
+      countdown(msLeft),
+    );
+  } else if (!call.called.length) {
+    children.push(h('div', { class: 'muted' }, left > 0 || !call.eligible.includes(playerId!) ? 'Waiting to see if anyone calls this round…' : 'You have no calls left.'));
+  }
+  children.push(errorEl);
+  return h('div', { class: 'call' }, ...children);
 }
 
 function renderStandings() {

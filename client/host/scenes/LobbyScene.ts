@@ -114,7 +114,7 @@ export class LobbyScene extends Phaser.Scene {
       return notes.length ? `${e.label} (${notes.join(', ')})` : e.label;
     };
     const chosen = state.wheelEntries.filter((e) => state.settings.enabled.includes(e.id));
-    const labels = chosen.filter((e) => !e.afterRounds).map(groupNote);
+    const labels = [...chosen.filter((e) => !e.afterRounds).map(groupNote), ...(state.settings.externalGames ?? [])];
     // Games played after every round, rather than on the wheel.
     const after = chosen.filter((e) => e.afterRounds).map(groupNote);
     const rounds = state.settings.rounds;

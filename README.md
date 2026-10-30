@@ -57,6 +57,22 @@ topic, to `flagged-questions.jsonl` in the project folder (one JSON object per l
 review; unticking it takes it back out. A game reports each question with `ctx.showingQuestion(...)`,
 and the answers only go to that file, never to the phones.
 
+In the trivia and word games, phones have an **I give up** button at the bottom. Holding it down for
+1.5 seconds fills it up and forfeits the puzzle (letting go early drains it away). What that means depends on the game:
+
+- **Word Rush, Rack Attack, Longest Word, Pick 'Em:** you're done with this puzzle, scoring nothing for it (a typed Pick 'Em list
+  keeps what you'd found).
+- **Trivia:** no answer. In Team Trivia that costs a life, as a missed answer does.
+- **Letter Drop:** you're out of this puzzle, as after a wrong answer.
+- **Team Pick 'Em:** you stop playing this list.
+- **Blockbusters:** the buzzer giving up counts as a wrong answer. Before anyone buzzes, you sit the question out,
+  and once your whole team has, the other team gets it to themselves.
+- **Clue Crew:** the clue-giver skips their turn. Voters already have Stop.
+
+The game's screen greys out until the next puzzle, and the puzzle ends early once everyone has answered,
+finished or given up. A game offers it through its player view (`canGiveUp`, `gaveUp`; see `GiveUpView` in
+`shared/protocol.ts`) and handles it in `giveUp(playerId)`; the phone shows the button for every game alike.
+
 ### Debug mode
 
 For testing a specific game, debug mode replaces the wheel with the old picker: the VIP (or
@@ -73,7 +89,47 @@ or `"woochaDebug": true` in `party-pack.config.json` (`PARTY_PACK_WOOCHA_DEBUG=1
 The VIP's phone then lists only the microgames; tapping one plays it once at each speed level (1, 2, 3),
 without scoring, then returns to the list. It takes priority over `debugMode`, but does nothing while `woochaware` is `false`.
 
+### Android app
+
+The phone screens can also be installed as an Android app (made with [Capacitor](https://capacitorjs.com),
+in `android/`). Players can mix the app and the browser in the same game. The app carries the phone
+screens inside it and only exchanges game data with the server, so:
+
+- it needs no HTTPS: WoochaWare's motion sensors work over plain HTTP, with no certificate warning;
+- it keeps the screen awake while it's open;
+- the first time, it asks for the server's address (the one on the TV; just the numbers before the
+  colon are enough) and remembers it. "Server: …" under the join form changes it.
+
+Building it needs Android Studio, set up once (its first run downloads the Android SDK). `scripts/android.ts` finds its
+Java and SDK, so nothing else needs setting:
+
+- `npm run app:build` builds the phone screens into `dist-app/` and copies them into `android/`.
+- `npm run app:install` does that, then installs it on a phone plugged in over USB (with USB debugging on).
+- `npm run app:apk` does that, then builds `android/app/build/outputs/apk/debug/app-debug.apk`, which can
+  be copied to a phone and installed (allow "install unknown apps" for whatever opens it, then turn that back off).
+
+Changes to the phone screens need a rebuild and reinstall. Changes to the server, the TV or the question lists don't.
+Add-on games in `local/` go into the app too, since it's built from this folder (and `dist-app/` is git-ignored).
+
 ## Games
+
+**Other games.** Under **Other games** in the lobby, the VIP can list games you play away from the
+app (board games, cards, charades…), separated by commas or new lines (up to 20). Each gets its
+own slice on the wheel; when one comes up, the TV and phones show what to play and how long it's
+been going, and the app waits until the VIP taps **We're finished** on their phone, then taps who
+won (one button per player; any number, or nobody) and **Done**. Each winner scores 1,000 per
+puzzle in the "puzzles per round" setting (what an app game's best player can get in a round),
+so the round counts in the standings like any other, and its winners and losers play any game
+that's played after rounds. The list is saved when the VIP taps away from the box, and with other games listed the
+app's own games can all be turned off. (`shared/games/external.ts`, `server/games/external.ts`.)
+
+**Calling a round.** A game played after rounds (`GameInfo.afterRounds`) can be *callable*
+(`GameInfo.calls`): then it isn't played after every round, only after a round a player calls
+it for. Once the wheel stops, phones with calls left get a button for each option (plus **No
+thanks**) for 10 seconds, or until everyone who can has decided; the TV lists the calls as they
+come in. Each option can be called once a round, and each call uses up one of the caller's calls
+for the session (`CallInfo.perPlayer`, or the game's `callsPerPlayer()`). The game gets what was
+called as `GameOptions.calls`.
 
 **Scoring.** Every game uses the same scale (`shared/scoring.ts`), so none outweighs the others on
 the wheel: each puzzle (a question, word, list, board or stage) is worth up to **1,000 points** to
@@ -89,9 +145,11 @@ for finishing plus up to 700 for speed, less a little per guess.
 | **Pick 'Em** | 1–8 | Long-list trivia, two kinds. **Tap lists:** 9 or 12 options (full rows of three on the TV) with several right answers; tap every one you think is right and lock in (30 seconds). A list is worth up to 1,000, shared among its right answers; each wrong pick costs as much as a right one scores (never below 0), so tapping everything doesn't pay. **Typed lists** (like "name everyone who dies in Romeo and Juliet"): type as many answers as you can in 60 seconds; the list is worth up to 1,000 shared among its answers, and wrong guesses cost nothing. Case, accents, punctuation, a leading "the" and small typos are forgiven. Your answers show only on your phone; the TV shows just how many each player has, then reveals the full list. Lists live in `server/games/pickem/` in the trivia format (typed lists use an `L:` line per answer, with other accepted forms after `\|`); each file is a mode, with the same topics as Trivia (General Knowledge, Disney & Pixar, Scrubs, Brooklyn Nine-Nine, Parks and Recreation). It comes up from the Trivia slice on the wheel, in the **Pick 'Em lists** format. |
 | **Team Pick 'Em** | 1–8 | Co-op Pick 'Em with the same lists. The whole party works each list together against one 3-minute clock. Every tap or typed answer counts straight away: a right one lights up on the TV (with who found it) for everyone, a wrong one takes 10 seconds off the clock, and repeating something already tried (right or wrong) costs nothing but says so. Find every answer before the clock runs out. Everyone gets a share of 700 for each answer found (split among the list's answers) and the rest of 1,000 for clearing it. |
 | **Rack Attack** | 1–8 | A word-tile game on an 11×11 board. Everyone gets the same part-played board and the same seven tiles, and has one minute to build the best play on their phone (tap a tile, then a square; Shuffle, Recall, and Submit, which shows the score first). Words must be in the dictionary, in one line, and connect to the board; using all seven tiles adds 50. Each play scores its share of the best play possible (the best play is worth 1,000), and the reveal shows that best play. One board per puzzle. |
+| **Longest Word** | 1–8 | A letters round in the style of the long-running TV word show. One player picks nine letters on their phone, a vowel or a consonant at a time (at least 3 vowels and 4 consonants; 10 seconds a letter or one is picked for them); the picker moves round the players each word. The letters come off shuffled vowel and consonant piles (`server/games/longestWord/letters.ts`). Then everyone has 30 seconds to spell the longest word they can by tapping the letters, each used once. Whatever you've spelt when time runs out counts, or lock it in early. Words must be in the dictionary, which isn't checked until the reveal. Each word scores its share of the longest word the letters make (the longest is worth 1,000; one half as long, 500), and the reveal shows the longest words with a definition. One word per puzzle. |
+| **Peg Drop** | 1–8 | A ball-and-pegs game on the TV. Players take turns aiming the launcher at the top by turning their phone like a steering wheel (lying flat, tilt it left and right; without motion sensors, drag on the dial), then tap Fire (or it fires by itself after 20 seconds). The ball bounces down through the pegs: blue pegs score 10, gold pegs 100, and hit pegs clear once the ball's gone (or early, if the ball gets stuck on them). Every peg's points multiply as the gold pegs get cleared (×2 at 40%, ×3 at 65%, ×5 at 85%), and hitting the last gold peg ends the board with a 1,000 bonus (multiplied); that shot plays in slow motion, zoomed in on the ball, before the board-cleared celebration. A bucket slides along the bottom: land in it for a free ball. Each player gets 12 ÷ players balls a board (at least 3). Shots are worked out on the server and played back on the TV. At the end of a board the top scorer gets 1,000 and everyone else their share of that. Layouts are random from six patterns (`server/games/pegDrop/layouts.ts`). Motion sensors need HTTPS in a phone's browser (on whenever WoochaWare is) or the Android app. One board per puzzle. |
 | **Clue Crew** | 2–8 | A co-op word-clue game in the style of two-player clue games, for the whole room. Everyone sees the same 25 words, but each phone shows a secret key: your green targets and red traps. Players take turns giving a one-word clue and a number; everyone else votes on the words they think it means (the most votes wins, ties at random). A target is found and the team can keep going, up to the number plus one; a word that isn't the clue-giver's ends the turn, and one of their traps ends the game. Find every target before everyone has had their turns (one turn each per round). Clues can't be, contain, or sit inside a board word. Everyone shares up to 700 a round for the words found (split among them), the clue-giver gets 50 more per word, and finding them all adds 300 a round. |
 | **Concentration** | 1–8 | A race to find pairs. Everyone gets the same face-down board of playing cards on their phone (4 by 4 by default; change `GRID_SIZE` in `shared/games/concentration.ts`, 2 to 10, and an odd size leaves the centre empty). Tap two cards: a pair stays face up, anything else turns back over. Like Word Rush, clearing the board scores 300, plus up to 700 for the time left, less 1.5 seconds of it per guess (a pair of flips); running out of time scores a little for each pair found. The TV shows each player's matched squares and guesses, never the cards. One board per puzzle. |
-| **Twenty-One** | 1–8 | Blackjack with no 10s or face cards: Ace to 9 only, from a fresh shoe of one deck per player each hand. Everyone is dealt two cards face down (only your phone shows yours). Then, in turn order, each player draws a card face up for everyone to see, or holds; it keeps going round until everyone has held or bust, and once you hold you're done for the hand. Aces count 1 or 11. You have 20 seconds a turn, or you hold. Going over 21 is bust, and your cards are turned over straight away. At the end everyone's cards are shown: the closest to 21 wins 1,000 (ties all win), other hands at 21 or under score 20 a point (18 scores 360), and busts score nothing. The first turn moves one seat round each hand. One hand per puzzle. |
+| **Twenty-One** | 1–8 | Blackjack with no 10s or face cards: Ace to 9 only, from a fresh shoe of one deck per player each hand. Everyone is dealt one card face down (only your phone shows yours) and one face up, as in blackjack. Then, in turn order, each player draws a card face up for everyone to see, or holds; it keeps going round until everyone has held or bust, and once you hold you're done for the hand. Aces count 1 or 11. You have 20 seconds a turn, or you hold. Going over 21 is bust, and your face-down card is turned over straight away. At the end everyone's cards are shown: the closest to 21 wins 1,000 (ties all win), other hands at 21 or under score 20 a point (18 scores 360), and busts score nothing. The first turn moves one seat round each hand. One hand per puzzle. |
 | **Blockbusters** | 2–8 | Two teams race across a board of hexagons, as on the game show (no Gold Rush), framed like the show: red bands top and bottom, white down the sides. Red links the top and bottom edges, White the left and right. With an even number of players the teams are equal and the board is 4 by 4; with an odd number Red is the smaller team and the board is the show's 5 wide by 4 high, so Red needs 4 hexagons and White 5. Each hexagon shows an answer's initials ("AE" for Albert Einstein, "NYC" for New York City). The team in control picks one on their phones. The question is read out a letter at a time, at reading pace. Anyone can buzz at any point, which stops the reading there; the buzzer types the whole answer (case, accents, small typos and a leading "The" are all fine). Right takes the hexagon and the next pick; wrong locks that team out, and the rest of the question is read out for the other team to buzz; if nobody gets it, another question on the same hexagon if there is one. 100 points per right answer and 500 to everyone on a team that wins a board. Questions are in `server/games/blockbusters/` (one file per topic; Q: and A: lines, with other accepted answers after `|`), and the initials come from the answer: one letter per capitalised word, skipping a leading "The" and small words like "of", every letter of an acronym (DNA, H2O as HO), and hyphenated words split (X-Ray as XR). One board per puzzle. |
 | **WoochaWare** | 1–8 | WarioWare-style microgames (35 of them, in `client/play/woochaware/`): 25 played on the touch screen and 10 by tilting, turning or gently shaking the phone (Road Trip is held sideways). Without motion sensors those 10 work by dragging instead. Each puzzle is a stage of 5 microgames, a few seconds each; every win scores 200. The speed level rises from 1 to 3 over the game. |
 
@@ -167,6 +225,8 @@ shared/            Types shared by server and clients
 client/
   host/            Phaser host screen: one scene per mini game
   play/            Phone controller (plain DOM): one controller per mini game
+android/           The Android app: the phone controller, built with `npm run app:build`
+capacitor.config.ts  The Android app's settings
 ```
 
 The server is authoritative: secret information (such as the Word Rush answer) never

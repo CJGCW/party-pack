@@ -28,6 +28,8 @@ class RackAttack implements MiniGame {
   private previews = new Map<string, { seq: number; check: MoveCheck }>();
   private submitted = new Map<string, ScoredMove>();
   private submitErrors = new Map<string, string>();
+  /** Who gave up on this board: a pass, scoring nothing. */
+  private gaveUp = new Set<string>();
   private lastPoints = new Map<string, number>();
   private gamePoints = new Map<string, number>();
   private phaseEndsAt = 0;
@@ -56,6 +58,7 @@ class RackAttack implements MiniGame {
     this.previews.clear();
     this.submitted.clear();
     this.submitErrors.clear();
+    this.gaveUp.clear();
     this.lastPoints.clear();
     this.setPhase('play', PLAY_MS, () => this.reveal());
   }
@@ -86,7 +89,19 @@ class RackAttack implements MiniGame {
       this.submitted.set(playerId, { tiles: check.tiles, words: check.words, score: check.score });
     }
     this.submitErrors.delete(playerId);
-    // Reveal as soon as everyone still here has locked in.
+    this.revealIfAllIn();
+  }
+
+  giveUp(playerId: string) {
+    if (this.phase !== 'play' || this.submitted.has(playerId)) return;
+    this.gaveUp.add(playerId);
+    this.submitted.set(playerId, PASS);
+    this.submitErrors.delete(playerId);
+    this.revealIfAllIn();
+  }
+
+  /** Reveal as soon as everyone still here has locked in. */
+  private revealIfAllIn() {
     const connected = this.ctx.players().filter((p) => p.connected);
     if (connected.every((p) => this.submitted.has(p.id))) this.reveal();
     else this.syncAll();
@@ -158,6 +173,8 @@ class RackAttack implements MiniGame {
       gamePoints: this.gamePoints.get(playerId) ?? 0,
       score: player.score,
       best: this.revealing ? this.puzzle.best : null,
+      canGiveUp: this.phase === 'play' && !this.submitted.has(playerId),
+      gaveUp: this.phase === 'play' && this.gaveUp.has(playerId),
     };
     this.ctx.sendPlayer(playerId, view);
   }

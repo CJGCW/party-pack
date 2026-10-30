@@ -19,7 +19,9 @@ import {
   type GroupFormat,
   type PlayStyle,
   type WheelEntry,
+  type CallState,
 } from '../shared/protocol';
+import { EXTERNAL, externalEntry, parseExternalGames } from '../shared/games/external';
 import { PICK_EM, PICK_EM_COOP } from '../shared/games/pickEm';
 import { TRIVIA, TRIVIA_QUEST } from '../shared/games/trivia';
 import { STANDINGS_MS } from '../shared/timing';
@@ -50,6 +52,10 @@ const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I or O, they look like 1 
 /** How long the wheel spins, then how long it shows the chosen game before starting it. */
 const SPIN_MS = 2_000;
 const SPIN_RESULT_MS = 3_000;
+/** Instead, when players can call the after-round game: time to call (or not) once the wheel stops. */
+const CALL_MS = 10_000;
+/** Once everyone who can call has decided, a moment to see it before the game starts. */
+const CALL_SETTLE_MS = 1_500;
 /** Final results screen at the end of a session. */
 const RESULTS_MS = 15_000;
 
@@ -135,9 +141,14 @@ export class Room {
     ),
     rounds: DEFAULT_ROUNDS,
     puzzlesPerRound: DEFAULT_PUZZLES,
+    externalGames: [],
   };
   private session: Session | null = null;
-  private spin: { entries: WheelEntry[]; targetIndex: number; endsAt: number } | null = null;
+  private spin: { entries: WheelEntry[]; targetIndex: number; stopsAt: number; endsAt: number; call: CallState | null } | null = null;
+  /** A callable after-round game (GameInfo.calls): calls each player has left this session. */
+  private callsLeft = new Map<string, number>();
+  /** What was called for the round being played (the after-round game is only played if something was). */
+  private roundCalls: string[] = [];
   private resultsEndAt = 0;
   private standings: { previousScores: Record<string, number>; endsAt: number } | null = null;
   /** The question on screen that the VIP can flag, saved as it would be; and whether it is flagged. */
@@ -198,8 +209,9 @@ export class Room {
             entries: this.spin.entries,
             targetIndex: this.spin.targetIndex,
             spinMs: SPIN_MS,
-            stopsInMs: Math.max(0, this.spin.endsAt - SPIN_RESULT_MS - Date.now()),
+            stopsInMs: Math.max(0, this.spin.stopsAt - Date.now()),
             msLeft: Math.max(0, this.spin.endsAt - Date.now()),
+            call: this.spin.call,
           }
         : null,
       standings: this.standings
@@ -286,10 +298,16 @@ export class Room {
   /** The VIP (first connected player) controls the lobby from their phone. */
   private assignVip() {
     const players = [...this.players.values()];
+    const before = players.find((p) => p.isVip);
     const current = players.find((p) => p.isVip && p.connected);
     for (const p of players) p.isVip = false;
     const vip = current ?? players.find((p) => p.connected);
     if (vip) vip.isVip = true;
+    // A game that shows who the VIP is (e.g. who marks an external game finished) needs to know.
+    if (this.game && vip !== before) {
+      this.game.syncHost();
+      for (const p of players) this.game.syncPlayer(p.id);
+    }
   }
 
   canControl(socket: ClientSocket): boolean {
@@ -309,8 +327,9 @@ export class Room {
     const validIds = new Set(WHEEL_ENTRIES.map((e) => e.id));
     const enabled = Array.isArray(next?.enabled) ? next.enabled.filter((id) => validIds.has(id)) : [];
     const rounds = Math.round(Number(next?.rounds));
+    const externalGames = Array.isArray(next?.externalGames) ? parseExternalGames(next.externalGames.map(String).join('\n')) : this.settings.externalGames;
     // Games played after rounds don't count: there has to be something on the wheel.
-    if (!enabled.some((id) => !WHEEL_ENTRIES.find((e) => e.id === id)?.afterRounds)) return 'Pick at least one game.';
+    if (!externalGames.length && !enabled.some((id) => !WHEEL_ENTRIES.find((e) => e.id === id)?.afterRounds)) return 'Pick at least one game.';
     if (!(rounds >= MIN_ROUNDS && rounds <= MAX_ROUNDS)) return `Rounds must be ${MIN_ROUNDS}-${MAX_ROUNDS}.`;
     // Older clients may not send this; keep the current value then.
     const puzzles = next?.puzzlesPerRound === undefined ? this.settings.puzzlesPerRound : Math.round(Number(next.puzzlesPerRound));
@@ -341,7 +360,7 @@ export class Room {
         }),
       );
     }
-    this.settings = { enabled: [...new Set(enabled)], groups, choices, rounds, puzzlesPerRound: puzzles };
+    this.settings = { enabled: [...new Set(enabled)], groups, choices, rounds, puzzlesPerRound: puzzles, externalGames };
     this.broadcastState();
     return null;
   }
@@ -351,17 +370,68 @@ export class Room {
     if (this.busy) return 'A game is already running.';
     const players = this.connectedCount();
     // Only games that suit this many players can go on the wheel.
-    const pool = WHEEL_ENTRIES.filter((e) => {
-      if (!this.settings.enabled.includes(e.id) || e.afterRounds) return false;
-      const info = findGame(e.gameId)!.info;
-      return players >= info.minPlayers && players <= info.maxPlayers;
-    });
+    const pool = [
+      ...WHEEL_ENTRIES.filter((e) => {
+        if (!this.settings.enabled.includes(e.id) || e.afterRounds) return false;
+        const info = findGame(e.gameId)!.info;
+        return players >= info.minPlayers && players <= info.maxPlayers;
+      }),
+      ...this.settings.externalGames.map(externalEntry),
+    ];
     if (players === 0) return 'Need at least 1 player.';
     if (pool.length === 0) return 'None of the chosen games work with this many players.';
 
     for (const p of this.players.values()) p.score = 0;
     this.session = { round: 0, totalRounds: this.settings.rounds, pool };
+    const callable = this.callable();
+    const perPlayer = callable ? (callable.def.callsPerPlayer?.() ?? callable.def.info.calls!.perPlayer) : 0;
+    this.callsLeft = new Map([...this.players.values()].map((p) => [p.id, perPlayer]));
     this.nextRound();
+    return null;
+  }
+
+  /** The after-round game that's on, if players call it (GameInfo.calls), and what can be called given the lobby choices. */
+  private callable() {
+    const entry = WHEEL_ENTRIES.find((e) => e.afterRounds && this.settings.enabled.includes(e.id));
+    const def = entry && findGame(entry.gameId);
+    if (!entry || !def?.info.calls) return null;
+    const allowed = def.callOptions?.(this.settings.choices[entry.id]) ?? def.info.calls.options.map((o) => o.id);
+    const options = def.info.calls.options.filter((o) => allowed.includes(o.id));
+    return options.length ? { entry, def, options } : null;
+  }
+
+  /** This round's chance to call the after-round game: who can (still here, with calls left). Null if nobody can. */
+  private callState(): CallState | null {
+    const callable = this.callable();
+    if (!callable) return null;
+    const eligible = [...this.players.values()].filter((p) => p.connected && (this.callsLeft.get(p.id) ?? 0) > 0).map((p) => p.id);
+    if (!eligible.length) return null;
+    return { options: callable.options, called: [], eligible, decided: [], left: Object.fromEntries(this.callsLeft) };
+  }
+
+  /** A player calls the after-round game for this round (or, with null, says no). */
+  call(socket: ClientSocket, option: string | null): string | null {
+    const id = socket.data.playerId;
+    const spin = this.spin;
+    const call = spin?.call;
+    if (!spin || !call || !id) return 'There is nothing to call right now.';
+    if (Date.now() < spin.stopsAt) return 'Wait for the wheel to stop.';
+    if (!call.eligible.includes(id) || call.decided.includes(id)) return "You can't call this round.";
+    if (option !== null) {
+      if (!call.options.some((o) => o.id === option)) return 'Unknown call.';
+      if (call.called.some((c) => c.option === option)) return 'That has already been called.';
+      this.callsLeft.set(id, (this.callsLeft.get(id) ?? 0) - 1);
+      call.left[id] = this.callsLeft.get(id)!;
+      call.called.push({ playerId: id, option });
+    }
+    call.decided.push(id);
+    // Everyone who can has decided, or there's nothing left to call: start soon.
+    const done = call.eligible.every((p) => call.decided.includes(p)) || call.options.every((o) => call.called.some((c) => c.option === o.id));
+    if (done && spin.endsAt - Date.now() > CALL_SETTLE_MS) {
+      spin.endsAt = Date.now() + CALL_SETTLE_MS;
+      this.setPhaseTimer(CALL_SETTLE_MS, () => this.startSpunGame());
+    }
+    this.broadcastState();
     return null;
   }
 
@@ -370,18 +440,27 @@ export class Room {
     const session = this.session!;
     session.round++;
     const targetIndex = Math.floor(Math.random() * session.pool.length);
-    this.spin = { entries: session.pool, targetIndex, endsAt: Date.now() + SPIN_MS + SPIN_RESULT_MS };
-    this.setPhaseTimer(SPIN_MS + SPIN_RESULT_MS, () => {
-      const entry = this.spin!.entries[targetIndex];
-      this.spin = null;
-      const { gameId, modeId, mixLists } = entry.group
-        ? this.pickFromGroup(entry.id, entry.group)
-        : { ...entry, modeId: entry.choices ? this.pickFromChoices(entry.id, entry.choices) : entry.modeId, mixLists: false };
-      const error = this.launchGame(gameId, modeId, undefined, mixLists);
-      // E.g. players left during the spin so the game no longer fits: end the session.
-      if (error) this.returnToLobby();
-    });
+    const call = this.callState();
+    const now = Date.now();
+    const showMs = call ? CALL_MS : SPIN_RESULT_MS;
+    this.spin = { entries: session.pool, targetIndex, stopsAt: now + SPIN_MS, endsAt: now + SPIN_MS + showMs, call };
+    this.setPhaseTimer(SPIN_MS + showMs, () => this.startSpunGame());
     this.broadcastState();
+  }
+
+  /** The wheel's done (and any calling): start the game it landed on. */
+  private startSpunGame() {
+    const spin = this.spin!;
+    const entry = spin.entries[spin.targetIndex];
+    // What was called carries over to after the round.
+    this.roundCalls = spin.call?.called.map((c) => c.option) ?? [];
+    this.spin = null;
+    const { gameId, modeId, mixLists } = entry.group
+      ? this.pickFromGroup(entry.id, entry.group)
+      : { ...entry, modeId: entry.choices ? this.pickFromChoices(entry.id, entry.choices) : entry.modeId, mixLists: false };
+    const error = this.launchGame(gameId, modeId, undefined, mixLists, undefined, gameId === EXTERNAL.id ? entry.label : undefined);
+    // E.g. players left during the spin so the game no longer fits: end the session.
+    if (error) this.returnToLobby();
   }
 
   /**
@@ -425,7 +504,14 @@ export class Room {
     return this.launchGame(gameId, modeId, config.woochaDebug ? microgameId : undefined);
   }
 
-  private launchGame(gameId: string, modeId?: string, microgameId?: string, mixLists = false, afterRound?: Pick<GameOptions, 'choices' | 'roundResult'>): string | null {
+  private launchGame(
+    gameId: string,
+    modeId?: string,
+    microgameId?: string,
+    mixLists = false,
+    afterRound?: Pick<GameOptions, 'choices' | 'roundResult' | 'calls'>,
+    externalGame?: string,
+  ): string | null {
     const def = findGame(gameId);
     if (!def) return 'Unknown game.';
     const mode = modeId ? def.info.modes.find((m) => m.id === modeId) : def.info.modes[0];
@@ -463,7 +549,7 @@ export class Room {
         },
       },
       mode.id,
-      { puzzles: this.settings.puzzlesPerRound, microgame: microgameId, mixLists, ...afterRound },
+      { puzzles: this.settings.puzzlesPerRound, microgame: microgameId, mixLists, externalGame, ...afterRound },
     );
     this.game = game;
     this.broadcastState();
@@ -487,7 +573,14 @@ export class Room {
     const entry = WHEEL_ENTRIES.find((e) => e.afterRounds && this.settings.enabled.includes(e.id));
     if (!entry) return false;
     const def = findGame(entry.gameId)!;
-    const options = { puzzles: this.settings.puzzlesPerRound, choices: this.settings.choices[entry.id], roundResult: this.roundResult() };
+    // A callable one is only played when someone called it this round.
+    if (def.info.calls && !this.roundCalls.length) return false;
+    const options = {
+      puzzles: this.settings.puzzlesPerRound,
+      choices: this.settings.choices[entry.id],
+      roundResult: this.roundResult(),
+      ...(def.info.calls ? { calls: this.roundCalls } : {}),
+    };
     if (def.skipAfterRound?.(options)) return false;
     return this.launchGame(entry.gameId, undefined, undefined, false, options) === null;
   }
@@ -573,6 +666,11 @@ export class Room {
   handleInput(socket: ClientSocket, input: unknown) {
     const playerId = socket.data.playerId;
     if (this.game && playerId && this.players.has(playerId)) this.game.onInput(playerId, input);
+  }
+
+  handleGiveUp(socket: ClientSocket) {
+    const playerId = socket.data.playerId;
+    if (this.game && playerId && this.players.has(playerId)) this.game.giveUp?.(playerId);
   }
 
   private setPhaseTimer(ms: number, fn: () => void) {

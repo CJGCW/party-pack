@@ -10,11 +10,16 @@
     "dev:woocha": "cross-env PARTY_PACK_WOOCHA_DEBUG=1 tsx watch --clear-screen=false server/index.ts",
     "build": "vite build",
     "start": "vite build && cross-env NODE_ENV=production tsx server/index.ts",
+    "app:build": "vite build --mode app && cap sync android",
+    "app:install": "npm run app:build && tsx scripts/android.ts installDebug",
+    "app:apk": "npm run app:build && tsx scripts/android.ts assembleDebug",
     "bot": "tsx scripts/bot.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test server/**/*.test.ts"
   },
   "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3",
     "an-array-of-english-words": "^2.0.0",
     "express": "^4.21.2",
     "naughty-words": "^1.2.0",
@@ -27,6 +32,7 @@
     "wordnet-db": "^3.1.14"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.5.3",
     "@types/express": "^4.17.21",
     "@types/node": "^22.15.0",
     "@types/qrcode": "^1.5.5",

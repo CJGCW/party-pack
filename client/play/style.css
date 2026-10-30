@@ -26,7 +26,7 @@ html, body {
 }
 
 #app {
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--bars));
   max-width: 520px;
   margin: 0 auto;
   padding: 16px;
@@ -70,6 +70,8 @@ button {
 button:active { transform: scale(0.97); }
 button:disabled { opacity: 0.5; }
 button.secondary { background: var(--panel-light); }
+/* The app's join screen: which server it's using, tap to change. */
+button.server-link { margin-top: 32px; width: 100%; font-size: 16px; }
 
 .error { color: var(--danger); text-align: center; min-height: 1.4em; }
 
@@ -84,7 +86,7 @@ button.secondary { background: var(--panel-light); }
 
 /* ---------- Word Rush ---------- */
 
-.wr { height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 10px; user-select: none; }
+.wr { height: calc(100dvh - 32px - var(--bars)); display: flex; flex-direction: column; gap: 10px; user-select: none; }
 .wr-top { display: flex; justify-content: space-between; align-items: center; font-size: 18px; color: var(--muted); }
 .wr-timer { font-size: 26px; color: var(--text); }
 .wr-timer.low { color: var(--danger); }
@@ -190,7 +192,7 @@ button.secondary { background: var(--panel-light); }
 
 /* ---------- Letter Drop ---------- */
 
-.tu { min-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 14px; }
+.tu { min-height: calc(100dvh - 32px - var(--bars)); display: flex; flex-direction: column; gap: 14px; }
 .tu-value { color: var(--accent); font-size: 22px; }
 .tu-category {
   text-align: center;
@@ -283,7 +285,7 @@ button.secondary { background: var(--panel-light); }
 
 /* ---------- Trivia ---------- */
 
-.tv { min-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 12px; }
+.tv { min-height: calc(100dvh - 32px - var(--bars)); display: flex; flex-direction: column; gap: 12px; }
 .tv-question { font-size: 22px; text-align: center; line-height: 1.3; }
 .tv-answers { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; padding-bottom: 8px; }
 .tv-answer {
@@ -326,7 +328,7 @@ button.secondary { background: var(--panel-light); }
 
 /* ---------- WoochaWare ---------- */
 
-.ww { height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 8px; user-select: none; -webkit-user-select: none; }
+.ww { height: calc(100dvh - 32px - var(--bars)); display: flex; flex-direction: column; gap: 8px; user-select: none; -webkit-user-select: none; }
 .ww-level { color: var(--accent); }
 .ww-fuse { height: 12px; border-radius: 6px; background: var(--empty); overflow: hidden; flex: none; }
 .ww-fuse-fill { height: 100%; width: 100%; background: var(--accent); border-radius: 6px; }
@@ -374,7 +376,7 @@ button.secondary { background: var(--panel-light); }
 
 /* ---------- Rack Attack ---------- */
 
-.ra { min-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 10px; user-select: none; -webkit-user-select: none; }
+.ra { min-height: calc(100dvh - 32px - var(--bars)); display: flex; flex-direction: column; gap: 10px; user-select: none; -webkit-user-select: none; }
 .ra-board {
   display: grid;
   grid-template-columns: repeat(11, 1fr);
@@ -430,6 +432,18 @@ button.secondary { background: var(--panel-light); }
 .ra-buttons button { font-size: 20px; padding: 14px 6px; }
 .ra-submit { background: var(--correct); }
 
+/* ---------- Longest Word (shares Rack Attack's tiles and buttons) ---------- */
+
+.lw [hidden] { display: none; }
+.lw-letters, .lw-word { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; touch-action: manipulation; }
+.lw .ra-tile .ra-letter { font-size: clamp(18px, 6vw, 34px); font-weight: 700; }
+.lw-word { margin-top: 12px; padding: 6px; border-radius: 10px; background: var(--empty); min-height: calc((100vw - 32px) / 9 + 12px); }
+.lw-word .ra-tile { background: var(--accent); box-shadow: 0 3px 0 #c99a2e; }
+.lw-word .ra-tile.lw-bad { background: var(--danger); box-shadow: none; }
+.lw-empty { background: var(--panel); box-shadow: none; cursor: default; }
+.lw-pick-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; padding-bottom: 8px; }
+.lw-pick-buttons .lw-pick { font-size: 24px; padding: 28px 6px; }
+
 /* ---------- Trivia Quest ---------- */
 
 .tt-bar { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--panel); }
@@ -482,7 +496,7 @@ button.secondary { background: var(--panel-light); }
 
 /* ---------- Clue Crew ---------- */
 
-.cc { min-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 10px; user-select: none; -webkit-user-select: none; }
+.cc { min-height: calc(100dvh - 32px - var(--bars)); display: flex; flex-direction: column; gap: 10px; user-select: none; -webkit-user-select: none; }
 .cc-turn { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 12px; background: var(--panel); }
 .cc-giver { font-size: 14px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
 .cc-clue { font-size: 22px; color: var(--accent); letter-spacing: 1px; }
@@ -585,7 +599,7 @@ button.secondary { background: var(--panel-light); }
 
 /* ---------- Concentration ---------- */
 
-.cn { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px); }
+.cn { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px - var(--bars)); }
 .cn-grid { display: grid; gap: 6px; justify-content: center; align-content: start; touch-action: manipulation; }
 .cn-blank { visibility: hidden; }
 .cn-open { box-shadow: 0 0 0 3px var(--accent), 0 4px 10px rgba(0, 0, 0, 0.4); }
@@ -599,7 +613,7 @@ button.secondary { background: var(--panel-light); }
 
 /* ---------- Twenty-One ---------- */
 
-.to { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px); }
+.to { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px - var(--bars)); }
 .to-hand { padding: 12px 0 4px; }
 /* Your face-down cards: outlined, so you know the others can't see them. */
 .to-hole { box-shadow: 0 0 0 3px var(--muted), 0 2px 6px rgba(0, 0, 0, 0.35); }
@@ -627,7 +641,7 @@ button.secondary { background: var(--panel-light); }
 
 /* ---------- Blockbusters ---------- */
 
-.bb { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px); }
+.bb { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px - var(--bars)); }
 .bb-team { padding: 2px 10px; border-radius: 999px; font-weight: 700; }
 .bb-team.red { background: var(--danger); color: var(--bg); }
 .bb-team.white { background: #f2f0ff; color: var(--bg); }
@@ -711,4 +725,135 @@ button.secondary { background: var(--panel-light); }
 }
 .flag-bar[hidden] { display: none; }
 .flag-bar input { width: 18px; height: 18px; margin: 0; }
-body.has-flag-bar { padding-bottom: 56px; }
+/*
+ * Room for the bars pinned to the bottom (the flag box, the give-up button), so they never cover
+ * a game: full-height game screens take --bars off their height.
+ */
+body { --bars: 0px; padding-bottom: var(--bars); }
+body.has-flag-bar { --bars: 56px; }
+body.has-give-up { --bars: 76px; }
+body.has-flag-bar.has-give-up { --bars: 128px; }
+body.has-give-up .flag-bar { bottom: 82px; }
+
+/* "I give up": hold it down and it fills up (see giveUp.ts). */
+.give-up-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 50;
+  width: min(488px, calc(100% - 32px));
+}
+.give-up-bar[hidden], .give-up[hidden], .give-up-note[hidden] { display: none; }
+.give-up {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 56px;
+  padding: 0;
+  font-size: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 0 0 3px var(--danger);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+.give-up:active { transform: none; }
+.give-up::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--danger);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 250ms ease-out;
+}
+.give-up.holding::before { transform: scaleX(1); transition: transform var(--hold-ms) linear; }
+.give-up-label { position: relative; }
+.give-up-note {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--muted);
+  text-align: center;
+}
+/* Given up: the game's screen stays visible but can't be used until the next puzzle. */
+body.gave-up #app { opacity: 0.4; pointer-events: none; filter: grayscale(0.5); }
+
+/* ---------- Peg Drop ---------- */
+
+.pd { min-height: calc(100dvh - 32px - var(--bars)); display: flex; flex-direction: column; gap: 12px; user-select: none; -webkit-user-select: none; }
+.pd [hidden] { display: none; }
+.pd-aim { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.pd-dial {
+  position: relative;
+  height: 260px;
+  border-radius: 0 0 200px 200px;
+  background: radial-gradient(circle at 50% 0, var(--panel-light), var(--empty) 75%);
+  overflow: hidden;
+  touch-action: none;
+}
+.pd-launcher { position: absolute; left: 50%; top: 0; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: var(--accent); }
+.pd-arrow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 14px;
+  height: 220px;
+  margin-left: -7px;
+  border-radius: 7px;
+  transform-origin: 50% 0;
+  background: linear-gradient(var(--accent), rgba(255, 209, 102, 0.15));
+}
+.pd-arrow::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 26px;
+  height: 26px;
+  margin-left: -13px;
+  border-radius: 50%;
+  background: #e8e8f0;
+}
+.pd-hint { text-align: center; color: var(--muted); font-size: 17px; }
+.pd-buttons { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: auto; padding-bottom: 8px; }
+.pd-buttons .pd-fire { grid-column: 2; }
+.pd-buttons button { font-size: 22px; padding: 22px 6px; }
+.pd-fire { background: var(--danger); font-size: 30px; letter-spacing: 2px; }
+.pd-info { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; gap: 14px; }
+.pd-info-title { font-size: 30px; color: var(--accent); }
+.pd-info-lines { font-size: 20px; display: flex; flex-direction: column; gap: 8px; }
+.pd-stats { text-align: center; color: var(--muted); font-size: 16px; padding-bottom: 8px; }
+
+/* ---------- Other games (played away from the app) ---------- */
+
+.ext-input {
+  width: 100%;
+  font: inherit;
+  font-size: 18px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 3px solid var(--panel-light);
+  background: var(--empty);
+  color: var(--text);
+  outline: none;
+  resize: vertical;
+}
+.ext-input:focus { border-color: var(--accent); }
+.ext-name { font-size: 40px; color: var(--accent); text-align: center; word-break: break-word; }
+.ext-clock { font-size: 28px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ext .muted { text-align: center; max-width: 320px; }
+.ext-finish { margin-top: 24px; width: 100%; font-size: 24px; padding: 22px; background: var(--correct); }
+.ext[hidden], .ext-finish[hidden] { display: none; }
+.ext-players { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.ext-player { font-size: 20px; padding: 18px 8px; background: var(--panel-light); border: 3px solid transparent; color: var(--color); }
+.ext-player.on { background: var(--color); border-color: #ffffff; color: var(--bg); }
+
+/* ---------- Calling the after-round game (once the wheel stops) ---------- */
+
+.call { display: flex; flex-direction: column; gap: 10px; width: 100%; text-align: center; margin-top: 8px; }
+.call[hidden] { display: none; }
+.call-made { font-size: 22px; color: var(--accent); }
+.call-button { font-size: 22px; padding: 18px; background: var(--danger); }

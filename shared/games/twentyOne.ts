@@ -9,7 +9,7 @@ export const TWENTY_ONE_RANKS: readonly Rank[] = ['A', '2', '3', '4', '5', '6', 
 export const TWENTY_ONE: GameInfo = {
   id: 'twentyOne',
   name: 'Twenty-One',
-  description: 'Two cards face down, then draw face up or hold. Closest to 21 without going over wins.',
+  description: 'One card face down and one up, then draw face up or hold. Closest to 21 without going over wins.',
   minPlayers: 1,
   maxPlayers: 8,
   modes: [{ id: 'standard', name: 'Standard', description: 'Ace to 9 only, one deck per player.' }],
@@ -35,20 +35,20 @@ export interface TwentyOneAction {
 }
 
 /**
- * A seat at the table, as everyone sees it. `hole` (the two face-down card ids) is only filled
- * in once they're turned over: when the player busts, and for everyone at the end of the hand.
+ * A seat at the table, as everyone sees it. `hole` (the face-down card's id) is only filled
+ * in once it's turned over: when the player busts, and for everyone at the end of the hand.
  */
 export interface TwentyOneSeat {
   id: string;
   name: string;
   color: string;
   connected: boolean;
-  hole: [string, string] | null;
-  /** Face-up cards, in the order drawn. */
+  hole: string | null;
+  /** Face-up cards: the one dealt, then the ones drawn. */
   up: string[];
   /** The total of the face-up cards alone. */
   showing: HandTotal;
-  /** The whole hand's total, once the hole cards are shown. */
+  /** The whole hand's total, once the hole card is shown. */
   total: HandTotal | null;
   status: SeatStatus;
   /** At the end of the hand: closest to 21. */
@@ -76,8 +76,8 @@ export type TwentyOneHostView = ViewBase;
 export interface TwentyOnePlayerView extends ViewBase {
   /** Your seat's id, or null if you're not dealt in this hand. */
   you: string | null;
-  /** Your own face-down cards (always shown to you), or null if you're not dealt in. */
-  myHole: [string, string] | null;
+  /** Your own face-down card (always shown to you), or null if you're not dealt in. */
+  myHole: string | null;
   /** Your whole hand's total. */
   myTotal: HandTotal | null;
 }

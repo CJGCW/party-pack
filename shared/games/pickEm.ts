@@ -1,4 +1,4 @@
-import type { GameInfo } from '../protocol';
+import type { GameInfo, GiveUpView } from '../protocol';
 
 /** Long-list trivia: pick, or type, every right answer. Each bank is a mode, with the same ids as Trivia's subjects. */
 export const PICK_EM: GameInfo = {
@@ -81,7 +81,7 @@ export interface PickGuessResult {
   answer: string | null;
 }
 
-export interface PickPlayerView {
+export interface PickPlayerView extends GiveUpView {
   phase: PickPhase;
   kind: PickKind;
   heading: string | null;
@@ -187,7 +187,7 @@ export interface PickCoopHostView extends CoopViewBase {
   players: { id: string; name: string; color: string; score: number; gamePoints: number; found: number }[];
 }
 
-export interface PickCoopPlayerView extends CoopViewBase {
+export interface PickCoopPlayerView extends CoopViewBase, GiveUpView {
   /** This player's latest pick or guess, matched by the seq the phone sent. */
   lastGuess: CoopEvent | null;
   gamePoints: number;

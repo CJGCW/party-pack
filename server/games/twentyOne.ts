@@ -34,7 +34,7 @@ export function handPoints(total: number, best: number) {
 
 interface Seat {
   id: string;
-  hole: [string, string];
+  hole: string;
   up: string[];
   status: SeatStatus;
   winner: boolean;
@@ -79,8 +79,9 @@ class TwentyOne implements MiniGame {
     const dealt = this.shoe.deal(players.length, 2);
     this.seats = players.map((p, i) => ({
       id: p.id,
-      hole: [cardId(dealt[i][0]), cardId(dealt[i][1])],
-      up: [],
+      // Like blackjack: the first card face down, the second face up.
+      hole: cardId(dealt[i][0]),
+      up: [cardId(dealt[i][1])],
       status: 'playing',
       winner: false,
       handPoints: 0,
@@ -113,7 +114,7 @@ class TwentyOne implements MiniGame {
     if (drawn) {
       const card = cardId(drawn);
       seat.up.push(card);
-      const bust = handTotal([...seat.hole, ...seat.up]).total > TARGET;
+      const bust = handTotal([seat.hole, ...seat.up]).total > TARGET;
       if (bust) seat.status = 'bust';
       this.lastAction = { seq: ++this.actionSeq, playerId: seat.id, kind: bust ? 'bust' : 'draw', card };
     } else {
@@ -126,7 +127,7 @@ class TwentyOne implements MiniGame {
 
   private endHand() {
     this.turnIndex = -1;
-    const totals = this.seats.map((s) => handTotal([...s.hole, ...s.up]).total);
+    const totals = this.seats.map((s) => handTotal([s.hole, ...s.up]).total);
     const best = Math.max(0, ...totals.filter((t) => t <= TARGET));
     this.seats.forEach((seat, i) => {
       seat.winner = best > 0 && totals[i] === best;
@@ -174,7 +175,7 @@ class TwentyOne implements MiniGame {
         hole: shown ? seat.hole : null,
         up: seat.up,
         showing: handTotal(seat.up),
-        total: shown ? handTotal([...seat.hole, ...seat.up]) : null,
+        total: shown ? handTotal([seat.hole, ...seat.up]) : null,
         status: seat.status,
         winner: seat.winner,
         handPoints: seat.handPoints,
@@ -204,7 +205,7 @@ class TwentyOne implements MiniGame {
       ...this.base(),
       you: seat?.id ?? null,
       myHole: seat?.hole ?? null,
-      myTotal: seat ? handTotal([...seat.hole, ...seat.up]) : null,
+      myTotal: seat ? handTotal([seat.hole, ...seat.up]) : null,
     };
     this.ctx.sendPlayer(playerId, view);
   }

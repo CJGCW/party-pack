@@ -1,4 +1,4 @@
-import type { GameInfo } from '../protocol';
+import type { GameInfo, GiveUpView } from '../protocol';
 
 export const WORDLE_RACE: GameInfo = {
   id: 'wordle-race',
@@ -34,6 +34,8 @@ export interface WordleHostPlayer {
   /** Only colours are shown on the big screen, never letters. One row per guess, oldest first. */
   rows: LetterResult[][];
   solved: boolean;
+  /** Gave up on this word. */
+  gaveUp: boolean;
   finishRank: number | null;
   /** Milliseconds left on the clock when they solved it. */
   solvedMsLeft: number | null;
@@ -63,7 +65,7 @@ export interface WordleGuess {
   result: LetterResult[];
 }
 
-export interface WordlePlayerView {
+export interface WordlePlayerView extends GiveUpView {
   phase: WordlePhase;
   mode: WordleModeId;
   guessCostSeconds: number;

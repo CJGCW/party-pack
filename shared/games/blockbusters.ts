@@ -1,4 +1,4 @@
-import type { GameInfo } from '../protocol';
+import type { GameInfo, GiveUpView } from '../protocol';
 /** Each mode is a question bank in server/games/blockbusters. */
 export const BLOCKBUSTERS: GameInfo = {
   id: 'blockbusters',
@@ -151,7 +151,7 @@ export interface BlockbustersHostView extends ViewBase {
   players: BlockbustersPlayerInfo[];
 }
 
-export interface BlockbustersPlayerView extends ViewBase {
+export interface BlockbustersPlayerView extends ViewBase, GiveUpView {
   myTeam: Team | null;
   /** This player buzzed in (and answers). */
   isBuzzer: boolean;

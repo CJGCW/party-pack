@@ -31,6 +31,7 @@ export function roundPoints(msLeft: number, guesses: number, roundMs: number): n
 interface Progress {
   guesses: WordleGuess[];
   solved: boolean;
+  gaveUp: boolean;
   finishRank: number | null;
   solvedMsLeft: number | null;
   roundPoints: number;
@@ -78,7 +79,7 @@ class WordleRace implements MiniGame {
     this.finishers = 0;
     this.progress.clear();
     for (const p of this.ctx.players()) {
-      this.progress.set(p.id, { guesses: [], solved: false, finishRank: null, solvedMsLeft: null, roundPoints: 0, error: null });
+      this.progress.set(p.id, { guesses: [], solved: false, gaveUp: false, finishRank: null, solvedMsLeft: null, roundPoints: 0, error: null });
     }
     this.setPhase('countdown', COUNTDOWN_MS, () => this.setPhase('playing', ROUND_MS[this.mode], () => this.endRound()));
   }
@@ -98,7 +99,7 @@ class WordleRace implements MiniGame {
     const input = raw as WordleInput;
     if (this.phase !== 'playing' || input?.type !== 'guess' || typeof input.word !== 'string') return;
     const prog = this.progress.get(playerId);
-    if (!prog || prog.solved) return;
+    if (!prog || prog.solved || prog.gaveUp) return;
 
     const word = input.word.trim().toUpperCase();
     if (word.length !== WORD_LENGTH || !/^[A-Z]+$/.test(word)) {
@@ -122,9 +123,23 @@ class WordleRace implements MiniGame {
 
     this.syncPlayer(playerId);
     this.syncHost();
-    // End early once every connected player is done, so nobody waits on someone who left.
+    this.endIfAllDone();
+  }
+
+  giveUp(playerId: string) {
+    const prog = this.progress.get(playerId);
+    if (this.phase !== 'playing' || !prog || prog.solved || prog.gaveUp) return;
+    prog.gaveUp = true;
+    prog.error = null;
+    this.syncPlayer(playerId);
+    this.syncHost();
+    this.endIfAllDone();
+  }
+
+  /** End early once every connected player has solved it or given up, so nobody waits on someone who left. */
+  private endIfAllDone() {
     const connected = new Set(this.ctx.players().filter((p) => p.connected).map((p) => p.id));
-    const allDone = [...this.progress].every(([id, p]) => p.solved || !connected.has(id));
+    const allDone = [...this.progress].every(([id, p]) => p.solved || p.gaveUp || !connected.has(id));
     if (allDone) this.endRound();
   }
 
@@ -167,6 +182,7 @@ class WordleRace implements MiniGame {
             color: p.color,
             rows: prog.guesses.map((g) => g.result),
             solved: prog.solved,
+            gaveUp: prog.gaveUp,
             finishRank: prog.finishRank,
             solvedMsLeft: prog.solvedMsLeft,
             roundPoints: prog.roundPoints,
@@ -199,6 +215,8 @@ class WordleRace implements MiniGame {
       answer: this.revealedAnswer(),
       definition: this.revealedDefinition(),
       error: prog.error,
+      canGiveUp: this.phase === 'playing' && !prog.solved && !prog.gaveUp,
+      gaveUp: this.phase === 'playing' && prog.gaveUp,
     };
     this.ctx.sendPlayer(playerId, view);
   }

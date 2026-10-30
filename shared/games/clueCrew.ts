@@ -1,4 +1,4 @@
-import type { GameInfo } from '../protocol';
+import type { GameInfo, GiveUpView } from '../protocol';
 
 /**
  * Co-op word clues, in the style of the two-player co-op variant of a well-known
@@ -88,7 +88,7 @@ export interface CrewHostView extends CrewViewBase {
   players: CrewHostPlayer[];
 }
 
-export interface CrewPlayerView extends CrewViewBase {
+export interface CrewPlayerView extends CrewViewBase, GiveUpView {
   isGiver: boolean;
   /** This player's secret key: what each card is to them. */
   key: CardKind[];

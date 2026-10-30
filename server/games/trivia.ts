@@ -188,6 +188,20 @@ class Trivia implements MiniGame {
     else this.syncAll();
   }
 
+  /** Giving up: no answer to this question (in Team Trivia that costs a life, as a missed answer does). */
+  giveUp(playerId: string) {
+    if (this.list) return this.list.game.giveUp?.(playerId);
+    if (!this.canGiveUp(playerId)) return;
+    this.picks.set(playerId, { indices: [], msLeft: 0 });
+    const connected = this.ctx.players().filter((p) => p.connected);
+    if (connected.every((p) => this.picks.has(p.id))) this.reveal();
+    else this.syncAll();
+  }
+
+  private canGiveUp(playerId: string) {
+    return (this.phase === 'question' || this.phase === 'answering') && !this.picks.has(playerId);
+  }
+
   private reveal() {
     this.scoreAnswers();
     this.setPhase('reveal', PUZZLE_RESULT_MS, () => this.afterReveal());
@@ -286,6 +300,8 @@ class Trivia implements MiniGame {
       gamePoints: this.gamePoints.get(playerId) ?? 0,
       score: player.score,
       msLeft: this.msLeft(),
+      canGiveUp: this.canGiveUp(playerId),
+      gaveUp: !this.revealing && this.picks.get(playerId)?.indices.length === 0,
     };
     this.decoratePlayer(view, playerId);
     this.ctx.sendPlayer(playerId, view);

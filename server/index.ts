@@ -46,7 +46,8 @@ const httpServer = createServer(app);
 // The same app over HTTPS for phones, sharing the rooms and sockets. Only WoochaWare's
 // motion games need it, so it's off along with WoochaWare.
 const httpsServer = config.woochaware ? createHttpsServer(loadCertificate(lan), app) : null;
-const io: IO = new Server(httpServer);
+// The Android app's screens live inside it (at http://localhost), so let them connect from there.
+const io: IO = new Server(httpServer, { cors: { origin: ['http://localhost', 'https://localhost'] } });
 if (httpsServer) io.attach(httpsServer);
 const rooms = new RoomManager(io, joinUrl);
 
@@ -105,6 +106,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('game:input', (input) => roomOf()?.handleInput(socket, input));
+  socket.on('game:giveUp', () => roomOf()?.handleGiveUp(socket));
+  socket.on('room:call', ({ option }, ack) => {
+    const room = roomOf();
+    const error = room ? room.call(socket, option === null || option === undefined ? null : String(option)) : 'Not in a room.';
+    ack(error ? { ok: false, error } : { ok: true });
+  });
   socket.on('game:flag', ({ key, flagged }, ack) => {
     const room = roomOf();
     const error = room ? room.flagQuestion(socket, String(key), !!flagged) : 'Not in a room.';

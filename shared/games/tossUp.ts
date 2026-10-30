@@ -1,4 +1,4 @@
-import type { GameInfo } from '../protocol';
+import type { GameInfo, GiveUpView } from '../protocol';
 
 export const TOSS_UP: GameInfo = {
   id: 'toss-up',
@@ -57,7 +57,7 @@ export interface TossUpHostView {
   solvedBy: string | null;
 }
 
-export interface TossUpPlayerView {
+export interface TossUpPlayerView extends GiveUpView {
   phase: TossUpPhase;
   puzzleNumber: number;
   totalPuzzles: number;

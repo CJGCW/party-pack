@@ -3,7 +3,10 @@ import type { RoomState } from '../../shared/protocol';
 import { CLUE_CREW } from '../../shared/games/clueCrew';
 import { BLOCKBUSTERS } from '../../shared/games/blockbusters';
 import { CONCENTRATION } from '../../shared/games/concentration';
+import { EXTERNAL } from '../../shared/games/external';
 import { TWENTY_ONE } from '../../shared/games/twentyOne';
+import { LONGEST_WORD } from '../../shared/games/longestWord';
+import { PEG_DROP } from '../../shared/games/pegDrop';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
@@ -14,7 +17,10 @@ import { net, socket } from './net';
 import { BlockbustersScene } from './scenes/BlockbustersScene';
 import { ClueCrewScene } from './scenes/ClueCrewScene';
 import { ConcentrationScene } from './scenes/ConcentrationScene';
+import { ExternalScene } from './scenes/ExternalScene';
 import { LobbyScene } from './scenes/LobbyScene';
+import { LongestWordScene } from './scenes/LongestWordScene';
+import { PegDropScene } from './scenes/PegDropScene';
 import { PickEmCoopScene } from './scenes/PickEmCoopScene';
 import { PickEmScene } from './scenes/PickEmScene';
 import { RackAttackScene } from './scenes/RackAttackScene';
@@ -42,6 +48,9 @@ const GAME_SCENES: Record<string, string> = {
   [CONCENTRATION.id]: ConcentrationScene.KEY,
   [TWENTY_ONE.id]: TwentyOneScene.KEY,
   [RACK_ATTACK.id]: RackAttackScene.KEY,
+  [LONGEST_WORD.id]: LongestWordScene.KEY,
+  [PEG_DROP.id]: PegDropScene.KEY,
+  [EXTERNAL.id]: ExternalScene.KEY,
   [WOOCHAWARE.id]: WoochaWareScene.KEY,
 };
 
@@ -71,6 +80,9 @@ game.scene.add(BlockbustersScene.KEY, BlockbustersScene, false);
 game.scene.add(ConcentrationScene.KEY, ConcentrationScene, false);
 game.scene.add(TwentyOneScene.KEY, TwentyOneScene, false);
 game.scene.add(RackAttackScene.KEY, RackAttackScene, false);
+game.scene.add(LongestWordScene.KEY, LongestWordScene, false);
+game.scene.add(PegDropScene.KEY, PegDropScene, false);
+game.scene.add(ExternalScene.KEY, ExternalScene, false);
 game.scene.add(WoochaWareScene.KEY, WoochaWareScene, false);
 // Machine-local add-on games (see ./addons).
 for (const addOn of TV_ADDONS) {

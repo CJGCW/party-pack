@@ -156,6 +156,22 @@ class TossUp implements MiniGame {
     else if (input?.type === 'answer' && typeof input.text === 'string') this.answer(playerId, input.text);
   }
 
+  /** Giving up: out of this puzzle, as if they'd buzzed and got it wrong (without the guess shown). */
+  giveUp(playerId: string) {
+    if (!this.canGiveUp(playerId)) return;
+    if (this.phase === 'buzzed') return this.wrongAnswer(playerId, '');
+    this.lockedOut.add(playerId);
+    const stillIn = this.ctx.players().filter((p) => p.connected && !this.lockedOut.has(p.id));
+    if (stillIn.length === 0) this.finishPuzzle(null);
+    else this.syncAll();
+  }
+
+  /** Before anyone's buzzed (or while answering yourself), and not already out. */
+  private canGiveUp(playerId: string) {
+    if (this.lockedOut.has(playerId)) return false;
+    return this.phase === 'intro' || this.phase === 'revealing' || (this.phase === 'buzzed' && this.buzzerId === playerId);
+  }
+
   private buzz(playerId: string) {
     // First buzz wins; the server decides, so ties can't happen.
     if (this.phase !== 'revealing' || this.lockedOut.has(playerId)) return;
@@ -276,6 +292,7 @@ class TossUp implements MiniGame {
       buzzerName: this.buzzerId ? this.nameOf(this.buzzerId) : null,
       lastGuess: this.lastGuess,
       solvedByName: this.solvedBy ? this.nameOf(this.solvedBy) : null,
+      canGiveUp: this.canGiveUp(playerId),
     };
     this.ctx.sendPlayer(playerId, view);
   }

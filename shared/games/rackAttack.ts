@@ -1,4 +1,4 @@
-import type { GameInfo } from '../protocol';
+import type { GameInfo, GiveUpView } from '../protocol';
 
 export const RACK_ATTACK: GameInfo = {
   id: 'rack-attack',
@@ -105,7 +105,7 @@ export interface RackHostView {
   best: ScoredMove | null;
 }
 
-export interface RackPlayerView {
+export interface RackPlayerView extends GiveUpView {
   phase: RackPhase;
   puzzleNumber: number;
   totalPuzzles: number;

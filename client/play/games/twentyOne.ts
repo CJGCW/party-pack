@@ -4,7 +4,7 @@ import { cardElement } from '../cards';
 import { h } from '../dom';
 import type { Controller } from '../main';
 
-/** Twenty-One on the phone: your hand (face-down cards marked), Draw / Hold on your turn, and the table. */
+/** Twenty-One on the phone: your hand (the face-down card marked), Draw / Hold on your turn, and the table. */
 export function createTwentyOne(root: HTMLElement, send: (input: unknown) => void): Controller {
   let view: TwentyOnePlayerView | null = null;
   let phaseEndsAt = 0;
@@ -14,7 +14,7 @@ export function createTwentyOne(root: HTMLElement, send: (input: unknown) => voi
   const timerEl = h('span', { class: 'wr-timer' });
   const totalEl = h('span');
   const handEl = h('div', { class: 'pcard-hand to-hand' });
-  const noteEl = h('div', { class: 'to-note' }, 'Outlined cards are face down: only you can see them.');
+  const noteEl = h('div', { class: 'to-note' }, 'The outlined card is face down: only you can see it.');
   const statusEl = h('div', { class: 'tu-status' });
   const drawBtn = h('button', {}, 'Draw') as HTMLButtonElement;
   const holdBtn = h('button', { class: 'secondary' }, 'Hold') as HTMLButtonElement;
@@ -53,14 +53,14 @@ export function createTwentyOne(root: HTMLElement, send: (input: unknown) => voi
     headerEl.textContent = `Hand ${v.hand}/${v.totalHands}`;
     totalEl.textContent = v.myTotal ? `Total ${totalLabel(v.myTotal)}` : '';
 
-    // Your hand: the two face-down cards (outlined), then the face-up ones.
+    // Your hand: the face-down card (outlined), then the face-up ones.
     const width = Math.min(window.innerWidth, 520) - 32;
-    const cards = [...(v.myHole ?? []), ...(seat?.up ?? [])];
+    const cards = [...(v.myHole ? [v.myHole] : []), ...(seat?.up ?? [])];
     handEl.style.setProperty('--card-w', `${Math.floor(Math.min(110, width / Math.max(3, cards.length * 0.6 + 0.4)))}px`);
     handEl.replaceChildren(
       ...cards.map((id, i) => {
         const el = cardElement(parseCard(id));
-        if (i < 2 && !(v.phase === 'handEnd' || v.phase === 'gameEnd' || seat?.status === 'bust')) el.classList.add('to-hole');
+        if (i === 0 && v.myHole && !(v.phase === 'handEnd' || v.phase === 'gameEnd' || seat?.status === 'bust')) el.classList.add('to-hole');
         return el;
       }),
     );
@@ -74,7 +74,7 @@ export function createTwentyOne(root: HTMLElement, send: (input: unknown) => voi
     else
       switch (v.phase) {
         case 'dealing':
-          setStatus('Dealing… two cards each, face down.');
+          setStatus('Dealing… one card face down, one face up.');
           break;
         case 'playing':
           if (mine) setStatus(`Your turn: draw a card face up, or hold at ${v.myTotal!.total}.`, 'good');
@@ -97,8 +97,8 @@ export function createTwentyOne(root: HTMLElement, send: (input: unknown) => voi
       ...v.seats
         .filter((s) => s.id !== myId)
         .map((s) => {
-          const cardsText = [...(s.hole ?? ['?', '?']), ...s.up].map((id) => (id === '?' ? '🂠' : cardLabel(parseCard(id)!))).join(' ');
-          const totalText = s.total ? totalLabel(s.total) : s.up.length ? `showing ${totalLabel(s.showing)}` : '';
+          const cardsText = [s.hole ?? '?', ...s.up].map((id) => (id === '?' ? '🂠' : cardLabel(parseCard(id)!))).join(' ');
+          const totalText = s.total ? totalLabel(s.total) : `showing ${totalLabel(s.showing)}`;
           const state = s.status === 'bust' ? 'Bust' : s.winner ? 'Winner' : s.status === 'held' ? 'Held' : v.turn === s.id ? 'Deciding' : '';
           return h(
             'div',

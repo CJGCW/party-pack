@@ -11,8 +11,8 @@ const PANEL_GAP = 28;
 const INK = '#140f2e';
 
 /**
- * The TV during Twenty-One: a seat per player with their hand. The two hole cards stay face
- * down (only the player's phone shows them) until they bust or the hand ends; drawn cards are
+ * The TV during Twenty-One: a seat per player with their hand. The hole card stays face
+ * down (only the player's phone shows it) until they bust or the hand ends; the rest are
  * face up for everyone.
  */
 export class TwentyOneScene extends Phaser.Scene {
@@ -71,7 +71,7 @@ export class TwentyOneScene extends Phaser.Scene {
     this.hintText
       .setText(
         view.phase === 'dealing'
-          ? 'DEALING: TWO CARDS EACH, FACE DOWN'
+          ? 'DEALING: ONE CARD DOWN, ONE UP'
           : view.phase === 'playing'
             ? `${turnName?.toUpperCase()}: DRAW OR HOLD?`
             : winners.length === 0
@@ -148,8 +148,8 @@ export class TwentyOneScene extends Phaser.Scene {
       c.add([bg, label]);
     }
 
-    // The hand: hole cards (face down until shown), then the face-up draws.
-    const ids: (string | null)[] = [...(s.hole ?? [null, null]), ...s.up];
+    // The hand: the hole card (face down until shown), then the face-up ones.
+    const ids: (string | null)[] = [s.hole, ...s.up];
     const cardsY = 100 + (h - 230) / 2 + (cardW * 1.4) / 2 - 20;
     const cards = addCardRow(this, PANEL_W / 2, cardsY, ids.map((id) => (id ? parseCard(id) : null)), { width: cardW, gap: 10, maxWidth: PANEL_W - 40 });
     c.add(cards);
@@ -160,11 +160,7 @@ export class TwentyOneScene extends Phaser.Scene {
       this.tweens.add({ targets: newest, scale: 1, alpha: s.status === 'bust' ? 0.6 : 1, duration: 280, ease: 'Back.easeOut' });
     }
 
-    const line1 = s.total
-      ? `Total ${totalLabel(s.total)}`
-      : s.up.length
-        ? `Showing ${totalLabel(s.showing)} + ? ?`
-        : 'Two cards down';
+    const line1 = s.total ? `Total ${totalLabel(s.total)}` : `Showing ${totalLabel(s.showing)} + ?`;
     c.add(text(this, PANEL_W / 2, h - 66, line1, 30, s.status === 'bust' ? COLORS.danger : COLORS.text, { fontStyle: '700' }));
     const line2 = view.phase === 'handEnd' || view.phase === 'gameEnd' ? (s.handPoints ? `+${s.handPoints.toLocaleString()}` : 'No points') : '';
     c.add(text(this, PANEL_W / 2, h - 28, line2, 26, s.handPoints ? COLORS.accent : COLORS.muted, { fontStyle: '700' }));

@@ -9,3 +9,6 @@ dist/
 
 # Questions the VIP flagged for review (see server/flags.ts)
 flagged-questions.jsonl
+
+# The phone screens built for the Android app (npm run app:build)
+dist-app/
