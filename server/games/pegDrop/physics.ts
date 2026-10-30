@@ -36,12 +36,12 @@ const MAX_SHOT_S = 25;
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
-export function simulateShot(pegs: Peg[], angle: number, number: number): Shot {
+export function simulateShot(pegs: Peg[], angle: number, number: number, catcherT = 0): Shot {
   const goldTotal = pegs.filter((p) => p.gold).length;
   let goldCleared = pegs.filter((p) => p.gold && p.gone).length;
   const solid = pegs.map((p) => !p.gone);
   const lit = new Set<number>();
-  const shot: Shot = { angle, number, path: [], step: DT * RECORD_EVERY, hits: [], pops: [], endT: 0, caught: false, points: 0, cleared: false, clearT: null };
+  const shot: Shot = { angle, number, catcherT, path: [], step: DT * RECORD_EVERY, hits: [], pops: [], endT: 0, caught: false, points: 0, cleared: false, clearT: null };
 
   let x = LAUNCHER.x;
   let y = LAUNCHER.y;
@@ -114,7 +114,7 @@ export function simulateShot(pegs: Peg[], angle: number, number: number): Shot {
     }
 
     // The bucket: falling into it catches the ball.
-    if (prevY < CATCHER.y && y >= CATCHER.y && vy > 0 && Math.abs(x - catcherX(number, t)) < CATCHER.width / 2 - BALL_R / 2) {
+    if (prevY < CATCHER.y && y >= CATCHER.y && vy > 0 && Math.abs(x - catcherX(catcherT + t)) < CATCHER.width / 2 - BALL_R / 2) {
       shot.path.push(round1(x), round1(y));
       shot.endT = t;
       shot.caught = true;

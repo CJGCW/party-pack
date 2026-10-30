@@ -268,6 +268,7 @@ button.server-link { margin-top: 32px; width: 100%; font-size: 16px; }
 .group-options.titled { margin-left: 0; }
 .group-options.off { border-left-color: var(--panel-light); }
 .choice-title { font-size: 20px; }
+.choice-label { font-size: 14px; }
 .segmented { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(0, 0, 0, 0.25); }
 .segmented button { flex: 1; padding: 10px 4px; font-size: 16px; background: transparent; box-shadow: none; opacity: 0.75; }
 .segmented button.on { background: var(--accent); color: var(--bg); opacity: 1; }
@@ -443,6 +444,15 @@ button.server-link { margin-top: 32px; width: 100%; font-size: 16px; }
 .lw-empty { background: var(--panel); box-shadow: none; cursor: default; }
 .lw-pick-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; padding-bottom: 8px; }
 .lw-pick-buttons .lw-pick { font-size: 24px; padding: 28px 6px; }
+
+/* ---------- Maze Race ---------- */
+
+.mz { height: calc(100dvh - 32px - var(--bars)); min-height: 0; }
+.mz-status { min-height: 2.6em; }
+.mz-board { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; padding-bottom: 8px; }
+.mz-canvas { touch-action: none; border-radius: 6px; }
+.mz-canvas[hidden], .mz-countdown[hidden] { display: none; }
+.mz-countdown { font-size: 140px; font-weight: 700; color: var(--accent); }
 
 /* ---------- Trivia Quest ---------- */
 

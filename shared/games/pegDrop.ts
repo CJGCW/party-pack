@@ -6,7 +6,19 @@ export const PEG_DROP: GameInfo = {
   description: 'Take turns firing a ball into a board of pegs on the TV, aiming by turning your phone. Gold pegs score big; most points on the board wins.',
   minPlayers: 1,
   maxPlayers: 8,
-  modes: [{ id: 'standard', name: 'Standard', description: 'Turn your phone like a steering wheel to aim.' }],
+  // The VIP picks the shots each per board in the lobby; the mode is that choice (see ballsPerPlayer).
+  modes: [
+    { id: 'auto', name: 'Auto', description: '12 shots a board shared out between the players (at least 3 each).' },
+    ...[3, 5, 8, 10].map((n) => ({ id: String(n), name: `${n} shots`, description: `${n} shots each per board.` })),
+  ],
+  choices: [
+    {
+      id: 'shots',
+      label: 'Shots each per board (Auto: 12 shared out, at least 3 each)',
+      options: [{ id: 'auto', label: 'Auto' }, ...[3, 5, 8, 10].map((n) => ({ id: String(n), label: String(n) }))],
+      noAny: true,
+    },
+  ],
 };
 
 // ---- The board, in TV pixels (1920 x 1080) -------------------------------------------------
@@ -28,10 +40,12 @@ export const LAUNCH_SPEED = 950;
 /** The bucket sliding along the bottom: catch the ball in it for a free ball. */
 export const CATCHER = { y: 1030, width: 190, height: 28, amplitude: 420, periodS: 4.5 };
 
-/** The bucket's centre `t` seconds into shot number `shot` (the TV and server agree on it). */
-export function catcherX(shot: number, t: number) {
-  const phase = shot * 2.1;
-  return LAUNCHER.x + CATCHER.amplitude * Math.sin(phase + (2 * Math.PI * t) / CATCHER.periodS);
+/**
+ * The bucket's centre at `t` on its own clock, which runs all the time: in real time between shots,
+ * and in step with the ball (slow motion included) while a shot plays (see Shot.catcherT).
+ */
+export function catcherX(t: number) {
+  return LAUNCHER.x + CATCHER.amplitude * Math.sin((2 * Math.PI * t) / CATCHER.periodS);
 }
 
 /** Where the ball is `t` seconds after leaving the launcher at `angle`, before it hits anything. */
@@ -55,8 +69,13 @@ export function multiplierFor(goldCleared: number, goldTotal: number) {
   return share >= 0.85 ? 5 : share >= 0.65 ? 3 : share >= 0.4 ? 2 : 1;
 }
 
-/** Balls each player gets per board: fewer each with more players, so a board takes about as long. */
-export function ballsPerPlayer(players: number) {
+/**
+ * Balls each player gets per board: as the VIP picked (the mode), or on Auto fewer each with more
+ * players, so a board takes about as long.
+ */
+export function ballsPerPlayer(players: number, modeId = 'auto') {
+  const picked = Number(modeId);
+  if (Number.isInteger(picked) && picked > 0) return picked;
   return Math.max(3, Math.ceil(12 / Math.max(1, players)));
 }
 
@@ -73,8 +92,10 @@ export interface Peg {
 /** A shot, worked out by the server as soon as it's fired, for the TV to play back. */
 export interface Shot {
   angle: number;
-  /** Which shot of the board this is (the bucket's position depends on it). */
+  /** Which shot of the board this is. */
   number: number;
+  /** The bucket's clock when it was fired: `t` seconds into the shot, the bucket's at catcherX(catcherT + t). */
+  catcherT: number;
   /** Ball positions every `step` seconds: x0, y0, x1, y1, … */
   path: number[];
   step: number;
@@ -152,6 +173,8 @@ export interface PegHostView {
   angle: number;
   shotNumber: number;
   shot: Shot | null;
+  /** The bucket's clock when this view was sent (it runs on in real time from there, see catcherX). */
+  catcherT: number;
   msLeft: number;
   phaseMs: number;
   multiplier: number;

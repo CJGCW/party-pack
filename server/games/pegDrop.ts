@@ -45,10 +45,15 @@ class PegDrop implements MiniGame {
   private phaseEndsAt = 0;
   private phaseMs = 0;
   private timer: NodeJS.Timeout | null = null;
+  /** The bucket's clock: it read `catcherBase` at `catcherBaseAt` (ms), running in real time from there. */
+  private catcherBase = 0;
+  private catcherBaseAt = Date.now();
 
   constructor(
     private readonly ctx: GameContext,
     private readonly totalBoards: number,
+    /** Shots each per board: a number, or 'auto' (see ballsPerPlayer). */
+    private readonly modeId: string,
   ) {}
 
   start() {
@@ -70,7 +75,7 @@ class PegDrop implements MiniGame {
     this.shotNumber = 0;
     this.shot = null;
     const players = this.ctx.players();
-    const each = ballsPerPlayer(players.filter((p) => p.connected).length);
+    const each = ballsPerPlayer(players.filter((p) => p.connected).length, this.modeId);
     // A different player goes first each board.
     const ids = players.map((p) => p.id);
     this.order = [...ids.slice(index % ids.length), ...ids.slice(0, index % ids.length)];
@@ -111,8 +116,12 @@ class PegDrop implements MiniGame {
   private fire() {
     if (this.phase !== 'aim') return;
     const shooter = this.shooterId;
-    const shot = simulateShot(this.pegs, this.angle, this.shotNumber);
+    const shot = simulateShot(this.pegs, this.angle, this.shotNumber, this.catcherT());
     this.shot = shot;
+    // While the shot plays back, the bucket keeps time with the ball (slow motion included), so it
+    // reaches the shot's end in step with the TV and runs on in real time from there.
+    this.catcherBase = shot.catcherT + shot.endT;
+    this.catcherBaseAt = Date.now() + playbackSeconds(shot) * 1000;
     this.balls.set(shooter, (this.balls.get(shooter) ?? 0) - (shot.caught ? 0 : 1));
     const playMs = Math.ceil(playbackSeconds(shot) * 1000) + SHOT_TAIL_MS + (shot.cleared ? CLEAR_CELEBRATION_MS : 0);
     this.setPhase('shot', playMs, () => {
@@ -151,6 +160,11 @@ class PegDrop implements MiniGame {
     return this.pegs.filter((p) => p.gold).length;
   }
 
+  /** The bucket's clock now. */
+  private catcherT() {
+    return this.catcherBase + (Date.now() - this.catcherBaseAt) / 1000;
+  }
+
   private msLeft() {
     return Math.max(0, this.phaseEndsAt - Date.now());
   }
@@ -178,6 +192,7 @@ class PegDrop implements MiniGame {
       shooterId: this.shooterId,
       angle: this.angle,
       shotNumber: this.shotNumber,
+      catcherT: this.catcherT(),
       shot: this.phase === 'shot' ? this.shot : null,
       msLeft: this.msLeft(),
       phaseMs: this.phaseMs,
@@ -233,5 +248,5 @@ class PegDrop implements MiniGame {
 
 export const pegDrop: MiniGameDefinition = {
   info: PEG_DROP,
-  create: (ctx, _modeId, options) => new PegDrop(ctx, options.puzzles),
+  create: (ctx, modeId, options) => new PegDrop(ctx, options.puzzles, modeId),
 };

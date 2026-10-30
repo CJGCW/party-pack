@@ -67,7 +67,11 @@ export interface CallState {
 /** One row of a game's lobby choices, e.g. Easy / Hard. */
 export interface GameChoice {
   id: string;
+  /** Shown above the row, if the options need explaining. */
+  label?: string;
   options: { id: string; label: string }[];
+  /** No "Both"/"Any" option: one of these is always picked (the first to start with). */
+  noAny?: boolean;
   /** Adds a "Neither"/"None" option, which takes the game off the wheel (and hides the rows after it). */
   canTurnOff?: boolean;
 }

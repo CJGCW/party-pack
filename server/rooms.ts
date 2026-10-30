@@ -135,9 +135,9 @@ export class Room {
     groups: Object.fromEntries(
       GROUPS.map((g) => [g.id, { style: 'both', topics: groupTopics(g).map((t) => t.id), formats: groupFormats(g).map((f) => f.id) }]),
     ),
-    // "Both"/"Any" for every choice to start with.
+    // "Both"/"Any" for every choice to start with (or the first option, for one without).
     choices: Object.fromEntries(
-      WHEEL_ENTRIES.flatMap((e) => (e.choices ? [[e.id, Object.fromEntries(e.choices.map((c) => [c.id, ANY_OPTION]))]] : [])),
+      WHEEL_ENTRIES.flatMap((e) => (e.choices ? [[e.id, Object.fromEntries(e.choices.map((c) => [c.id, c.noAny ? c.options[0].id : ANY_OPTION]))]] : [])),
     ),
     rounds: DEFAULT_ROUNDS,
     puzzlesPerRound: DEFAULT_PUZZLES,
@@ -355,7 +355,7 @@ export class Room {
       choices[e.id] = Object.fromEntries(
         e.choices.map((c) => {
           const sent = next?.choices?.[e.id]?.[c.id];
-          const valid = sent === ANY_OPTION || c.options.some((o) => o.id === sent);
+          const valid = (sent === ANY_OPTION && !c.noAny) || c.options.some((o) => o.id === sent);
           return [c.id, valid ? sent! : this.settings.choices[e.id][c.id]];
         }),
       );

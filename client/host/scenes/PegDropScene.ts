@@ -96,6 +96,9 @@ export class PegDropScene extends Phaser.Scene {
   private phaseEndsAt = 0;
   private shot: Shot | null = null;
   private shotStart = 0;
+  /** The bucket's clock (see catcherX): it read `catcherBase` at `catcherBaseAt` (performance.now ms). */
+  private catcherBase = 0;
+  private catcherBaseAt = 0;
   private hitsShown = 0;
   private popsShown = 0;
   private shotDone = false;
@@ -286,6 +289,12 @@ export class PegDropScene extends Phaser.Scene {
     this.view = view;
     this.phaseEndsAt = performance.now() + view.msLeft;
     this.barrel.setRotation(-view.angle);
+    // Follow the server's bucket clock, ignoring small differences (network jitter) so it glides.
+    const now = performance.now();
+    if (Math.abs(this.catcherBase + (now - this.catcherBaseAt) / 1000 - view.catcherT) > 0.05) {
+      this.catcherBase = view.catcherT;
+      this.catcherBaseAt = now;
+    }
 
     const pegKey = `${view.boardNumber}|${view.shotNumber}`;
     if (pegKey !== this.pegKey) {
@@ -328,7 +337,8 @@ export class PegDropScene extends Phaser.Scene {
 
     const shot = this.shot;
     const { t, slow } = shot ? shotTimeAt(shot, (now - this.shotStart) / 1000) : { t: 0, slow: false };
-    this.catcher.setX(catcherX(v.shotNumber, Math.min(t, shot?.endT ?? 0)));
+    // The bucket keeps time with the ball while a shot plays (slow motion too), and runs on its own otherwise.
+    this.catcher.setX(catcherX(shot && t < shot.endT ? shot.catcherT + t : this.catcherBase + (now - this.catcherBaseAt) / 1000));
 
     // The lights along the top chase while a ball is in play, and glow softly otherwise.
     const inPlay = !!shot && t < shot.endT;

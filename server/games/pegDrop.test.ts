@@ -14,7 +14,7 @@ afterEach(() => {
   mock.timers.reset();
 });
 
-function play(players: number, boards = 1) {
+function play(players: number, boards = 1, modeId = 'auto') {
   const room: PlayerInfo[] = Array.from({ length: players }, (_, i) => ({
     id: `p${i}`,
     name: `P${i}`,
@@ -33,7 +33,7 @@ function play(players: number, boards = 1) {
     finish: () => {},
     showingQuestion: () => {},
   };
-  const game = pegDrop.create(ctx, 'standard', { puzzles: boards });
+  const game = pegDrop.create(ctx, modeId, { puzzles: boards });
   running.push(game);
   game.start();
   return { game, view: (id: string) => views.get(id)!, host: () => host, room };
@@ -86,6 +86,23 @@ describe('Peg Drop', () => {
     assert.ok(caught.length > 0);
   });
 
+  it("the bucket moves all the time, so when you fire decides whether it's under the ball", () => {
+    const at = (catcherT: number) => simulateShot([], 0, 0, catcherT).caught;
+    const outcomes = new Set(Array.from({ length: 45 }, (_, i) => at(i / 10)));
+    assert.deepEqual([...outcomes].sort(), [false, true]);
+
+    // Its clock runs on while aiming, and a shot carries on from where the last one left it.
+    const g = play(2);
+    const startT = g.host().catcherT;
+    mock.timers.tick(2_000);
+    g.game.onInput('p0', { type: 'aim', angle: 0.3 });
+    assert.ok(Math.abs(g.host().catcherT - startT - 2) < 0.01);
+    const { shot } = shoot(g);
+    assert.ok(Math.abs(shot.catcherT - startT - 2) < 0.01);
+    // After playback (shot.endT on the bucket's clock) and the 1.5s tail.
+    assert.ok(Math.abs(g.host().catcherT - (shot.catcherT + shot.endT + 1.5)) < 0.01);
+  });
+
   it('takes turns; only the shooter aims and fires, and the aim is kept on the board', () => {
     const g = play(2);
     assert.equal(g.host().shooterId, 'p0');
@@ -98,6 +115,13 @@ describe('Peg Drop', () => {
     const { shot } = shoot(g);
     assert.equal(g.view('p0').ballsLeft, ballsPerPlayer(2) - (shot.caught ? 0 : 1));
     if (!shot.cleared) assert.equal(g.host().shooterId, 'p1');
+  });
+
+  it('gives each player the shots the VIP picked, or on Auto 12 shared out (at least 3 each)', () => {
+    assert.equal(play(2, 1, '5').view('p0').ballsLeft, 5);
+    assert.equal(play(2).view('p0').ballsLeft, 6);
+    assert.equal(play(6).view('p0').ballsLeft, 3);
+    assert.equal(ballsPerPlayer(4, '10'), 10);
   });
 
   it('fires by itself when time runs out', () => {

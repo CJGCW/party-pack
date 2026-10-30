@@ -6,6 +6,7 @@ import { CONCENTRATION } from '../../shared/games/concentration';
 import { EXTERNAL, MAX_EXTERNAL_GAMES, parseExternalGames } from '../../shared/games/external';
 import { TWENTY_ONE } from '../../shared/games/twentyOne';
 import { LONGEST_WORD } from '../../shared/games/longestWord';
+import { MAZE_RACE } from '../../shared/games/mazeRace';
 import { PEG_DROP } from '../../shared/games/pegDrop';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
@@ -24,6 +25,7 @@ import { createConcentration } from './games/concentration';
 import { createExternal } from './games/external';
 import { createTwentyOne } from './games/twentyOne';
 import { createLongestWord } from './games/longestWord';
+import { createMazeRace } from './games/mazeRace';
 import { createPegDrop } from './games/pegDrop';
 import { createPickEm } from './games/pickEm';
 import { createPickEmCoop } from './games/pickEmCoop';
@@ -55,6 +57,7 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [RACK_ATTACK.id]: createRackAttack,
   [LONGEST_WORD.id]: createLongestWord,
   [PEG_DROP.id]: createPegDrop,
+  [MAZE_RACE.id]: createMazeRace,
   [EXTERNAL.id]: createExternal,
   [WOOCHAWARE.id]: createWoochaWare,
 };
@@ -371,12 +374,13 @@ function wheelSettings(isVip: boolean): Node[] {
     for (const choice of entry.choices ?? []) {
       const value = values[choice.id] ?? ANY_OPTION;
       const two = choice.options.length === 2;
+      if (choice.label) rows.push(h('div', { class: 'muted choice-label' }, choice.label));
       rows.push(
         h(
           'div',
           { class: 'segmented' },
           ...choice.options.map((o) => button(o.label, on && value === o.id, () => choose(choice.id, o.id))),
-          button(two ? 'Both' : 'Any', on && value === ANY_OPTION, () => choose(choice.id, ANY_OPTION)),
+          !choice.noAny && button(two ? 'Both' : 'Any', on && value === ANY_OPTION, () => choose(choice.id, ANY_OPTION)),
           !!choice.canTurnOff && button(two ? 'Neither' : 'None', !on, turnOff),
         ),
       );
