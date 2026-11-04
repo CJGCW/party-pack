@@ -270,6 +270,7 @@ button.server-link { margin-top: 32px; width: 100%; font-size: 16px; }
 .choice-title { font-size: 20px; }
 .choice-label { font-size: 14px; }
 .segmented { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(0, 0, 0, 0.25); }
+.segmented.wrap { flex-wrap: wrap; }
 .segmented button { flex: 1; padding: 10px 4px; font-size: 16px; background: transparent; box-shadow: none; opacity: 0.75; }
 .segmented button.on { background: var(--accent); color: var(--bg); opacity: 1; }
 .segmented button:disabled { cursor: default; }
@@ -1138,3 +1139,52 @@ body.gave-up #app { opacity: 0.4; pointer-events: none; filter: grayscale(0.5); 
 /* ---------- Copy Cat ---------- */
 
 .cc2-pad { min-height: 40dvh; touch-action: none; }
+
+/* Wumble puzzles */
+.cr { gap: 6px; }
+.cr .ra-status { min-height: 1.4em; font-size: 16px; }
+.cr-stage { display: flex; flex-direction: column; gap: 8px; }
+.cr-pips, .cr-hearts { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 14px; }
+.cr-pips span { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--muted); box-sizing: border-box; }
+.cr-pips span.on { background: #ffd166; border-color: #ffd166; }
+.cr-hearts span { font-size: 16px; line-height: 1; color: var(--empty); }
+.cr-hearts span.on { color: var(--danger); }
+.cr-grid { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 5px; }
+.cr-tile { position: relative; padding: 2px; background: var(--empty); box-shadow: none; border: 3px solid transparent; border-radius: 10px; min-height: 0; }
+.cr-tile:disabled { opacity: 1; }
+.cr-tile svg { display: block; width: 100%; }
+.cr-tile.on { border-color: var(--accent); background: var(--panel-light); }
+.cr-tile.good { border-color: #4cd37a; }
+.cr-tile.dim { opacity: 0.3; }
+.cr-badge { position: absolute; right: 2px; top: 1px; font-size: 11px; font-weight: 700; color: var(--danger); text-shadow: 0 0 3px #140f2e; }
+.cr-topping { font-size: 30px; line-height: 1.3; }
+.cr-door { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 96px; padding: 6px; background: #3a2a1c; border: 3px solid #8a6a44; box-shadow: none; border-radius: 12px 12px 4px 4px; }
+.cr-door b { font-size: 20px; }
+.cr-door.dim { opacity: 0.4; }
+.cr-door .cr-grid { width: 100%; gap: 1px; }
+.cr-door svg { display: block; width: 100%; }
+.cr-go { font-size: 22px; padding: 12px 6px; background: var(--accent); color: var(--bg); box-shadow: none; }
+.cr-go.secondary { background: var(--panel-light); color: var(--text); font-size: 18px; }
+.cr-go:disabled { opacity: 0.45; }
+.cr-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cr-customer { display: flex; justify-content: center; }
+.cr-customer svg { width: 92px; height: 92px; }
+.cr-order { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--panel); border-radius: 8px; padding: 2px 8px; }
+.cr-order svg { width: 40px; height: 40px; flex: none; }
+.cr-order .cr-tile { width: 64px; flex: none; }
+.cr-food { font-size: 24px; }
+.cr-reply { font-weight: 700; }
+.cr-reply.more { color: #ffd166; }
+.cr-reply.yuck { color: var(--danger); }
+.cr-reply.yum { color: #4cd37a; }
+.cr-log { display: flex; flex-direction: column; gap: 3px; }
+.cr-board { display: block; width: 100%; max-height: 50dvh; touch-action: manipulation; }
+.cr-pair { display: flex; background: var(--panel); border-radius: 8px; padding: 2px; }
+.cr-pair svg { width: 50%; }
+.cr-rule { height: 2px; background: var(--panel-light); }
+.cr-ladder { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.cr-ladder svg { width: 44px; height: 44px; }
+.cr-gap { width: 44px; text-align: center; font-size: 26px; color: var(--muted); }
+.cr-lenses { text-align: center; font-size: 28px; line-height: 1; letter-spacing: 6px; }
+.cr-tile.good .cr-badge { color: #4cd37a; }
+.cr-then { font-size: 22px; color: var(--muted); }

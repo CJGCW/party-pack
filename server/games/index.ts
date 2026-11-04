@@ -10,6 +10,7 @@ import { mazeRace } from './mazeRace';
 import { pegDrop } from './pegDrop';
 import { spiralShot } from './spiralShot';
 import { starSplat } from './starSplat';
+import { twoDoors, pickyEater, seatingChart, lookalikes, roomSort, lineUp, lensLab, switchback, steppingStones } from './critters';
 import { caveFlyer } from './caveFlyer';
 import { stacker } from './stacker';
 import { tileTilt } from './tileTilt';
@@ -69,7 +70,7 @@ import { castleSiege } from './castleSiege';
 
 /** Every mini game in the pack. Add new games here. WoochaWare can be turned off in the config. */
 export const GAMES: MiniGameDefinition[] = [
-  wordleRace, tossUp, trivia, triviaQuest, pickEm, pickEmCoop, rackAttack, clueCrew, concentration, blockbusters, twentyOne, longestWord, pegDrop, mazeRace, spiralShot, starSplat, caveFlyer, stacker, tileTilt, tempestRun, helixDrop, skyHop, snowChase, roadHop, poppit, unblockCar, minesweeper, pipeFlow, lightTrails, bumpRing, hexHeat, fruitRush, skyJoust, keepGuard, blastGrid, tankYard, bubbleBrawl, gemRush, brickBash, castleCrush, strikeZone, idolTower, inkRun, gizmoGoal, snatch, rockSolid, flagSignal, windUp, powerBeat, popChain, headBall, moonDrop, dodgeBox, barDash, ballCount, crowdSpot, faceFix, sketchIt, noteRush, copyCat, glideDrop, marbleRally, mazeMuncher, walkerRescue, castleSiege,
+  wordleRace, tossUp, trivia, triviaQuest, pickEm, pickEmCoop, rackAttack, clueCrew, concentration, blockbusters, twentyOne, longestWord, pegDrop, mazeRace, spiralShot, starSplat, caveFlyer, stacker, tileTilt, tempestRun, helixDrop, skyHop, snowChase, roadHop, poppit, unblockCar, minesweeper, pipeFlow, lightTrails, bumpRing, hexHeat, fruitRush, skyJoust, keepGuard, blastGrid, tankYard, bubbleBrawl, gemRush, brickBash, castleCrush, strikeZone, idolTower, inkRun, gizmoGoal, snatch, rockSolid, flagSignal, windUp, powerBeat, popChain, headBall, moonDrop, dodgeBox, barDash, ballCount, crowdSpot, faceFix, sketchIt, noteRush, copyCat, glideDrop, marbleRally, mazeMuncher, walkerRescue, castleSiege, twoDoors, pickyEater, seatingChart, lookalikes, roomSort, lineUp, lensLab, switchback, steppingStones,
   ...(config.woochaware ? [woochaware] : []),
   // Machine-local add-ons, if any (see ./addons).
   ...(await loadAddOns()),

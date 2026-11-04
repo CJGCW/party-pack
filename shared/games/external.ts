@@ -1,7 +1,7 @@
 import type { GameInfo, WheelEntry } from '../protocol';
 
 // Games played away from the app (board games, cards, anything): the VIP lists them in the lobby,
-// each gets its own slice on the wheel, and when one comes up the app waits until the VIP marks
+// they get a wheel of their own (the loser of each round picks which wheel to spin), and when one comes up the app waits until the VIP marks
 // it finished, tapping who won. Each winner scores a full round's points (see WIN_POINTS_PER_PUZZLE).
 
 export const EXTERNAL: GameInfo = {

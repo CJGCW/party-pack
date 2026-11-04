@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { roundOf } from '../../../shared/protocol';
 import type { CallState, RoomState, SpinState } from '../../../shared/protocol';
 import { listen, net } from '../net';
 import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, hex, panel, text } from '../theme';
@@ -68,6 +69,7 @@ export class SpinnerScene extends Phaser.Scene {
   }
 
   private applyState(state: RoomState) {
+    if (state.wheelChoice && state.session) return this.showChoice(state);
     if (!state.spin || !state.session) return;
     const key = `${state.session.round}`;
     if (key !== this.spinKey) {
@@ -81,6 +83,32 @@ export class SpinnerScene extends Phaser.Scene {
     this.callShowTimer?.remove();
     this.callLayer.setVisible(state.spin.stopsInMs <= 0);
     if (state.spin.stopsInMs > 0) this.callShowTimer = this.time.delayedCall(state.spin.stopsInMs, () => this.callLayer.setVisible(true));
+  }
+
+  /** Before the spin, with two wheels: who's picking, and the two wheels up for grabs. */
+  private showChoice(state: RoomState) {
+    const choice = state.wheelChoice!;
+    const key = `choose|${state.session!.round}`;
+    this.callEndsAt = performance.now() + choice.msLeft;
+    if (key === this.spinKey) return;
+    this.spinKey = key;
+    this.layer.removeAll(true);
+    this.callLayer.removeAll(true);
+    this.wheel = null;
+    const chooser = state.players.find((p) => p.id === choice.chooserId);
+    const round = state.session!;
+    this.layer.add(text(this, CENTER_X, 70, `Round ${roundOf(round)}`, 52, COLORS.accent, { fontStyle: '700' }));
+    this.renderScores(state);
+    if (choice.isLoser) this.layer.add(text(this, CENTER_X, 300, 'Last place picks the wheel', 44, COLORS.muted));
+    this.layer.add(text(this, CENTER_X, choice.isLoser ? 400 : 340, chooser?.name ?? '?', 110, chooser?.color ?? COLORS.text, { fontStyle: '700' }));
+    this.layer.add(text(this, CENTER_X, choice.isLoser ? 510 : 450, 'is choosing…', 50, COLORS.text));
+    [['App games', -1], ['Other games', 1]].forEach(([label, side]) => {
+      const x = CENTER_X + (side as number) * 300;
+      this.layer.add(panel(this, x - 260, 620, 520, 170));
+      this.layer.add(text(this, x, 705, label as string, 56, COLORS.accent, { fontStyle: '700' }));
+    });
+    this.callTimer = text(this, CENTER_X, 860, '', 40, COLORS.muted);
+    this.layer.add(this.callTimer);
   }
 
   /** Who's called what (the after-round game, see GameInfo.calls), and who can still call. */
@@ -131,7 +159,8 @@ export class SpinnerScene extends Phaser.Scene {
 
     const { entries } = spin;
     const round = state.session!;
-    this.layer.add(text(this, CENTER_X, 70, `Round ${round.round} of ${round.totalRounds}`, 52, COLORS.accent, { fontStyle: '700' }));
+    const wheelName = spin.wheel ? ` · ${spin.wheel === 'app' ? 'App games' : 'Other games'}` : '';
+    this.layer.add(text(this, CENTER_X, 70, `Round ${roundOf(round)}${wheelName}`, 52, COLORS.accent, { fontStyle: '700' }));
     this.renderScores(state);
 
     this.sliceDeg = 360 / entries.length;

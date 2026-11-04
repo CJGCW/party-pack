@@ -1,3 +1,6 @@
+import type { WheelKind } from '../../shared/protocol';
+import { TWO_DOORS, PICKY_EATER, SEATING_CHART, LOOKALIKES, ROOM_SORT, LINE_UP, LENS_LAB, SWITCHBACK, STEPPING_STONES } from '../../shared/games/critterGames';
+import { createTwoDoors, createPickyEater, createSeatingChart, createLookalikes, createRoomSort, createLineUp, createLensLab, createSwitchback, createSteppingStones } from './games/wumblePuzzles';
 import { resetClock, syncClock } from '../clock';
 import { io, type Socket } from 'socket.io-client';
 import { ANY_OPTION, MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type FlaggableQuestion, type GiveUpView, type CallState, type GroupSettings, type RoomState, type PlayStyle, type WheelEntry, type ServerToClientEvents } from '../../shared/protocol';
@@ -151,6 +154,15 @@ type ControllerFactory = (root: HTMLElement, send: (input: unknown) => void) => 
 
 /** Phone UI for each mini game, keyed by game id. Add new games here. */
 const CONTROLLERS: Record<string, ControllerFactory> = {
+  [TWO_DOORS.id]: createTwoDoors,
+  [PICKY_EATER.id]: createPickyEater,
+  [SEATING_CHART.id]: createSeatingChart,
+  [LOOKALIKES.id]: createLookalikes,
+  [ROOM_SORT.id]: createRoomSort,
+  [LINE_UP.id]: createLineUp,
+  [LENS_LAB.id]: createLensLab,
+  [SWITCHBACK.id]: createSwitchback,
+  [STEPPING_STONES.id]: createSteppingStones,
   [WORDLE_RACE.id]: createWordleRace,
   [TOSS_UP.id]: createTossUp,
   [TRIVIA.id]: createTrivia,
@@ -400,7 +412,8 @@ function render() {
   controller?.instance.destroy();
   controller = null;
   giveUpBar.update(null);
-  if (room.phase === 'spinning') renderSpinning();
+  if (room.phase === 'choosing') renderChoosing();
+  else if (room.phase === 'spinning') renderSpinning();
   else if (room.phase === 'standings') renderStandings();
   else if (room.phase === 'results') renderResults();
   else renderLobby();
@@ -538,14 +551,17 @@ function wheelSettings(isVip: boolean): Node[] {
     const rows: Node[] = [];
     for (const choice of entry.choices ?? []) {
       const value = values[choice.id] ?? ANY_OPTION;
-      const two = choice.options.length === 2;
+      const plain = choice.options.filter((o) => !o.extra);
+      const two = plain.length === 2;
+      const optionButton = (o: (typeof plain)[number]) => button(o.label, on && value === o.id, () => choose(choice.id, o.id));
       if (choice.label) rows.push(h('div', { class: 'muted choice-label' }, choice.label));
       rows.push(
         h(
           'div',
-          { class: 'segmented' },
-          ...choice.options.map((o) => button(o.label, on && value === o.id, () => choose(choice.id, o.id))),
+          { class: `segmented${plain.length < choice.options.length ? ' wrap' : ''}` },
+          ...plain.map(optionButton),
           !choice.noAny && button(two ? 'Both' : 'Any', on && value === ANY_OPTION, () => choose(choice.id, ANY_OPTION)),
+          ...choice.options.filter((o) => o.extra).map(optionButton),
           !!choice.canTurnOff && button(two ? 'Neither' : 'None', !on, turnOff),
         ),
       );
@@ -626,7 +642,7 @@ function wheelSettings(isVip: boolean): Node[] {
       h('button', { class: 'secondary', disabled: !isVip || value >= max, onclick: () => set(value + 1) }, '+'),
     );
 
-  // Games played away from the app: each name its own slice.
+  // Games played away from the app: with any listed, they get a wheel of their own.
   const otherGames = isVip
     ? (() => {
         const box = h('textarea', { class: 'ext-input', rows: '3', placeholder: 'Catan, Uno, Charades' }) as HTMLTextAreaElement;
@@ -649,7 +665,7 @@ function wheelSettings(isVip: boolean): Node[] {
     h(
       'div',
       { class: 'muted' },
-      `Games you play away from the app (board games, cards…), separated by commas, up to ${MAX_EXTERNAL_GAMES}. Each gets its own slice; when one comes up, the app waits until the VIP marks it finished. No points.`,
+      `Games you play away from the app (board games, cards…), separated by commas, up to ${MAX_EXTERNAL_GAMES}. With any listed, they get their own wheel: before each round the last round's loser picks which wheel to spin. When one comes up, the app waits until the VIP marks it finished and taps who won.`,
     ),
     otherGames,
     h('h2', {}, 'Rounds'),
@@ -675,6 +691,41 @@ function wheelSettings(isVip: boolean): Node[] {
     'Spin the wheel!',
   );
   return [h('p', {}, "You're the VIP. Choose the games and rounds:"), card, spin, errorEl];
+}
+
+/** Before the spin, with two wheels: the chooser picks one; everyone else waits. */
+function renderChoosing() {
+  const choice = room!.wheelChoice!;
+  const session = room!.session;
+  const chooser = room!.players.find((p) => p.id === choice.chooserId);
+  const head = session ? h('p', {}, `Round ${session.round} of ${session.totalRounds}`) : '';
+  if (choice.chooserId !== playerId) {
+    app.replaceChildren(h('div', { class: 'center' }, head, h('div', { class: 'spin-emoji' }, '🎡'), h('h2', {}, `${chooser?.name ?? 'Someone'} is choosing the wheel…`), h('p', {}, 'Watch the TV!')));
+    return;
+  }
+  const errorEl = h('div', { class: 'error' });
+  const pick = (wheel: WheelKind) => () =>
+    socket.emit('room:chooseWheel', { wheel }, (res) => {
+      if (!res.ok) errorEl.textContent = res.error;
+    });
+  const endsAt = performance.now() + choice.msLeft;
+  const left = h('div', { class: 'muted' });
+  const tick = () => (left.textContent = `Picked for you in ${Math.max(0, Math.ceil((endsAt - performance.now()) / 1000))}s`);
+  tick();
+  const timer = setInterval(() => (left.isConnected ? tick() : clearInterval(timer)), 250);
+  app.replaceChildren(
+    h(
+      'div',
+      { class: 'center' },
+      head,
+      h('h2', {}, choice.isLoser ? 'You came last, so you pick!' : 'You pick!'),
+      h('p', {}, 'Which wheel should we spin?'),
+      h('button', { class: 'mode-button', onclick: pick('app') }, h('span', {}, 'App game'), h('small', {}, 'Played here on your phones.')),
+      h('button', { class: 'mode-button alt', onclick: pick('other') }, h('span', {}, 'Other game'), h('small', {}, 'One from your list, played away from the app.')),
+      left,
+      errorEl,
+    ),
+  );
 }
 
 function renderSpinning() {

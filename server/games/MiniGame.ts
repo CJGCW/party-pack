@@ -9,6 +9,8 @@ export interface GameContext {
   addScore(playerId: string, points: number): void;
   /** Ends the game and returns everyone to the lobby. */
   finish(): void;
+  /** Games played after rounds: this was the session's last round, whatever was left of it. */
+  endSession?(): void;
   /**
    * Trivia-style games: a question is now on screen (it stays current until the next one), so
    * the VIP can flag it for review. The answers only go to the review file, never to phones.
@@ -67,7 +69,12 @@ export interface MiniGameDefinition {
   create(ctx: GameContext, modeId: string, options: GameOptions): MiniGame;
   /** Games played after rounds: whether there's nothing to play for this round (e.g. nobody won), so it's skipped. */
   skipAfterRound?(options: GameOptions): boolean;
-  /** Callable games (GameInfo.calls): calls each player gets, asked at the start of each session (e.g. read from a file). */
+  /**
+   * Games played after rounds: asked at the start of each session. True means rounds carry on,
+   * however many the lobby set, until the game calls GameContext.endSession.
+   */
+  endlessSession?(choices: Record<string, string> | undefined): boolean;
+  /** Callable games (GameInfo.calls): calls each player gets, asked at the start of each session (e.g. read from a file). 0 means it's automatic (see CallInfo.perPlayer). */
   callsPerPlayer?(): number;
   /** Callable games: which options can be called, given the lobby choices (all of them if missing). */
   callOptions?(choices: Record<string, string> | undefined): string[];

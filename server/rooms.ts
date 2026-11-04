@@ -30,6 +30,7 @@ import { config } from './config';
 import { removeFlag, saveFlag, type FlagRecord } from './flags';
 import { GAMES, findGame } from './games';
 import type { GameOptions, MiniGame, RoundResult } from './games/MiniGame';
+import type { WheelKind } from '../shared/protocol';
 
 export interface SocketData {
   roomCode?: string;
@@ -54,6 +55,8 @@ const SPIN_MS = 2_000;
 /** Each spin, the wheel shows this many of the chosen games, pulled at random (all of them if there are fewer). */
 const WHEEL_SLICES = 8;
 const SPIN_RESULT_MS = 3_000;
+/** With two wheels: how long the chooser has before one's picked for them. */
+const WHEEL_CHOICE_MS = 15_000;
 /** Instead, when players can call the after-round game: time to call (or not) once the wheel stops. */
 const CALL_MS = 10_000;
 /** Once everyone who can call has decided, a moment to see it before the game starts. */
@@ -132,8 +135,25 @@ const sample = <T,>(items: T[], n: number) => {
 
 interface Session {
   round: number;
-  totalRounds: number;
+  /** Null: no set length, it goes on until a game ends it. */
+  totalRounds: number | null;
+  /** The app's games that suit this many players. */
   pool: WheelEntry[];
+  /** Games played away from the app: with any of these and any app games, there are two wheels. */
+  otherPool: WheelEntry[];
+  /** Who lost the last wheel game (none on the first round, or if everyone tied). */
+  losers: string[];
+}
+
+/**
+ * Who picks the wheel: a loser of the last round who's still here (at random, if they tied),
+ * otherwise the VIP. `vip` is null if there isn't one, and then anyone will do.
+ */
+export function pickChooser(losers: string[], connected: string[], vip: string | null): { id: string; isLoser: boolean } | null {
+  const here = losers.filter((id) => connected.includes(id));
+  if (here.length) return { id: here[Math.floor(Math.random() * here.length)], isLoser: true };
+  const id = vip ?? connected[0];
+  return id ? { id, isLoser: false } : null;
 }
 
 export class Room {
@@ -155,9 +175,12 @@ export class Room {
     externalGames: [],
   };
   private session: Session | null = null;
-  private spin: { entries: WheelEntry[]; targetIndex: number; stopsAt: number; endsAt: number; call: CallState | null } | null = null;
+  private spin: { entries: WheelEntry[]; targetIndex: number; stopsAt: number; endsAt: number; call: CallState | null; wheel: WheelKind | null } | null = null;
+  private wheelChoice: { chooserId: string; isLoser: boolean; endsAt: number } | null = null;
   /** A callable after-round game (GameInfo.calls): calls each player has left this session. */
   private callsLeft = new Map<string, number>();
+  /** No calls to hand out this session: everything that can be called is, every round. */
+  private callsAutomatic = false;
   /** What was called for the round being played (the after-round game is only played if something was). */
   private roundCalls: string[] = [];
   private resultsEndAt = 0;
@@ -190,6 +213,7 @@ export class Room {
 
   private get phase(): RoomState['phase'] {
     if (this.game) return 'game';
+    if (this.wheelChoice) return 'choosing';
     if (this.spin) return 'spinning';
     if (this.standings) return 'standings';
     if (this.resultsEndAt > Date.now()) return 'results';
@@ -223,7 +247,11 @@ export class Room {
             stopsInMs: Math.max(0, this.spin.stopsAt - Date.now()),
             msLeft: Math.max(0, this.spin.endsAt - Date.now()),
             call: this.spin.call,
+            wheel: this.spin.wheel,
           }
+        : null,
+      wheelChoice: this.wheelChoice
+        ? { chooserId: this.wheelChoice.chooserId, isLoser: this.wheelChoice.isLoser, msLeft: Math.max(0, this.wheelChoice.endsAt - Date.now()) }
         : null,
       standings: this.standings
         ? { previousScores: this.standings.previousScores, msLeft: Math.max(0, this.standings.endsAt - Date.now()) }
@@ -381,22 +409,23 @@ export class Room {
     if (this.busy) return 'A game is already running.';
     const players = this.connectedCount();
     // Only games that suit this many players can go on the wheel.
-    const pool = [
-      ...WHEEL_ENTRIES.filter((e) => {
+    const pool = WHEEL_ENTRIES.filter((e) => {
         if (!this.settings.enabled.includes(e.id) || e.afterRounds) return false;
         const info = findGame(e.gameId)!.info;
-        return players >= info.minPlayers && players <= info.maxPlayers;
-      }),
-      ...this.settings.externalGames.map(externalEntry),
-    ];
+      return players >= info.minPlayers && players <= info.maxPlayers;
+    });
+    const otherPool = this.settings.externalGames.map(externalEntry);
     if (players === 0) return 'Need at least 1 player.';
-    if (pool.length === 0) return 'None of the chosen games work with this many players.';
+    if (pool.length + otherPool.length === 0) return 'None of the chosen games work with this many players.';
 
     for (const p of this.players.values()) p.score = 0;
-    this.session = { round: 0, totalRounds: this.settings.rounds, pool };
+    const after = WHEEL_ENTRIES.find((e) => e.afterRounds && this.settings.enabled.includes(e.id));
+    const endless = !!after && !!findGame(after.gameId)?.endlessSession?.(this.settings.choices[after.id]);
+    this.session = { round: 0, totalRounds: endless ? null : this.settings.rounds, pool, otherPool, losers: [] };
     const callable = this.callable();
     const perPlayer = callable ? (callable.def.callsPerPlayer?.() ?? callable.def.info.calls!.perPlayer) : 0;
     this.callsLeft = new Map([...this.players.values()].map((p) => [p.id, perPlayer]));
+    this.callsAutomatic = !!callable && perPlayer === 0;
     this.nextRound();
     return null;
   }
@@ -446,17 +475,43 @@ export class Room {
     return null;
   }
 
-  /** Spins the wheel for the next round, then starts whichever game it lands on. */
+  /** The next round: its wheel spins straight away, unless there are two to choose between. */
   private nextRound() {
     const session = this.session!;
     session.round++;
+    if (!session.pool.length || !session.otherPool.length) return this.spinWheel(session.pool.length ? session.pool : session.otherPool, null);
+    const connected = [...this.players.values()].filter((p) => p.connected);
+    const chooser = pickChooser(session.losers, connected.map((p) => p.id), connected.find((p) => p.isVip)?.id ?? null);
+    if (!chooser) return this.showResults();
+    this.wheelChoice = { chooserId: chooser.id, isLoser: chooser.isLoser, endsAt: Date.now() + WHEEL_CHOICE_MS };
+    this.setPhaseTimer(WHEEL_CHOICE_MS, () => this.spinChosen(Math.random() < 0.5 ? 'app' : 'other'));
+    this.broadcastState();
+  }
+
+  /** The chooser picks which wheel to spin. */
+  chooseWheel(socket: ClientSocket, wheel: WheelKind): string | null {
+    if (!this.wheelChoice) return 'There is nothing to choose right now.';
+    if (socket.data.playerId !== this.wheelChoice.chooserId) return "It isn't your choice.";
+    if (wheel !== 'app' && wheel !== 'other') return 'Unknown wheel.';
+    this.spinChosen(wheel);
+    return null;
+  }
+
+  private spinChosen(wheel: WheelKind) {
+    const session = this.session!;
+    this.wheelChoice = null;
+    this.spinWheel(wheel === 'app' ? session.pool : session.otherPool, wheel);
+  }
+
+  /** Spins a wheel, then starts whichever game it lands on. */
+  private spinWheel(pool: WheelEntry[], wheel: WheelKind | null) {
     // A fresh handful of the chosen games for each spin, so a long list doesn't crowd the wheel.
-    const entries = sample(session.pool, WHEEL_SLICES);
+    const entries = sample(pool, WHEEL_SLICES);
     const targetIndex = Math.floor(Math.random() * entries.length);
     const call = this.callState();
     const now = Date.now();
     const showMs = call ? CALL_MS : SPIN_RESULT_MS;
-    this.spin = { entries, targetIndex, stopsAt: now + SPIN_MS, endsAt: now + SPIN_MS + showMs, call };
+    this.spin = { entries, targetIndex, stopsAt: now + SPIN_MS, endsAt: now + SPIN_MS + showMs, call, wheel };
     this.setPhaseTimer(SPIN_MS + showMs, () => this.startSpunGame());
     this.broadcastState();
   }
@@ -466,7 +521,7 @@ export class Room {
     const spin = this.spin!;
     const entry = spin.entries[spin.targetIndex];
     // What was called carries over to after the round.
-    this.roundCalls = spin.call?.called.map((c) => c.option) ?? [];
+    this.roundCalls = this.callsAutomatic ? (this.callable()?.options.map((o) => o.id) ?? []) : (spin.call?.called.map((c) => c.option) ?? []);
     this.spin = null;
     const { gameId, modeId, mixLists } = entry.group
       ? this.pickFromGroup(entry.id, entry.group)
@@ -500,7 +555,7 @@ export class Room {
     return choices
       .map((c) => {
         const value = this.settings.choices[id]?.[c.id] ?? ANY_OPTION;
-        return value === ANY_OPTION ? pick(c.options).id : value;
+        return value === ANY_OPTION ? pick(c.options.filter((o) => !o.extra)).id : value;
       })
       .join('-');
   }
@@ -555,6 +610,9 @@ export class Room {
           // Only end the game that is still current, in case it already ended.
           if (this.game === game) this.gameFinished();
         },
+        endSession: () => {
+          if (this.session) this.session.totalRounds = this.session.round;
+        },
         showingQuestion: (question) => {
           if (this.game !== game) return;
           const id = `${this.code}-${Date.now().toString(36)}-${this.nextFlagKey++}`;
@@ -576,6 +634,8 @@ export class Room {
     this.gameId = null;
     this.setFlaggable(null);
     if (!this.session) return this.returnToLobby();
+    // The loser of a wheel game, before an after-round game's points muddy it, picks the next wheel.
+    if (!this.afterRound) this.session.losers = this.roundResult().losers;
     // After a wheel game, any game that's played after rounds; then the standings.
     if (!this.afterRound && this.startAfterRound()) return;
     this.showStandings();
@@ -619,7 +679,7 @@ export class Room {
     this.setPhaseTimer(STANDINGS_MS, () => {
       this.standings = null;
       const session = this.session!;
-      if (session.round < session.totalRounds && this.connectedCount() > 0) this.nextRound();
+      if ((session.totalRounds === null || session.round < session.totalRounds) && this.connectedCount() > 0) this.nextRound();
       else this.showResults();
     });
     this.broadcastState();
@@ -668,6 +728,7 @@ export class Room {
     this.setFlaggable(null);
     this.session = null;
     this.spin = null;
+    this.wheelChoice = null;
     this.standings = null;
     this.resultsEndAt = 0;
     // Drop players who left mid-game now that we're back in the lobby.

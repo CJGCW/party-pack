@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { roundOf } from '../../../shared/protocol';
 import type { PlayerInfo } from '../../../shared/protocol';
 import { net } from '../net';
 import { COLORS, HEIGHT, WIDTH, addBackdrop, hex, text } from '../theme';
@@ -49,11 +50,11 @@ export class StandingsScene extends Phaser.Scene {
     const previous = state.standings.previousScores;
     this.endsAt = performance.now() + state.standings.msLeft;
     const session = state.session;
-    const isLast = !session || session.round >= session.totalRounds;
+    const isLast = !session || (session.totalRounds !== null && session.round >= session.totalRounds);
     this.nextLabel = isLast ? 'Final results' : 'Next spin';
 
     text(this, WIDTH / 2, 110, 'STANDINGS', 84, COLORS.accent, { fontStyle: '700' });
-    if (session) text(this, WIDTH / 2, 200, `After round ${session.round} of ${session.totalRounds}`, 40, COLORS.muted);
+    if (session) text(this, WIDTH / 2, 200, `After round ${roundOf(session)}`, 40, COLORS.muted);
 
     // Start in the order from before this round; ties keep join order.
     const players = [...state.players].sort((a, b) => (previous[b.id] ?? 0) - (previous[a.id] ?? 0));

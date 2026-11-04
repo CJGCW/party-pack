@@ -78,6 +78,8 @@ import { MazeRaceScene } from './scenes/MazeRaceScene';
 import { PegDropScene } from './scenes/PegDropScene';
 import { SpiralShotScene } from './scenes/SpiralShotScene';
 import { StarSplatScene } from './scenes/StarSplatScene';
+import { CritterScene } from './scenes/CritterScene';
+import { TWO_DOORS, PICKY_EATER, SEATING_CHART, LOOKALIKES, ROOM_SORT, LINE_UP, LENS_LAB, SWITCHBACK, STEPPING_STONES } from '../../shared/games/critterGames';
 import { CaveFlyerScene } from './scenes/CaveFlyerScene';
 import { StackerScene } from './scenes/StackerScene';
 import { TileTiltScene } from './scenes/TileTiltScene';
@@ -161,6 +163,15 @@ const GAME_SCENES: Record<string, string> = {
   [MAZE_RACE.id]: MazeRaceScene.KEY,
   [SPIRAL_SHOT.id]: SpiralShotScene.KEY,
   [STAR_SPLAT.id]: StarSplatScene.KEY,
+  [TWO_DOORS.id]: CritterScene.KEY,
+  [PICKY_EATER.id]: CritterScene.KEY,
+  [SEATING_CHART.id]: CritterScene.KEY,
+  [LOOKALIKES.id]: CritterScene.KEY,
+  [ROOM_SORT.id]: CritterScene.KEY,
+  [LINE_UP.id]: CritterScene.KEY,
+  [LENS_LAB.id]: CritterScene.KEY,
+  [SWITCHBACK.id]: CritterScene.KEY,
+  [STEPPING_STONES.id]: CritterScene.KEY,
   [CAVE_FLYER.id]: CaveFlyerScene.KEY,
   [STACKER.id]: StackerScene.KEY,
   [TILE_TILT.id]: TileTiltScene.KEY,
@@ -249,6 +260,7 @@ game.scene.add(PegDropScene.KEY, PegDropScene, false);
 game.scene.add(MazeRaceScene.KEY, MazeRaceScene, false);
 game.scene.add(SpiralShotScene.KEY, SpiralShotScene, false);
 game.scene.add(StarSplatScene.KEY, StarSplatScene, false);
+game.scene.add(CritterScene.KEY, CritterScene, false);
 game.scene.add(CaveFlyerScene.KEY, CaveFlyerScene, false);
 game.scene.add(StackerScene.KEY, StackerScene, false);
 game.scene.add(TileTiltScene.KEY, TileTiltScene, false);
@@ -317,7 +329,7 @@ function showSceneFor(state: RoomState) {
   const key =
     state.phase === 'game' && state.gameId
       ? sceneForView(net.gameView, state.gameId)
-      : state.phase === 'spinning'
+      : state.phase === 'spinning' || state.phase === 'choosing'
         ? SpinnerScene.KEY
         : state.phase === 'standings'
           ? StandingsScene.KEY

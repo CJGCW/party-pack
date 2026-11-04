@@ -46,7 +46,10 @@ export interface GameInfo {
 export interface CallInfo {
   /** What can be called, e.g. two kinds of round. */
   options: { id: string; label: string }[];
-  /** Calls each player gets per session (the server can override it: MiniGameDefinition.callsPerPlayer). */
+  /**
+   * Calls each player gets per session (the server can override it: MiniGameDefinition.callsPerPlayer).
+   * With 0 nobody calls: everything the lobby choices allow is played after every round.
+   */
   perPlayer: number;
 }
 
@@ -69,12 +72,17 @@ export interface GameChoice {
   id: string;
   /** Shown above the row, if the options need explaining. */
   label?: string;
-  options: { id: string; label: string }[];
+  /** `extra`: a way of choosing, not one of the things chosen between, so "Both"/"Any" doesn't include it. Shown after "Both"/"Any". */
+  options: { id: string; label: string; extra?: boolean }[];
   /** No "Both"/"Any" option: one of these is always picked (the first to start with). */
   noAny?: boolean;
   /** Adds a "Neither"/"None" option, which takes the game off the wheel (and hides the rows after it). */
   canTurnOff?: boolean;
 }
+
+/** "3 of 5", or just "3" for a session with no set length. */
+export const roundOf = (session: { round: number; totalRounds: number | null }) =>
+  session.totalRounds === null ? `${session.round}` : `${session.round} of ${session.totalRounds}`;
 
 /** A choice row's value: one of its option ids, or this for "Both"/"Any". */
 export const ANY_OPTION = 'any';
@@ -88,7 +96,7 @@ export interface PlayerInfo {
   isVip: boolean;
 }
 
-export type RoomPhase = 'lobby' | 'spinning' | 'game' | 'standings' | 'results';
+export type RoomPhase = 'lobby' | 'choosing' | 'spinning' | 'game' | 'standings' | 'results';
 
 export const MIN_ROUNDS = 1;
 export const MAX_ROUNDS = 10;
@@ -157,6 +165,18 @@ export interface SessionSettings {
   externalGames: string[];
 }
 
+/** The two wheels, when the VIP has listed games played away from the app. */
+export type WheelKind = 'app' | 'other';
+
+/** Before a spin, when there are two wheels: someone picks which one to spin. */
+export interface WheelChoiceState {
+  chooserId: string;
+  /** They lost the last round (otherwise there was no loser, and the VIP's choosing). */
+  isLoser: boolean;
+  /** Milliseconds until one's picked for them. */
+  msLeft: number;
+}
+
 export interface SpinState {
   /** The slices on the wheel, in order. */
   entries: WheelEntry[];
@@ -170,6 +190,8 @@ export interface SpinState {
   msLeft: number;
   /** Present when there's an after-round game players can call this round. */
   call: CallState | null;
+  /** Which wheel this is, when there are two. */
+  wheel: WheelKind | null;
 }
 
 export interface StandingsState {
@@ -196,7 +218,10 @@ export interface RoomState {
   wheelEntries: WheelEntry[];
   settings: SessionSettings;
   /** Present while a multi-round session is running. */
-  session: { round: number; totalRounds: number } | null;
+  /** `totalRounds` is null for a session with no set length (MiniGameDefinition.endlessSession). */
+  session: { round: number; totalRounds: number | null } | null;
+  /** Present during the 'choosing' phase. */
+  wheelChoice: WheelChoiceState | null;
   /** Present during the 'spinning' phase. */
   spin: SpinState | null;
   /** Present during the 'standings' phase, between rounds of a session. */
@@ -234,6 +259,8 @@ export interface ClientToServerEvents {
   'game:giveUp': () => void;
   /** After the wheel stops: call the after-round game with one of its options, or (null) say no (see GameInfo.calls). */
   'room:call': (req: { option: string | null }, ack: Ack) => void;
+  /** Pick which wheel to spin (see WheelChoiceState). */
+  'room:chooseWheel': (req: { wheel: WheelKind }, ack: Ack) => void;
 }
 
 /**

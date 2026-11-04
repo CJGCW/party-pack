@@ -98,7 +98,7 @@ export class LobbyScene extends Phaser.Scene {
       if (e.choices) {
         const picked = e.choices.map((c) => {
           const value = state.settings.choices?.[e.id]?.[c.id];
-          return c.options.find((o) => o.id === value)?.label ?? c.options.map((o) => o.label).join(' / ');
+          return c.options.find((o) => o.id === value)?.label ?? c.options.filter((o) => !o.extra).map((o) => o.label).join(' / ');
         });
         return `${e.label} (${picked.join(', ')})`;
       }
@@ -114,11 +114,13 @@ export class LobbyScene extends Phaser.Scene {
       return notes.length ? `${e.label} (${notes.join(', ')})` : e.label;
     };
     const chosen = state.wheelEntries.filter((e) => state.settings.enabled.includes(e.id));
-    const labels = [...chosen.filter((e) => !e.afterRounds).map(groupNote), ...(state.settings.externalGames ?? [])];
+    const labels = chosen.filter((e) => !e.afterRounds).map(groupNote);
+    // Games played away from the app are a wheel of their own.
+    const others = state.settings.externalGames ?? [];
     // Games played after every round, rather than on the wheel.
     const after = chosen.filter((e) => e.afterRounds).map(groupNote);
     const rounds = state.settings.rounds;
-    const games = text(this, -210, -28, `On the wheel: ${labels.join(',  ')}${after.length ? `\nAfter each round: ${after.join(',  ')}` : ''}`, 28, COLORS.text, {
+    const games = text(this, -210, -28, `On the wheel: ${labels.join(',  ')}${others.length ? `\nOther games wheel: ${others.join(',  ')}` : ''}${after.length ? `\nAfter each round: ${after.join(',  ')}` : ''}`, 28, COLORS.text, {
       wordWrap: { width: 760 },
       align: 'center',
     });

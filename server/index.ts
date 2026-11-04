@@ -113,6 +113,11 @@ io.on('connection', (socket) => {
     const error = room ? room.call(socket, option === null || option === undefined ? null : String(option)) : 'Not in a room.';
     ack(error ? { ok: false, error } : { ok: true });
   });
+  socket.on('room:chooseWheel', ({ wheel }, ack) => {
+    const room = roomOf();
+    const error = room ? room.chooseWheel(socket, wheel) : 'Not in a room.';
+    ack(error ? { ok: false, error } : { ok: true });
+  });
   socket.on('game:flag', ({ key, flagged }, ack) => {
     const room = roomOf();
     const error = room ? room.flagQuestion(socket, String(key), !!flagged) : 'Not in a room.';
