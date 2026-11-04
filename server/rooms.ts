@@ -51,6 +51,8 @@ const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I or O, they look like 1 
 
 /** How long the wheel spins, then how long it shows the chosen game before starting it. */
 const SPIN_MS = 2_000;
+/** Each spin, the wheel shows this many of the chosen games, pulled at random (all of them if there are fewer). */
+const WHEEL_SLICES = 8;
 const SPIN_RESULT_MS = 3_000;
 /** Instead, when players can call the after-round game: time to call (or not) once the wheel stops. */
 const CALL_MS = 10_000;
@@ -118,6 +120,15 @@ const WHEEL_ENTRIES: WheelEntry[] = GAMES.flatMap((g): WheelEntry[] => {
 });
 
 const pick = <T,>(items: T[]) => items[Math.floor(Math.random() * items.length)];
+/** Up to `n` of `items`, picked at random, in a random order. */
+const sample = <T,>(items: T[], n: number) => {
+  const a = [...items];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a.slice(0, n);
+};
 
 interface Session {
   round: number;
@@ -439,11 +450,13 @@ export class Room {
   private nextRound() {
     const session = this.session!;
     session.round++;
-    const targetIndex = Math.floor(Math.random() * session.pool.length);
+    // A fresh handful of the chosen games for each spin, so a long list doesn't crowd the wheel.
+    const entries = sample(session.pool, WHEEL_SLICES);
+    const targetIndex = Math.floor(Math.random() * entries.length);
     const call = this.callState();
     const now = Date.now();
     const showMs = call ? CALL_MS : SPIN_RESULT_MS;
-    this.spin = { entries: session.pool, targetIndex, stopsAt: now + SPIN_MS, endsAt: now + SPIN_MS + showMs, call };
+    this.spin = { entries, targetIndex, stopsAt: now + SPIN_MS, endsAt: now + SPIN_MS + showMs, call };
     this.setPhaseTimer(SPIN_MS + showMs, () => this.startSpunGame());
     this.broadcastState();
   }

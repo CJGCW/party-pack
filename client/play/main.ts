@@ -1,3 +1,4 @@
+import { resetClock, syncClock } from '../clock';
 import { io, type Socket } from 'socket.io-client';
 import { ANY_OPTION, MAX_NAME_LENGTH, MAX_PUZZLES, MAX_ROUNDS, MIN_PUZZLES, MIN_ROUNDS, type ClientToServerEvents, type FlaggableQuestion, type GiveUpView, type CallState, type GroupSettings, type RoomState, type PlayStyle, type WheelEntry, type ServerToClientEvents } from '../../shared/protocol';
 import { CLUE_CREW } from '../../shared/games/clueCrew';
@@ -10,12 +11,63 @@ import { MAZE_RACE } from '../../shared/games/mazeRace';
 import { PEG_DROP } from '../../shared/games/pegDrop';
 import { SPIRAL_SHOT } from '../../shared/games/spiralShot';
 import { STAR_SPLAT } from '../../shared/games/starSplat';
+import { CAVE_FLYER } from '../../shared/games/caveFlyer';
+import { STACKER } from '../../shared/games/stacker';
+import { TILE_TILT } from '../../shared/games/tileTilt';
+import { TEMPEST_RUN } from '../../shared/games/tempestRun';
+import { HELIX_DROP } from '../../shared/games/helixDrop';
+import { SKY_HOP } from '../../shared/games/skyHop';
+import { SNOW_CHASE } from '../../shared/games/snowChase';
+import { ROAD_HOP } from '../../shared/games/roadHop';
+import { POPPIT } from '../../shared/games/poppit';
+import { UNBLOCK_CAR } from '../../shared/games/unblockCar';
+import { MINESWEEPER } from '../../shared/games/minesweeper';
+import { PIPE_FLOW } from '../../shared/games/pipeFlow';
+import { LIGHT_TRAILS } from '../../shared/games/lightTrails';
+import { BUMP_RING } from '../../shared/games/bumpRing';
+import { HEX_HEAT } from '../../shared/games/hexHeat';
+import { FRUIT_RUSH } from '../../shared/games/fruitRush';
+import { SKY_JOUST } from '../../shared/games/skyJoust';
+import { KEEP_GUARD } from '../../shared/games/keepGuard';
+import { BLAST_GRID } from '../../shared/games/blastGrid';
+import { TANK_YARD } from '../../shared/games/tankYard';
+import { BUBBLE_BRAWL } from '../../shared/games/bubbleBrawl';
+import { GEM_RUSH } from '../../shared/games/gemRush';
+import { BRICK_BASH } from '../../shared/games/brickBash';
+import { CASTLE_CRUSH } from '../../shared/games/castleCrush';
+import { STRIKE_ZONE } from '../../shared/games/strikeZone';
+import { IDOL_TOWER } from '../../shared/games/idolTower';
+import { INK_RUN } from '../../shared/games/inkRun';
+import { GIZMO_GOAL } from '../../shared/games/gizmoGoal';
+import { GRAVITY_UI } from '../../shared/games/tankGravity';
+import { TURNS_UI } from '../../shared/games/mineTurns';
 import { PICK_EM, PICK_EM_COOP } from '../../shared/games/pickEm';
 import { RACK_ATTACK } from '../../shared/games/rackAttack';
 import { TOSS_UP } from '../../shared/games/tossUp';
 import { TRIVIA, TRIVIA_QUEST } from '../../shared/games/trivia';
 import { WOOCHAWARE } from '../../shared/games/woochaware';
 import { WORDLE_RACE } from '../../shared/games/wordleRace';
+import { SNATCH } from '../../shared/games/snatch';
+import { ROCK_SOLID } from '../../shared/games/rockSolid';
+import { FLAG_SIGNAL } from '../../shared/games/flagSignal';
+import { WIND_UP } from '../../shared/games/windUp';
+import { POWER_BEAT } from '../../shared/games/powerBeat';
+import { POP_CHAIN } from '../../shared/games/popChain';
+import { HEAD_BALL } from '../../shared/games/headBall';
+import { MOON_DROP } from '../../shared/games/moonDrop';
+import { DODGE_BOX } from '../../shared/games/dodgeBox';
+import { BAR_DASH } from '../../shared/games/barDash';
+import { BALL_COUNT } from '../../shared/games/ballCount';
+import { CROWD_SPOT } from '../../shared/games/crowdSpot';
+import { FACE_FIX } from '../../shared/games/faceFix';
+import { SKETCH_IT } from '../../shared/games/sketchIt';
+import { NOTE_RUSH } from '../../shared/games/noteRush';
+import { COPY_CAT } from '../../shared/games/copyCat';
+import { GLIDE_DROP } from '../../shared/games/glideDrop';
+import { MARBLE_RALLY } from '../../shared/games/marbleRally';
+import { MAZE_MUNCHER } from '../../shared/games/mazeMuncher';
+import { WALKER_RESCUE } from '../../shared/games/walkerRescue';
+import { CASTLE_SIEGE } from '../../shared/games/castleSiege';
 import { PHONE_ADDONS } from './addons';
 import { h } from './dom';
 import { createGiveUpBar } from './giveUp';
@@ -31,6 +83,36 @@ import { createMazeRace } from './games/mazeRace';
 import { createPegDrop } from './games/pegDrop';
 import { createSpiralShot } from './games/spiralShot';
 import { createStarSplat } from './games/starSplat';
+import { createCaveFlyer } from './games/caveFlyer';
+import { createStacker } from './games/stacker';
+import { createTileTilt } from './games/tileTilt';
+import { createTempestRun } from './games/tempestRun';
+import { createHelixDrop } from './games/helixDrop';
+import { createSkyHop } from './games/skyHop';
+import { createSnowChase } from './games/snowChase';
+import { createRoadHop } from './games/roadHop';
+import { createPoppit } from './games/poppit';
+import { createUnblockCar } from './games/unblockCar';
+import { createMinesweeper } from './games/minesweeper';
+import { createPipeFlow } from './games/pipeFlow';
+import { createLightTrails } from './games/lightTrails';
+import { createBumpRing } from './games/bumpRing';
+import { createHexHeat } from './games/hexHeat';
+import { createFruitRush } from './games/fruitRush';
+import { createSkyJoust } from './games/skyJoust';
+import { createKeepGuard } from './games/keepGuard';
+import { createBlastGrid } from './games/blastGrid';
+import { createTankYard } from './games/tankYard';
+import { createBubbleBrawl } from './games/bubbleBrawl';
+import { createGemRush } from './games/gemRush';
+import { createBrickBash } from './games/brickBash';
+import { createCastleCrush } from './games/castleCrush';
+import { createStrikeZone } from './games/strikeZone';
+import { createIdolTower } from './games/idolTower';
+import { createInkRun } from './games/inkRun';
+import { createGizmoGoal } from './games/gizmoGoal';
+import { createTankGravity } from './games/tankGravity';
+import { createMineTurns } from './games/mineTurns';
 import { createPickEm } from './games/pickEm';
 import { createPickEmCoop } from './games/pickEmCoop';
 import { createRackAttack } from './games/rackAttack';
@@ -38,6 +120,27 @@ import { createTossUp } from './games/tossUp';
 import { createTrivia } from './games/trivia';
 import { createWoochaWare } from './games/woochaware';
 import { createWordleRace } from './games/wordleRace';
+import { createSnatch } from './games/snatch';
+import { createRockSolid } from './games/rockSolid';
+import { createFlagSignal } from './games/flagSignal';
+import { createWindUp } from './games/windUp';
+import { createPowerBeat } from './games/powerBeat';
+import { createPopChain } from './games/popChain';
+import { createHeadBall } from './games/headBall';
+import { createMoonDrop } from './games/moonDrop';
+import { createDodgeBox } from './games/dodgeBox';
+import { createBarDash } from './games/barDash';
+import { createBallCount } from './games/ballCount';
+import { createCrowdSpot } from './games/crowdSpot';
+import { createFaceFix } from './games/faceFix';
+import { createSketchIt } from './games/sketchIt';
+import { createNoteRush } from './games/noteRush';
+import { createCopyCat } from './games/copyCat';
+import { createGlideDrop } from './games/glideDrop';
+import { createMarbleRally } from './games/marbleRally';
+import { createMazeMuncher } from './games/mazeMuncher';
+import { createWalkerRescue } from './games/walkerRescue';
+import { createCastleSiege } from './games/castleSiege';
 
 /** A mini game's phone UI. */
 export interface Controller {
@@ -64,8 +167,61 @@ const CONTROLLERS: Record<string, ControllerFactory> = {
   [MAZE_RACE.id]: createMazeRace,
   [SPIRAL_SHOT.id]: createSpiralShot,
   [STAR_SPLAT.id]: createStarSplat,
+  [CAVE_FLYER.id]: createCaveFlyer,
+  [STACKER.id]: createStacker,
+  [TILE_TILT.id]: createTileTilt,
+  [TEMPEST_RUN.id]: createTempestRun,
+  [HELIX_DROP.id]: createHelixDrop,
+  [SKY_HOP.id]: createSkyHop,
+  [SNOW_CHASE.id]: createSnowChase,
+  [ROAD_HOP.id]: createRoadHop,
+  [POPPIT.id]: createPoppit,
+  [UNBLOCK_CAR.id]: createUnblockCar,
+  [MINESWEEPER.id]: createMinesweeper,
+  [PIPE_FLOW.id]: createPipeFlow,
+  [LIGHT_TRAILS.id]: createLightTrails,
+  [BUMP_RING.id]: createBumpRing,
+  [HEX_HEAT.id]: createHexHeat,
+  [FRUIT_RUSH.id]: createFruitRush,
+  [SKY_JOUST.id]: createSkyJoust,
+  [KEEP_GUARD.id]: createKeepGuard,
+  [BLAST_GRID.id]: createBlastGrid,
+  [TANK_YARD.id]: createTankYard,
+  [BUBBLE_BRAWL.id]: createBubbleBrawl,
+  [GEM_RUSH.id]: createGemRush,
+  [BRICK_BASH.id]: createBrickBash,
+  [CASTLE_CRUSH.id]: createCastleCrush,
+  [STRIKE_ZONE.id]: createStrikeZone,
+  [IDOL_TOWER.id]: createIdolTower,
+  [INK_RUN.id]: createInkRun,
+  [GIZMO_GOAL.id]: createGizmoGoal,
+  // Tank Yard's Gravity mode (its views say to use this).
+  [GRAVITY_UI]: createTankGravity,
+  // Mine Dash's Turns mode.
+  [TURNS_UI]: createMineTurns,
   [EXTERNAL.id]: createExternal,
   [WOOCHAWARE.id]: createWoochaWare,
+  [SNATCH.id]: createSnatch,
+  [ROCK_SOLID.id]: createRockSolid,
+  [FLAG_SIGNAL.id]: createFlagSignal,
+  [WIND_UP.id]: createWindUp,
+  [POWER_BEAT.id]: createPowerBeat,
+  [POP_CHAIN.id]: createPopChain,
+  [HEAD_BALL.id]: createHeadBall,
+  [MOON_DROP.id]: createMoonDrop,
+  [DODGE_BOX.id]: createDodgeBox,
+  [BAR_DASH.id]: createBarDash,
+  [BALL_COUNT.id]: createBallCount,
+  [CROWD_SPOT.id]: createCrowdSpot,
+  [FACE_FIX.id]: createFaceFix,
+  [SKETCH_IT.id]: createSketchIt,
+  [NOTE_RUSH.id]: createNoteRush,
+  [COPY_CAT.id]: createCopyCat,
+  [GLIDE_DROP.id]: createGlideDrop,
+  [MARBLE_RALLY.id]: createMarbleRally,
+  [MAZE_MUNCHER.id]: createMazeMuncher,
+  [WALKER_RESCUE.id]: createWalkerRescue,
+  [CASTLE_SIEGE.id]: createCastleSiege,
 };
 // Machine-local add-on games (see ./addons).
 for (const addOn of PHONE_ADDONS) CONTROLLERS[addOn.gameId] = addOn.create;
@@ -120,6 +276,9 @@ socket.on('connect', () => {
   // Rejoin automatically after a refresh, a dropped connection or the phone sleeping.
   if (joined) join(joined.code, joined.name, () => renderJoin());
   else renderJoin();
+  // The server's clock, for timing games (a new connection may take a different route).
+  resetClock();
+  void syncClock(() => new Promise((resolve) => socket.emit('clock:ping', resolve)));
 });
 
 // The app can't fall back on the page having loaded, so say when the server can't be reached.
@@ -316,7 +475,7 @@ function renderLobby() {
     h('h2', {}, "You're in!"),
   ];
   // After a refresh the permission has to be asked for again, from a tap (WoochaWare and Peg Drop use it).
-  if (needsMotionPermission() && room!.games.some((g) => [WOOCHAWARE.id, PEG_DROP.id, SPIRAL_SHOT.id].includes(g.id))) {
+  if (needsMotionPermission() && room!.games.some((g) => [WOOCHAWARE.id, PEG_DROP.id, SPIRAL_SHOT.id, TILE_TILT.id, TEMPEST_RUN.id, HELIX_DROP.id, SKY_HOP.id, SNOW_CHASE.id, BUMP_RING.id, HEX_HEAT.id, FRUIT_RUSH.id, SKY_JOUST.id, KEEP_GUARD.id, BUBBLE_BRAWL.id, BRICK_BASH.id, CASTLE_CRUSH.id, TANK_YARD.id, HEAD_BALL.id, MOON_DROP.id, BALL_COUNT.id, COPY_CAT.id, GLIDE_DROP.id, MARBLE_RALLY.id].includes(g.id))) {
     children.push(
       h(
         'button',

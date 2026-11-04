@@ -226,6 +226,8 @@ export interface ClientToServerEvents {
   'room:backToLobby': () => void;
   /** Mini-game specific input from a phone. */
   'game:input': (input: unknown) => void;
+  /** Clock sync: the server's time (ms since the epoch), for timing games (see client/play/clock.ts). */
+  'clock:ping': (ack: (serverMs: number) => void) => void;
   /** VIP: flag (or unflag) the question on screen for review. */
   'game:flag': (req: { key: string; flagged: boolean }, ack: Ack) => void;
   /** A player held down "I give up" (in games whose views offer it: see GiveUpView). */

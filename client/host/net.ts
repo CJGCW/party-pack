@@ -1,3 +1,4 @@
+import { resetClock, syncClock } from '../clock';
 import Phaser from 'phaser';
 import { io, type Socket } from 'socket.io-client';
 import type { ClientToServerEvents, RoomState, ServerToClientEvents } from '../../shared/protocol';
@@ -19,6 +20,9 @@ export const net = {
 };
 
 socket.on('connect', () => {
+  // The server's clock, for timing games.
+  resetClock();
+  void syncClock(() => new Promise((resolve) => socket.emit('clock:ping', resolve)));
   // Resume the same room after a refresh or reconnect so players aren't kicked out.
   const resumeCode = sessionStorage.getItem(RESUME_KEY) ?? undefined;
   socket.emit('host:create', { resumeCode }, (res) => {

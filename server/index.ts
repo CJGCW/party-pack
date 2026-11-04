@@ -106,6 +106,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('game:input', (input) => roomOf()?.handleInput(socket, input));
+  socket.on('clock:ping', (ack) => typeof ack === 'function' && ack(Date.now()));
   socket.on('game:giveUp', () => roomOf()?.handleGiveUp(socket));
   socket.on('room:call', ({ option }, ack) => {
     const room = roomOf();

@@ -4,7 +4,6 @@ import {
   BALL_D,
   CENTER,
   FIRE_MS,
-  READY_MS,
   ROUND_MS,
   BALL_R,
   BOARD_SIZE,
@@ -17,6 +16,7 @@ import {
 } from '../../shared/games/spiralShot';
 import type { PlayerInfo } from '../../shared/protocol';
 import type { GameContext, MiniGame } from './MiniGame';
+import { READY_MS } from './boards';
 import { spiralShot } from './spiralShot';
 import { Board, seededRandom, type Marble } from './spiralShot/board';
 
@@ -152,7 +152,7 @@ describe('Spiral Shot', () => {
 
     const before = views.get('p0')!;
     game.onInput('p0', { type: 'swap' });
-    assert.deepEqual([views.get('p0')!.current, views.get('p0')!.next], [before.next, before.current]);
+    assert.deepEqual([views.get('p0')!.state!.current, views.get('p0')!.state!.next], [before.state!.next, before.state!.current]);
     game.onInput('p0', { type: 'aim', angle: 1 });
 
     // A always clears their chain, so never goes out; B does nothing.
@@ -168,10 +168,10 @@ describe('Spiral Shot', () => {
     for (let ms = 0; ms < ROUND_MS && host.phase === 'play'; ms += 1000) mock.timers.tick(1000);
     assert.equal(host.phase, 'result');
     const [boardA, boardB] = host.boards;
-    assert.equal(boardA.outAtMs, null);
+    assert.equal(boardA.endedAtMs, null);
     assert.equal(boardA.points, 1000);
     assert.equal(boardA.place, 1);
-    assert.ok(boardB.outAtMs! > 10_000 && boardB.outAtMs! < ROUND_MS);
+    assert.ok(boardB.endedAtMs! > 10_000 && boardB.endedAtMs! < ROUND_MS);
     assert.ok(boardB.points > 0 && boardB.points < 700);
     assert.equal(boardB.place, 2);
     assert.equal(room[0].score, 1000);

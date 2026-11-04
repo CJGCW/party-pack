@@ -25,6 +25,7 @@
     "naughty-words": "^1.2.0",
     "obscenity": "^0.4.6",
     "phaser": "^3.90.0",
+    "planck": "1.5.0",
     "qrcode": "^1.5.4",
     "selfsigned": "^2.4.1",
     "socket.io": "^4.8.1",

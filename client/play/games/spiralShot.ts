@@ -1,23 +1,17 @@
 import { COLORS, type SpiralInput, type SpiralPlayerView } from '../../../shared/games/spiralShot';
+import { boardsClock, boardsInfo, isPlaying } from '../boards';
 import { h } from '../dom';
 import type { Controller } from '../main';
-import { motion, needsMotionPermission, requestMotionPermission, sensorsLive } from '../motion';
+import { needsMotionPermission, requestMotionPermission, sensorsLive } from '../motion';
+import { Steer } from '../steer';
 
-/** Below this much gravity in the screen's plane the phone is lying flat, so tilt aims instead of turning. */
-const FLAT_GRAVITY = 4;
 /** Turning the phone like a wheel turns the turret this many times as far (a quarter turn each way aims all round). */
 const WHEEL_GAIN = 2;
-/** Lying flat: degrees of left-right tilt per radian of aim. */
-const TILT_DEG_PER_RAD = 20;
 /** Aim updates go to the server at most this often, and only when they've moved this much. */
-const SEND_MS = 50;
+const SEND_MS = 33;
 const SEND_RAD = 0.01;
 
 const wrapRad = (r: number) => Math.atan2(Math.sin(r), Math.cos(r));
-
-function ordinal(n: number) {
-  return `${n}${n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'}`;
-}
 
 /**
  * Turn the phone like a steering wheel to turn your turret on the TV (lying flat, tilt it left and
@@ -29,7 +23,6 @@ export function createSpiralShot(root: HTMLElement, send: (input: unknown) => vo
   let phaseEndsAt = 0;
   let aiming = false;
   let angle = 0;
-  let base: { steer: number; gamma: number } | null = null;
   let dragging = false;
   let sent = { angle: NaN, at: 0 };
   let frame = 0;
@@ -53,14 +46,13 @@ export function createSpiralShot(root: HTMLElement, send: (input: unknown) => vo
 
   root.append(h('div', { class: 'pd ss' }, h('div', { class: 'wr-top' }, headerEl, timerEl, scoreEl), aimEl, infoEl, statsEl));
 
-  /** The phone's turn, clockwise, in the screen's plane. */
-  const gravityAngle = () => Math.atan2(motion.gravity.x, motion.gravity.y);
-  const flat = () => Math.hypot(motion.gravity.x, motion.gravity.y) < FLAT_GRAVITY;
+  // The phone's turn (or tilt, lying flat), smoothed; without sensors the dial's pointed at instead (below).
+  const steer = new Steer(null, { wheelGain: WHEEL_GAIN });
 
   function startAiming() {
     aiming = true;
     angle = 0;
-    base = null;
+    steer.recentre();
     sent = { angle: NaN, at: 0 };
     loop();
   }
@@ -72,12 +64,7 @@ export function createSpiralShot(root: HTMLElement, send: (input: unknown) => vo
 
   function loop() {
     if (!aiming) return;
-    if (sensorsLive() && !dragging) {
-      base ??= { steer: gravityAngle(), gamma: motion.gamma! };
-      const target = flat() ? (motion.gamma! - base.gamma) / TILT_DEG_PER_RAD : WHEEL_GAIN * wrapRad(gravityAngle() - base.steer);
-      // A little smoothing takes the shake out of a hand (the short way round).
-      angle = wrapRad(angle + wrapRad(target - angle) * 0.35);
-    }
+    if (sensorsLive() && !dragging) angle = steer.angle();
     arrow.style.transform = `rotate(${angle}rad)`;
     const now = performance.now();
     if ((Number.isNaN(sent.angle) || Math.abs(wrapRad(angle - sent.angle)) > SEND_RAD) && now - sent.at > SEND_MS) {
@@ -114,7 +101,7 @@ export function createSpiralShot(root: HTMLElement, send: (input: unknown) => vo
   dial.addEventListener('pointercancel', endDrag);
 
   recentreBtn.addEventListener('click', () => {
-    base = null;
+    steer.recentre();
     angle = 0;
   });
   permissionBtn.addEventListener('click', () => void requestMotionPermission().then(render));
@@ -123,51 +110,34 @@ export function createSpiralShot(root: HTMLElement, send: (input: unknown) => vo
   function render() {
     if (!view) return;
     const v = view;
+    const st = v.state;
     headerEl.textContent = `Round ${v.puzzleNumber}/${v.totalPuzzles}`;
     scoreEl.textContent = `${v.score.toLocaleString()} pts`;
 
-    const playing = v.current >= 0 && v.outAtMs === null && (v.phase === 'ready' || v.phase === 'play');
+    const playing = isPlaying(v);
     if (playing && !aiming) startAiming();
     if (!playing && aiming) stopAiming();
     aimEl.hidden = !playing;
     infoEl.hidden = playing;
-    currentEl.style.background = COLORS[v.current] ?? 'transparent';
-    nextEl.style.background = COLORS[v.next] ?? 'transparent';
+    currentEl.style.background = (st && COLORS[st.current]) ?? 'transparent';
+    nextEl.style.background = (st && COLORS[st.next]) ?? 'transparent';
     permissionBtn.hidden = !needsMotionPermission();
     recentreBtn.hidden = !sensorsLive();
     hintEl.textContent = sensorsLive()
       ? 'Turn your phone like a steering wheel to aim; it fires by itself. Tap the dial to swap marbles. (Lying flat? Tilt it.)'
       : 'Point at the dial to aim; it fires by itself. Tap Swap to swap marbles.';
 
-    const lines: string[] = [];
-    if (v.phase === 'ready' || v.phase === 'play') {
-      if (v.current < 0) {
-        infoTitle.textContent = 'Watch the TV!';
-        lines.push("You'll get a board next round.");
-      } else {
-        infoTitle.textContent = `Out at ${Math.floor(v.outAtMs! / 1000)}s`;
-        lines.push(`${v.alive} of ${v.playing} still in. Watch the TV!`);
-      }
-    } else if (v.phase === 'result') {
-      infoTitle.textContent = v.outAtMs === null ? 'You survived!' : `Out at ${Math.floor(v.outAtMs / 1000)}s`;
-      if (v.place !== null) lines.push(`${ordinal(v.place)} place`);
-      lines.push(`+${v.points.toLocaleString()} points`);
-    } else {
-      infoTitle.textContent = 'Round scores';
-      lines.push(`You got +${v.gamePoints.toLocaleString()} this round. Look at the TV!`);
-    }
-    infoLines.replaceChildren(...lines.map((l) => h('div', {}, l)));
-
-    statsEl.textContent =
-      v.current < 0 || v.phase === 'gameEnd' ? '' : `Popped: ${v.pops} · Best chain: ${v.bestCombo} · ${v.alive} of ${v.playing} still in`;
+    const info = boardsInfo(v, 'survival');
+    infoTitle.textContent = info.title;
+    infoLines.replaceChildren(...info.lines.map((l) => h('div', {}, l)));
+    statsEl.textContent = !st || v.phase === 'gameEnd' ? '' : `Popped: ${st.pops} · Best chain: ${st.bestCombo} · ${v.going} of ${v.playing} still in`;
   }
 
   function tick() {
     if (!view) return;
-    const secs = Math.max(0, Math.ceil((phaseEndsAt - performance.now()) / 1000));
-    const timed = view.phase === 'play' || view.phase === 'ready';
-    timerEl.textContent = timed ? (view.phase === 'ready' ? `Starting in ${secs}` : `${secs}s`) : '';
-    timerEl.classList.toggle('low', view.phase === 'play' && secs <= 10);
+    const clock = boardsClock(view, phaseEndsAt);
+    timerEl.textContent = clock.text;
+    timerEl.classList.toggle('low', clock.low);
   }
   const interval = setInterval(tick, 200);
 

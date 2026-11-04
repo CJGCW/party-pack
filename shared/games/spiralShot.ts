@@ -1,3 +1,4 @@
+import type { BoardsHostView, BoardsPlayerView } from '../boards';
 import type { GameInfo } from '../protocol';
 
 export const SPIRAL_SHOT: GameInfo = {
@@ -11,8 +12,6 @@ export const SPIRAL_SHOT: GameInfo = {
 
 // ---- Timing and pace -----------------------------------------------------------------------
 
-/** The countdown before each round. */
-export const READY_MS = 3_000;
 /** Each round: survive this long for the bonus. */
 export const ROUND_MS = 90_000;
 /** The turret fires by itself this often. */
@@ -169,26 +168,13 @@ export function aimVector(angle: number) {
   return { x: Math.sin(angle), y: -Math.cos(angle) };
 }
 
-// ---- Scoring -------------------------------------------------------------------------------
-
-/** Going out early still scores: up to this share of a round's points, by how long you lasted. */
-export const OUT_SHARE = 0.7;
-
 // ---- Views ---------------------------------------------------------------------------------
-
-/**
- * 'ready': the countdown, with everyone's board set up.
- * 'play': the 90 seconds.
- * 'result': who survived, who went out when, and the points.
- * 'gameEnd': round scores.
- */
-export type SpiralPhase = 'ready' | 'play' | 'result' | 'gameEnd';
+//
+// A side-by-side boards game (see shared/boards.ts), scored by survival: what's here is what each
+// board adds to the engine's views.
 
 /** One player's board, as the TV draws it. */
-export interface SpiralBoardView {
-  playerId: string;
-  name: string;
-  color: string;
+export interface SpiralBoardState {
   /** The chain: id, distance along the track, colour index; three numbers a marble, head first. */
   chain: number[];
   /** Shots in flight: id, x, y, colour index; four numbers a shot. */
@@ -200,45 +186,23 @@ export interface SpiralBoardView {
   pops: number;
   /** The best chain reaction so far (pops set off one after another). */
   bestCombo: number;
-  /** When they went out (ms into the round), or null while they're still in. */
-  outAtMs: number | null;
-  /** At the result: their place (1 for the best) and points. */
-  place: number | null;
-  points: number;
 }
 
-export interface SpiralHostView {
-  phase: SpiralPhase;
-  puzzleNumber: number;
-  totalPuzzles: number;
-  msLeft: number;
-  /** ms into the round (0 until it starts). */
-  roundMs: number;
-  /** This round's track (see TRACKS). */
+/** What the whole round shares: the track (see TRACKS). */
+export interface SpiralRound {
   trackId: string;
-  boards: SpiralBoardView[];
-  /** Round scores, for the 'gameEnd' screen. */
-  gamePoints: Record<string, number>;
 }
 
-export interface SpiralPlayerView {
-  phase: SpiralPhase;
-  puzzleNumber: number;
-  totalPuzzles: number;
-  msLeft: number;
+/** What a player's phone gets of their board. */
+export interface SpiralPlayerState {
   current: number;
   next: number;
   pops: number;
   bestCombo: number;
-  outAtMs: number | null;
-  /** How many are still in, out of how many. */
-  alive: number;
-  playing: number;
-  place: number | null;
-  points: number;
-  gamePoints: number;
-  score: number;
 }
+
+export type SpiralHostView = BoardsHostView<SpiralBoardState, SpiralRound>;
+export type SpiralPlayerView = BoardsPlayerView<SpiralPlayerState>;
 
 export type SpiralInput =
   /** Where the turret points: 0 is up, clockwise, in radians. */

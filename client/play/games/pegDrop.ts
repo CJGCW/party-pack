@@ -1,20 +1,17 @@
 import { MAX_AIM, type PegInput, type PegPlayerView } from '../../../shared/games/pegDrop';
 import { h } from '../dom';
 import type { Controller } from '../main';
-import { motion, needsMotionPermission, requestMotionPermission, sensorsLive } from '../motion';
+import { needsMotionPermission, requestMotionPermission, sensorsLive } from '../motion';
+import { Steer } from '../steer';
 
-/** Below this much gravity in the screen's plane the phone is lying flat, so tilt aims instead of turning. */
-const FLAT_GRAVITY = 4;
 /** Lying flat: degrees of left-right tilt per radian of aim. */
 const TILT_DEG_PER_RAD = 35;
 /** Without sensors: pixels of drag per radian of aim. */
 const DRAG_PX_PER_RAD = 160;
 /** Aim updates go to the TV at most this often, and only when they've moved this much. */
-const SEND_MS = 50;
+const SEND_MS = 33;
 const SEND_RAD = 0.004;
 
-const wrapRad = (r: number) => Math.atan2(Math.sin(r), Math.cos(r));
-const clampAim = (a: number) => Math.max(-MAX_AIM, Math.min(MAX_AIM, a));
 
 /**
  * The shooter aims the launcher on the TV by turning their phone like a steering wheel
@@ -27,8 +24,6 @@ export function createPegDrop(root: HTMLElement, send: (input: unknown) => void)
   let phaseEndsAt = 0;
   let aiming = false;
   let angle = 0;
-  let base: { steer: number; gamma: number } | null = null;
-  let drag: { x: number; angle: number } | null = null;
   let sent = { angle: 0, at: 0 };
   let frame = 0;
 
@@ -49,15 +44,13 @@ export function createPegDrop(root: HTMLElement, send: (input: unknown) => void)
 
   root.append(h('div', { class: 'pd' }, h('div', { class: 'wr-top' }, headerEl, timerEl, scoreEl), aimEl, infoEl, statsEl));
 
-  /** The phone's turn, clockwise, in the screen's plane. */
-  const gravityAngle = () => Math.atan2(motion.gravity.x, motion.gravity.y);
-  const flat = () => Math.hypot(motion.gravity.x, motion.gravity.y) < FLAT_GRAVITY;
+  // The phone's turn (or tilt, lying flat), smoothed; without sensors, a drag on the dial.
+  const steer = new Steer(dial, { flatDegPerRad: TILT_DEG_PER_RAD, maxAngle: MAX_AIM, dragPxPerRad: DRAG_PX_PER_RAD });
 
   function startAiming() {
     aiming = true;
     angle = 0;
-    base = null;
-    drag = null;
+    steer.recentre();
     sent = { angle: 0, at: 0 };
     loop();
   }
@@ -69,14 +62,7 @@ export function createPegDrop(root: HTMLElement, send: (input: unknown) => void)
 
   function loop() {
     if (!aiming) return;
-    if (sensorsLive()) {
-      base ??= { steer: gravityAngle(), gamma: motion.gamma! };
-      const target = flat()
-        ? (motion.gamma! - base.gamma) / TILT_DEG_PER_RAD
-        : wrapRad(gravityAngle() - base.steer);
-      // A little smoothing takes the shake out of a hand.
-      angle += (clampAim(target) - angle) * 0.35;
-    }
+    angle = steer.angle();
     arrow.style.transform = `rotate(${-angle}rad)`;
     const now = performance.now();
     if (Math.abs(angle - sent.angle) > SEND_RAD && now - sent.at > SEND_MS) {
@@ -86,23 +72,8 @@ export function createPegDrop(root: HTMLElement, send: (input: unknown) => void)
     frame = requestAnimationFrame(loop);
   }
 
-  // Dragging works with or without sensors (without, it's the only way to aim).
-  dial.addEventListener('pointerdown', (e) => {
-    if (!aiming || sensorsLive()) return;
-    e.preventDefault();
-    dial.setPointerCapture(e.pointerId);
-    drag = { x: e.clientX, angle };
-  });
-  dial.addEventListener('pointermove', (e) => {
-    if (!drag) return;
-    angle = clampAim(drag.angle + (e.clientX - drag.x) / DRAG_PX_PER_RAD);
-  });
-  const endDrag = () => (drag = null);
-  dial.addEventListener('pointerup', endDrag);
-  dial.addEventListener('pointercancel', endDrag);
-
   recentreBtn.addEventListener('click', () => {
-    base = null;
+    steer.recentre();
     angle = 0;
   });
   permissionBtn.addEventListener('click', () => void requestMotionPermission().then(render));
