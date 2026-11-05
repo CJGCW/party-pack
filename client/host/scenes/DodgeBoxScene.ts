@@ -15,7 +15,6 @@ export class DodgeBoxScene extends BoardsScene<DodgeState> {
   protected readonly scoring = 'race';
   protected readonly boardW = BOARD_W;
   protected readonly boardH = BOARD_H;
-  protected labelColor = '#140f2e';
   private drawn = new Map<string, Phaser.GameObjects.Graphics>();
 
   constructor() {

@@ -12,7 +12,7 @@ export function svgEl<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Recor
 }
 
 function primEl(p: Prim): SVGElement {
-  const paint = { fill: p.fill ?? 'none', stroke: p.line ?? 'none', 'stroke-width': p.w ?? 0, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' };
+  const paint = { fill: p.fill ?? 'none', 'fill-opacity': p.alpha ?? 1, stroke: p.line ?? 'none', 'stroke-width': p.w ?? 0, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' };
   if (p.t === 'circle') return svgEl('circle', { cx: p.x, cy: p.y, r: p.r, ...paint });
   const points = p.pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
   return svgEl(p.open ? 'polyline' : 'polygon', { points, ...paint });

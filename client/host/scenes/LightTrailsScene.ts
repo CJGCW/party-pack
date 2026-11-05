@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import type { ArenaHostView } from '../../../shared/arena';
 import { GRID_H, GRID_W, STEP, type TrailsWorld } from '../../../shared/games/lightTrails';
+import { DANGER, SKY, ball, glow, gridFloor } from '../art';
 import { ArenaScene } from '../arenaScene';
+import { burst, shockwave } from '../fx';
 import { hex } from '../theme';
 
 /** A grid cell is this many world units. */
@@ -21,20 +23,28 @@ export class LightTrailsScene extends ArenaScene<TrailsWorld> {
 
   /** A dark floor with a faint grid. */
   protected drawStatic(g: Phaser.GameObjects.Graphics, _view: ArenaHostView<TrailsWorld>) {
-    g.fillStyle(0x0c0920, 1).fillRect(0, 0, this.worldW, this.worldH);
-    g.lineStyle(1, 0x5ec8f2, 0.08);
-    for (let x = 0; x <= GRID_W; x += 4) g.lineBetween(x * CELL, 0, x * CELL, this.worldH);
-    for (let y = 0; y <= GRID_H; y += 4) g.lineBetween(0, y * CELL, this.worldW, y * CELL);
+    gridFloor(g, this.worldW, this.worldH, CELL * 2, 5);
+  }
+
+  /** A crash goes off where the rider was. */
+  protected onUpdate(prev: TrailsWorld, next: TrailsWorld) {
+    for (const r of next.riders) {
+      if (r.alive || !prev.riders.find((o) => o.playerId === r.playerId)?.alive) continue;
+      const n = r.trail.length;
+      const at = this.screenOf((r.trail[n - 2] + 0.5) * CELL, (r.trail[n - 1] + 0.5) * CELL);
+      burst(this, at.x, at.y, hex(r.color), 44);
+      shockwave(this, at.x, at.y, hex(r.color), 130);
+    }
   }
 
   protected drawWorld(g: Phaser.GameObjects.Graphics, prev: TrailsWorld, curr: TrailsWorld, t: number, time: number) {
     // The walls, where they've closed in to.
     if (curr.inset > 0) {
       const w = curr.inset * CELL;
-      g.fillStyle(0xff5d73, 0.35 + 0.15 * Math.sin(time / 150));
+      g.fillStyle(DANGER, 0.35 + 0.15 * Math.sin(time / 150));
       g.fillRect(0, 0, this.worldW, w).fillRect(0, this.worldH - w, this.worldW, w).fillRect(0, 0, w, this.worldH).fillRect(this.worldW - w, 0, w, this.worldH);
     }
-    g.lineStyle(6, 0x5ec8f2, 0.6).strokeRect(curr.inset * CELL, curr.inset * CELL, this.worldW - 2 * curr.inset * CELL, this.worldH - 2 * curr.inset * CELL);
+    g.lineStyle(6, curr.inset > 0 ? DANGER : SKY, 0.7).strokeRect(curr.inset * CELL, curr.inset * CELL, this.worldW - 2 * curr.inset * CELL, this.worldH - 2 * curr.inset * CELL);
 
     for (const r of curr.riders) {
       const color = hex(r.color);
@@ -63,8 +73,9 @@ export class LightTrailsScene extends ArenaScene<TrailsWorld> {
       const [dx, dy] = STEP[r.dir];
       const cx = (hx + 0.5) * CELL;
       const cy = (hy + 0.5) * CELL;
-      g.fillStyle(0xffffff, 1).fillCircle(cx, cy, CELL * 0.8);
+      glow(g, cx, cy, CELL * 3.4, color);
       g.fillStyle(color, 1).fillTriangle(cx + dx * CELL * 1.6, cy + dy * CELL * 1.6, cx - dy * CELL * 0.9, cy + dx * CELL * 0.9, cx + dy * CELL * 0.9, cy - dx * CELL * 0.9);
+      ball(g, cx, cy, CELL * 0.72, 0xffffff);
     }
   }
 }

@@ -18,7 +18,6 @@ export class GlideDropScene extends BoardsScene<GlideState> {
   protected readonly scoring = 'best';
   protected readonly boardW = BOARD_W;
   protected readonly boardH = BOARD_H;
-  protected labelColor = '#140f2e';
 
   constructor() {
     super(GlideDropScene.KEY);

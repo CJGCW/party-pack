@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { piecePrims, type CritterHostView, type CritterProgress, type Piece, type Prim, type StageGroup } from '../../../shared/critters';
+import { GOLD, ball, glow } from '../art';
+import { GameHud } from '../hud';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
 import { COLORS, WIDTH, addBackdrop, burstConfetti, hex, panel, text } from '../theme';
@@ -23,9 +25,7 @@ export class CritterScene extends Phaser.Scene {
   private view: CritterHostView | null = null;
   private phaseKey = '';
   private phaseEndsAt = 0;
-  private titleText!: Phaser.GameObjects.Text;
-  private headerText!: Phaser.GameObjects.Text;
-  private timerText!: Phaser.GameObjects.Text;
+  private hud!: GameHud;
   private stageLayer!: Phaser.GameObjects.Container;
   private cardLayer!: Phaser.GameObjects.Container;
   private overlay!: Phaser.GameObjects.Container;
@@ -38,9 +38,8 @@ export class CritterScene extends Phaser.Scene {
     this.view = null;
     this.phaseKey = '';
     addBackdrop(this);
-    this.titleText = text(this, 60, 70, '', 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
-    this.headerText = text(this, WIDTH / 2 + 100, 70, '', 40);
-    this.timerText = text(this, WIDTH - 150, 70, '', 64, COLORS.text, { fontStyle: '700' });
+    this.hud = new GameHud(this, '');
+    panel(this, STAGE.x - 24, STAGE.y - 4, STAGE.w + 48, STAGE.h + 8, 0x1a1442, 0.6);
     this.stageLayer = this.add.container(0, 0);
     this.cardLayer = this.add.container(0, 0);
     this.overlay = this.add.container(0, 0).setDepth(50);
@@ -59,14 +58,14 @@ export class CritterScene extends Phaser.Scene {
     const v = this.view;
     if (!v) return;
     const secs = Math.max(0, Math.ceil((this.phaseEndsAt - performance.now()) / 1000));
-    this.timerText.setText(v.phase === 'play' ? `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}` : '').setColor(secs <= 15 ? COLORS.danger : COLORS.text);
+    this.hud.clock(v.phase === 'play' ? secs : null, 15, (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`);
   }
 
   private applyView(view: CritterHostView) {
     this.view = view;
     this.phaseEndsAt = performance.now() + view.msLeft;
-    this.titleText.setText(view.title.toUpperCase());
-    this.headerText.setText(`Puzzle ${view.puzzleNumber} of ${view.totalPuzzles} · ${view.levelName}`);
+    this.hud.setTitle(view.title.toUpperCase());
+    this.hud.setHeader(`Puzzle ${view.puzzleNumber} of ${view.totalPuzzles} · ${view.levelName}`);
     const key = `${view.puzzleNumber}|${view.phase}`;
     if (key !== this.phaseKey) {
       this.phaseKey = key;
@@ -114,20 +113,24 @@ export class CritterScene extends Phaser.Scene {
     }
     const g = this.add.graphics({ x, y });
     g.setScale(size / 100);
-    if (piece.dim) g.setAlpha(0.3);
-    if (piece.on) g.lineStyle(5, 0xffd166, 1).strokeCircle(0, 0, 49);
+    if (piece.on) {
+      glow(g, 0, 0, 70, GOLD);
+      g.lineStyle(5, GOLD, 1).strokeCircle(0, 0, 49);
+    }
     for (const p of piecePrims(piece)) this.drawPrim(g, p);
+    g.setAlpha(piece.dim ? 0.3 : 1);
     this.stageLayer.add(g);
   }
 
   private drawPrim(g: Phaser.GameObjects.Graphics, p: Prim) {
+    const alpha = p.alpha ?? 1;
     if (p.t === 'circle') {
-      if (p.fill) g.fillStyle(hex(p.fill), 1).fillCircle(p.x, p.y, p.r);
+      if (p.fill) g.fillStyle(hex(p.fill), alpha).fillCircle(p.x, p.y, p.r);
       if (p.line) g.lineStyle(p.w ?? 1, hex(p.line), 1).strokeCircle(p.x, p.y, p.r);
       return;
     }
     const pts = p.pts.map(([x, y]) => new Phaser.Math.Vector2(x, y));
-    if (p.fill) g.fillStyle(hex(p.fill), 1).fillPoints(pts, true);
+    if (p.fill) g.fillStyle(hex(p.fill), alpha).fillPoints(pts, true);
     if (p.line) g.lineStyle(p.w ?? 1, hex(p.line), 1).strokePoints(pts, !p.open);
   }
 
@@ -153,8 +156,8 @@ export class CritterScene extends Phaser.Scene {
     const step = Math.min(30, (w - 48) / Math.max(1, p.goal));
     for (let i = 0; i < p.goal; i++) {
       const cx = x + 24 + step * (i + 0.5);
-      if (i < p.got) pips.fillStyle(0xffd166, 1).fillCircle(cx, y + 84, step * 0.38);
-      else pips.lineStyle(2, hex(COLORS.muted), 0.7).strokeCircle(cx, y + 84, step * 0.38);
+      if (i < p.got) ball(pips, cx, y + 84, step * 0.34, GOLD);
+      else pips.lineStyle(2, hex(COLORS.muted), 0.5).strokeCircle(cx, y + 84, step * 0.34);
     }
     o.add(pips);
     let status = '♥'.repeat(p.triesLeft);

@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import type { BoardView, BoardsHostView, BoardsScoring } from '../../shared/boards';
+import { boxGlow, burst, impact, popText, resultCard, shockwave } from './fx';
+import { GameHud } from './hud';
 import { listen, net } from './net';
 import { showRoundScores } from './roundScores';
 import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, hex, text } from './theme';
@@ -61,17 +63,13 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
   protected abstract readonly boardH: number;
   /** On a board as its run ends. */
   protected endedBanner = 'OUT!';
-  /** The board's corner label (darker on a light board). */
-  protected labelColor: string = COLORS.muted;
 
   protected view: BoardsHostView<S, R> | null = null;
   protected slots: BoardSlot<S, Snap>[] = [];
   private slotsKey = '';
   private phaseKey = '';
   private phaseEndsAt = 0;
-  private headerText!: Phaser.GameObjects.Text;
-  private timerText!: Phaser.GameObjects.Text;
-  private countdownText!: Phaser.GameObjects.Text;
+  private hud!: GameHud;
   private boardLayer!: Phaser.GameObjects.Container;
   protected overlay!: Phaser.GameObjects.Container;
 
@@ -116,11 +114,8 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
     this.slotsKey = this.phaseKey = '';
     addBackdrop(this);
     this.setup();
-    text(this, 60, 70, this.title, 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
-    this.headerText = text(this, WIDTH / 2, 70, '', 40);
-    this.timerText = text(this, WIDTH - 140, 70, '', 64, COLORS.text, { fontStyle: '700' });
     this.boardLayer = this.add.container(0, 0);
-    this.countdownText = text(this, WIDTH / 2, HEIGHT / 2, '', 260, COLORS.accent, { fontStyle: '700', stroke: '#140f2e', strokeThickness: 16 }).setDepth(40);
+    this.hud = new GameHud(this, this.title);
     this.overlay = this.add.container(0, 0).setDepth(50);
 
     listen(this, 'gameView', (v: BoardsHostView<S, R>) => this.applyView(v));
@@ -136,7 +131,7 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
   private applyView(view: BoardsHostView<S, R>) {
     this.view = view;
     this.phaseEndsAt = performance.now() + view.msLeft;
-    this.headerText.setText(this.roundLabel(view));
+    this.hud.setHeader(this.roundLabel(view));
 
     const key = `${view.puzzleNumber}|${this.layoutKey(view)}|${view.boards.map((b) => b.playerId).join(',')}`;
     if (key !== this.slotsKey) {
@@ -169,6 +164,8 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
               ? this.slots.some((s) => s.board.endedAtMs !== null)
               : this.slots.some((s) => s.board.boardScore > 0);
         if (celebrate) burstConfetti(this, WIDTH / 2, HEIGHT / 3, 60);
+        const top = Math.max(0, ...this.slots.map((s) => s.board.points));
+        for (const slot of this.slots) if (top > 0 && slot.board.points === top) this.cheer(slot);
       }
       if (view.phase === 'gameEnd') {
         showRoundScores(
@@ -205,7 +202,9 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
 
       const g = this.add.graphics();
       const corner = Math.min(w, h) * 0.04;
-      g.fillStyle(0x1a1442, 0.95).fillRoundedRect(0, 0, w, h, corner);
+      this.boardLayer.addAt(boxGlow(this, x, y, w * scale, h * scale, corner * scale, hex(b.color)), 0);
+      g.fillGradientStyle(0x241c5a, 0x241c5a, 0x120d30, 0x120d30, 1);
+      g.fillRect(0, 0, w, h);
       const slot: BoardSlot<S, Snap> = {
         playerId: b.playerId,
         x,
@@ -213,8 +212,8 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
         scale,
         container,
         dynamic: this.add.graphics(),
-        nameText: text(this, label * 0.8, label * 0.85, b.name, label, b.color, { fontStyle: '700' }).setOrigin(0, 0.5),
-        statText: text(this, w - label * 0.8, label * 0.85, '', label * 0.78, COLORS.muted, { fontStyle: '700' }).setOrigin(1, 0.5),
+        nameText: text(this, label * 0.8, label * 0.85, b.name, label, b.color, { fontStyle: '700', stroke: '#140f2e', strokeThickness: label * 0.14 }).setOrigin(0, 0.5),
+        statText: text(this, w - label * 0.8, label * 0.85, '', label * 0.78, COLORS.muted, { fontStyle: '700', stroke: '#140f2e', strokeThickness: label * 0.14 }).setOrigin(1, 0.5),
         banner: this.add.container(w / 2, h / 2),
         prev: null,
         curr: null,
@@ -226,7 +225,7 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
       this.drawStatic(slot, g);
       // The player's colour round the edge, then the labels and banner, over everything.
       const edge = this.add.graphics();
-      edge.lineStyle(Math.min(w, h) * 0.01, hex(b.color), 0.9).strokeRoundedRect(0, 0, w, h, corner);
+      edge.lineStyle(Math.min(w, h) * 0.012, hex(b.color), 1).strokeRoundedRect(0, 0, w, h, corner);
       container.add([edge, slot.nameText, slot.statText, slot.banner]);
       return slot;
     });
@@ -236,7 +235,7 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
     const b = slot.board;
     const ended = b.endedAtMs !== null;
     slot.statText.setText(ended && this.scoring === 'survival' ? `OUT ${Math.floor(b.endedAtMs! / 1000)}s` : this.statusText(b));
-    slot.statText.setColor(ended && this.scoring === 'survival' ? COLORS.danger : this.labelColor);
+    slot.statText.setColor(ended && this.scoring === 'survival' ? COLORS.danger : COLORS.text);
     // A board whose run's over gets a banner as soon as it happens (and dims, unless it finished a race).
     if (ended && slot.banner.length === 0 && this.view?.phase === 'play') {
       const size = Math.min(this.boardW, this.boardH);
@@ -244,8 +243,33 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
       slot.banner.add(text(this, 0, 0, finished ? 'DONE!' : this.endedBanner, size * 0.2, finished ? COLORS.accent : COLORS.danger, { fontStyle: '700', stroke: '#140f2e', strokeThickness: size * 0.02 }));
       slot.banner.setScale(0.3);
       this.tweens.add({ targets: slot.banner, scale: 1, duration: 300, ease: 'Back.easeOut' });
-      if (this.scoring === 'survival') this.cameras.main.shake(200, 0.004);
+      const { x, y } = this.middleOf(slot);
+      if (finished) {
+        burst(this, x, y, hex(COLORS.accent), 40);
+        shockwave(this, x, y, hex(COLORS.accent), (size * slot.scale) / 2);
+      } else {
+        burst(this, x, y, hex(COLORS.danger), 40);
+        impact(this, 0.005);
+      }
     }
+  }
+
+  /** Where a point on a board is on screen (effects are drawn in screen pixels). */
+  protected screenOf(slot: BoardSlot<S, Snap>, x: number, y: number) {
+    return { x: slot.x + x * slot.scale, y: slot.y + y * slot.scale };
+  }
+
+  /** The middle of a board, on screen. */
+  private middleOf(slot: BoardSlot<S, Snap>) {
+    return this.screenOf(slot, this.boardW / 2, this.boardH / 2);
+  }
+
+  /** The round's best: sparks and the points flying up off their board. */
+  private cheer(slot: BoardSlot<S, Snap>) {
+    const { x, y } = this.middleOf(slot);
+    burst(this, x, y, hex(COLORS.accent), 50);
+    shockwave(this, x, y, hex(COLORS.accent), (Math.min(this.boardW, this.boardH) * slot.scale) / 2);
+    popText(this, x, y - (this.boardH * slot.scale) / 3, 'BEST!', COLORS.accent, 52);
   }
 
   private showResult(slot: BoardSlot<S, Snap>) {
@@ -254,7 +278,7 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
     slot.banner.removeAll(true);
     const { title, good } = this.resultTitle(b);
     const color = good ? COLORS.accent : this.scoring === 'survival' ? COLORS.danger : COLORS.text;
-    slot.banner.add(this.add.rectangle(0, 0, this.boardW * 0.8, size * 0.33, 0x0a0720, 0.85).setStrokeStyle(size * 0.008, hex(good ? COLORS.accent : COLORS.danger)));
+    slot.banner.add(resultCard(this, this.boardW * 0.8, size * 0.33, hex(good ? COLORS.accent : COLORS.danger), good));
     slot.banner.add(text(this, 0, -size * 0.07, title, size * 0.09, color, { fontStyle: '700' }));
     slot.banner.add(text(this, 0, size * 0.06, `+${b.points.toLocaleString()}`, size * 0.11, COLORS.text, { fontStyle: '700' }));
     slot.banner.setScale(0.3).setAlpha(0);
@@ -266,8 +290,8 @@ export abstract class BoardsScene<S, R = null, Snap = S> extends Phaser.Scene {
     if (!v) return;
     const now = performance.now();
     const secs = Math.max(0, Math.ceil((this.phaseEndsAt - now) / 1000));
-    this.timerText.setText(v.phase === 'play' ? String(secs) : '').setColor(secs <= 10 ? COLORS.danger : COLORS.text);
-    this.countdownText.setText(v.phase === 'ready' ? String(Math.max(1, secs)) : '');
+    this.hud.clock(v.phase === 'play' ? secs : null);
+    this.hud.countdown(v.phase === 'ready' ? Math.max(1, secs) : null);
     for (const slot of this.slots) {
       const g = slot.dynamic.clear();
       if (!slot.prev || !slot.curr) continue;

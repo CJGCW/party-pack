@@ -18,8 +18,8 @@ const GREY = '#8d86b8';
 
 /** Something to draw, in a box from -50 to 50 each way. */
 export type Prim =
-  | { t: 'circle'; x: number; y: number; r: number; fill?: string; line?: string; w?: number }
-  | { t: 'poly'; pts: [number, number][]; fill?: string; line?: string; w?: number; open?: boolean };
+  | { t: 'circle'; x: number; y: number; r: number; fill?: string; line?: string; w?: number; alpha?: number }
+  | { t: 'poly'; pts: [number, number][]; fill?: string; line?: string; w?: number; open?: boolean; alpha?: number };
 
 const ring = (n: number, r: number, cx = 0, cy = 0, turn = -Math.PI / 2, squash = 1): [number, number][] =>
   Array.from({ length: n }, (_, i) => {
@@ -30,6 +30,15 @@ const ring = (n: number, r: number, cx = 0, cy = 0, turn = -Math.PI / 2, squash 
 const poly = (pts: [number, number][], fill: string, w = 2.5): Prim => ({ t: 'poly', pts, fill, line: INK, w });
 const line = (pts: [number, number][], w = 3, color = CREAM): Prim => ({ t: 'poly', pts, line: color, w, open: true });
 const dot = (x: number, y: number, r: number, fill: string, w = 0): Prim => ({ t: 'circle', x, y, r, fill, ...(w ? { line: INK, w } : {}) });
+
+/** The house lighting on a solid shape: a darker underside, and a highlight up and to the left. */
+function lit(shape: [number, number][], shineX: number, shineY: number, shineR: number): Prim[] {
+  const ys = shape.map(([, y]) => y);
+  const bottom = Math.max(...ys);
+  const cut = bottom - (bottom - Math.min(...ys)) * 0.3;
+  const under = shape.filter(([, y]) => y >= cut);
+  return [{ t: 'poly', pts: under, fill: INK, alpha: 0.18 }, { t: 'circle', x: shineX, y: shineY, r: shineR, fill: '#ffffff', alpha: 0.5 }];
+}
 
 function hat(i: number): Prim[] {
   switch (i) {
@@ -91,7 +100,7 @@ export function wumblePrims(t: Traits): Prim[] {
     const r = 27 * (1 + 0.09 * Math.sin(a));
     return [r * Math.cos(a), 6 + r * Math.sin(a)];
   });
-  return [...feet(t[3]), poly(body, t[0] >= 0 ? PAINTS[t[0]] : GREY), ...hat(t[1]), ...eyes(t[2])];
+  return [...feet(t[3]), poly(body, t[0] >= 0 ? PAINTS[t[0]] : GREY, 3), ...lit(body, -14, -8, 4.5), ...hat(t[1]), ...eyes(t[2])];
 }
 
 function botTop(i: number): Prim[] {
@@ -131,7 +140,8 @@ function botBase(i: number): Prim[] {
 /** Their robot cousins, for Lookalikes: colour, chest mark, what's on top, what's underneath. */
 export function botPrims(t: Traits): Prim[] {
   const chest = shapePoints(t[1]).map(([x, y]): [number, number] => [x * 28, 3 + y * 28]);
-  return [...botBase(t[3]), ...botTop(t[2]), poly([[-28, -26], [28, -26], [28, 31], [-28, 31]], PAINTS[t[0]]), poly(chest, '#ffffff', 2)];
+  const box: [number, number][] = [[-28, -26], [28, -26], [28, 31], [-28, 31]];
+  return [...botBase(t[3]), ...botTop(t[2]), poly(box, PAINTS[t[0]], 3), ...lit(box, -20, -18, 3.5), poly(chest, '#ffffff', 2)];
 }
 
 /** Stepping Stones' tiles: shape, colour, mark. */
@@ -139,7 +149,7 @@ export const TILE_OPTIONS = 4;
 export function tilePrims(t: Traits): Prim[] {
   const outline: [number, number][][] = [ring(24, 44), [[-40, -40], [40, -40], [40, 40], [-40, 40]], ring(6, 46), ring(4, 48)];
   const mark = shapePoints([0, 1, 2, 4][t[2]]).map(([x, y]): [number, number] => [x * 34, y * 34]);
-  return [poly(outline[t[0]], PAINTS[t[1]], 3), poly(mark, INK, 1)];
+  return [poly(outline[t[0]], PAINTS[t[1]], 3.5), ...lit(outline[t[0]], -18, -24, 5), poly(mark, INK, 1)];
 }
 
 /** Anything a puzzle shows. */

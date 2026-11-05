@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import type { ArenaEntry, ArenaHostView, ArenaScoring } from '../../shared/arena';
+import { boxGlow, burst, impact, popText } from './fx';
+import { GameHud } from './hud';
 import { listen, net } from './net';
 import { showRoundScores } from './roundScores';
 import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, hex, panel, text } from './theme';
@@ -34,9 +36,9 @@ export abstract class ArenaScene<S> extends Phaser.Scene {
   private staticG!: Phaser.GameObjects.Graphics;
   private listLayer!: Phaser.GameObjects.Container;
   private overlay!: Phaser.GameObjects.Container;
-  private headerText!: Phaser.GameObjects.Text;
-  private timerText!: Phaser.GameObjects.Text;
-  private countdownText!: Phaser.GameObjects.Text;
+  private hud!: GameHud;
+  /** Who's been seen to go out this round. */
+  private fallen = new Set<string>();
   private phaseKey = '';
   private roundKey = '';
   private listKey = '';
@@ -60,12 +62,10 @@ export abstract class ArenaScene<S> extends Phaser.Scene {
     this.phaseKey = this.roundKey = this.listKey = '';
     addBackdrop(this);
     this.setup();
-    text(this, 60, 70, this.title, 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
-    this.headerText = text(this, WIDTH / 2, 70, '', 40);
-    this.timerText = text(this, WIDTH - 140, 70, '', 64, COLORS.text, { fontStyle: '700' });
     this.worldScale = Math.min(WORLD_AREA.w / this.worldW, WORLD_AREA.h / this.worldH);
     const x = WORLD_AREA.x + (WORLD_AREA.w - this.worldW * this.worldScale) / 2;
     const y = WORLD_AREA.y + (WORLD_AREA.h - this.worldH * this.worldScale) / 2;
+    boxGlow(this, x, y, this.worldW * this.worldScale, this.worldH * this.worldScale, 6, 0x8b7cf6);
     this.worldLayer = this.add.container(x, y).setScale(this.worldScale);
     const clip = this.make.graphics({}, false).fillStyle(0xffffff).fillRect(x, y, this.worldW * this.worldScale, this.worldH * this.worldScale);
     this.worldLayer.setMask(clip.createGeometryMask());
@@ -73,7 +73,7 @@ export abstract class ArenaScene<S> extends Phaser.Scene {
     this.dynamic = this.add.graphics();
     this.worldLayer.add([this.staticG, this.dynamic]);
     this.listLayer = this.add.container(0, 0);
-    this.countdownText = text(this, x + (this.worldW * this.worldScale) / 2, HEIGHT / 2, '', 260, COLORS.accent, { fontStyle: '700', stroke: '#140f2e', strokeThickness: 16 }).setDepth(40);
+    this.hud = new GameHud(this, this.title, x + (this.worldW * this.worldScale) / 2);
     this.overlay = this.add.container(0, 0).setDepth(50);
 
     listen(this, 'gameView', (v: ArenaHostView<S>) => this.applyView(v));
@@ -90,11 +90,12 @@ export abstract class ArenaScene<S> extends Phaser.Scene {
     const now = performance.now();
     this.view = view;
     this.phaseEndsAt = now + view.msLeft;
-    this.headerText.setText(`Round ${view.puzzleNumber} of ${view.totalPuzzles}`);
+    this.hud.setHeader(`Round ${view.puzzleNumber} of ${view.totalPuzzles}`);
     const roundKey = `${view.puzzleNumber}|${view.seed}`;
     const next = { at: now, world: view.world };
     if (roundKey !== this.roundKey) {
       this.roundKey = roundKey;
+      this.fallen.clear();
       this.staticG.clear();
       this.drawStatic(this.staticG, view);
       this.prev = next;
@@ -111,7 +112,27 @@ export abstract class ArenaScene<S> extends Phaser.Scene {
       if (view.phase === 'result') burstConfetti(this, LIST.x + LIST.w / 2, LIST.y + 80, 50);
       if (view.phase === 'gameEnd') showRoundScores(this, this.overlay, view.players.map((p) => ({ name: p.name, color: p.color, points: view.gamePoints[p.playerId] ?? 0 })));
     }
+    this.markFallen(view);
     this.drawList(view);
+  }
+
+  /** Where a point in the world is on screen (effects are drawn in screen pixels). */
+  protected screenOf(x: number, y: number) {
+    return { x: this.worldLayer.x + x * this.worldScale, y: this.worldLayer.y + y * this.worldScale };
+  }
+
+  /** Anyone newly out gets a moment. */
+  private markFallen(view: ArenaHostView<S>) {
+    // At the result too: in a duel, the first one out ends the round there and then.
+    if (view.phase !== 'play' && view.phase !== 'result') return;
+    const x = WORLD_AREA.x + WORLD_AREA.w / 2;
+    for (const p of view.players) {
+      if (p.endedAtMs === null || this.fallen.has(p.playerId)) continue;
+      this.fallen.add(p.playerId);
+      popText(this, x, HEIGHT / 2, `${p.name} is out!`, p.color, 64);
+      burst(this, x, HEIGHT / 2, hex(p.color), 36);
+      impact(this, 0.005);
+    }
   }
 
   /** The players, beside the world: still in first; at the result, by place with their points. */
@@ -129,11 +150,13 @@ export abstract class ArenaScene<S> extends Phaser.Scene {
     rows.forEach((p, i) => {
       const y = LIST.y + 15 + i * rowH + rowH / 2;
       const out = p.endedAtMs !== null && view.phase === 'play';
+      if (i) this.listLayer.add(this.add.rectangle(LIST.x + 20, y - rowH / 2, LIST.w - 40, 2, 0xffffff, 0.07).setOrigin(0, 0.5));
+      const glow = this.add.image(LIST.x + 34, y, 'fx-glow').setDisplaySize(64, 64).setTint(hex(p.color)).setAlpha(out ? 0 : 0.55).setBlendMode(Phaser.BlendModes.ADD);
       const dot = this.add.circle(LIST.x + 34, y, 14, hex(p.color)).setAlpha(out ? 0.4 : 1);
       const name = text(this, LIST.x + 60, y, p.name, 34, out ? COLORS.muted : p.color, { fontStyle: '700' }).setOrigin(0, 0.5);
       const status = result ? `${ordinal(p.place ?? 1)} · +${p.points}` : this.statusText(p);
       const right = text(this, LIST.x + LIST.w - 24, y, status, 28, result ? COLORS.accent : out ? COLORS.danger : COLORS.muted, { fontStyle: '700' }).setOrigin(1, 0.5);
-      this.listLayer.add([dot, name, right]);
+      this.listLayer.add([glow, dot, name, right]);
     });
   }
 
@@ -142,8 +165,8 @@ export abstract class ArenaScene<S> extends Phaser.Scene {
     if (!v || !this.prev || !this.curr) return;
     const now = performance.now();
     const secs = Math.max(0, Math.ceil((this.phaseEndsAt - now) / 1000));
-    this.timerText.setText(v.phase === 'play' ? String(secs) : '').setColor(secs <= 10 ? COLORS.danger : COLORS.text);
-    this.countdownText.setText(v.phase === 'ready' ? String(Math.max(1, secs)) : '');
+    this.hud.clock(v.phase === 'play' ? secs : null);
+    this.hud.countdown(v.phase === 'ready' ? Math.max(1, secs) : null);
     const span = Math.max(1, this.curr.at - this.prev.at);
     const t = Math.min(1, (now - this.curr.at) / span);
     this.drawWorld(this.dynamic.clear(), this.prev.world, this.curr.world, t, time);

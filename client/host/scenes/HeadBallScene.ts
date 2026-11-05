@@ -15,7 +15,6 @@ export class HeadBallScene extends BoardsScene<HeadState> {
   protected readonly scoring = 'best';
   protected readonly boardW = BOARD_W;
   protected readonly boardH = BOARD_H;
-  protected labelColor = '#140f2e';
   private throws: Throw[] = [];
   private seed = -1;
   private bonkAt = new Map<string, number>();

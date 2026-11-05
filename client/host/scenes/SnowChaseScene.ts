@@ -49,7 +49,6 @@ export class SnowChaseScene extends BoardsScene<SnowBoardState> {
     return board.endedAtMs === null ? { title: 'GOT AWAY!', good: true } : { title: `CAUGHT AT ${Math.floor(board.endedAtMs / 1000)}s`, good: false };
   }
 
-  protected labelColor = '#4a4570';
 
   /** Snow. */
   protected drawStatic(_slot: Slot, g: Phaser.GameObjects.Graphics) {

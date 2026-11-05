@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import type { VolleyBoardView, VolleyHostView } from '../../shared/volleys';
 import { AREA, GAP, gridFor } from './boardsScene';
+import { boxGlow, burst, resultCard, shockwave } from './fx';
+import { GameHud } from './hud';
 import { listen, net } from './net';
 import { showRoundScores } from './roundScores';
 import { COLORS, WIDTH, addBackdrop, burstConfetti, hex, text } from './theme';
@@ -8,6 +10,10 @@ import { COLORS, WIDTH, addBackdrop, burstConfetti, hex, text } from './theme';
 /** One player's board on screen. */
 export interface VolleySlot<S> {
   playerId: string;
+  /** Where it is on screen, and how many screen pixels a board unit is. */
+  x: number;
+  y: number;
+  scale: number;
   container: Phaser.GameObjects.Container;
   /** Cleared and redrawn every frame. */
   dynamic: Phaser.GameObjects.Graphics;
@@ -38,8 +44,7 @@ export abstract class VolleyScene<S> extends Phaser.Scene {
   private phaseEndsAt = 0;
   /** When this volley's shots started playing (performance.now()). */
   protected flyStartedAt = 0;
-  private headerText!: Phaser.GameObjects.Text;
-  private timerText!: Phaser.GameObjects.Text;
+  private hud!: GameHud;
   private boardLayer!: Phaser.GameObjects.Container;
   protected overlay!: Phaser.GameObjects.Container;
 
@@ -61,10 +66,8 @@ export abstract class VolleyScene<S> extends Phaser.Scene {
     this.slots = [];
     this.slotsKey = this.phaseKey = '';
     addBackdrop(this);
-    text(this, 60, 70, this.title, 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
-    this.headerText = text(this, WIDTH / 2, 70, '', 40);
-    this.timerText = text(this, WIDTH - 140, 70, '', 64, COLORS.text, { fontStyle: '700' });
     this.boardLayer = this.add.container(0, 0);
+    this.hud = new GameHud(this, this.title);
     this.overlay = this.add.container(0, 0).setDepth(50);
     listen(this, 'gameView', (v: VolleyHostView<S>) => this.applyView(v));
     if (net.gameView) {
@@ -79,7 +82,7 @@ export abstract class VolleyScene<S> extends Phaser.Scene {
   private applyView(view: VolleyHostView<S>) {
     this.view = view;
     this.phaseEndsAt = performance.now() + view.msLeft;
-    this.headerText.setText(`Round ${view.puzzleNumber} of ${view.totalPuzzles} · ${this.shotWord} ${view.volley} of ${view.totalVolleys}`);
+    this.hud.setHeader(`Round ${view.puzzleNumber} of ${view.totalPuzzles} · ${this.shotWord} ${view.volley} of ${view.totalVolleys}`);
     const key = `${view.puzzleNumber}|${view.boards.map((b) => b.playerId).join(',')}`;
     if (key !== this.slotsKey) {
       this.slotsKey = key;
@@ -117,7 +120,8 @@ export abstract class VolleyScene<S> extends Phaser.Scene {
     const { cols, rows, scale } = gridFor(Math.max(1, boards.length), w, h);
     const gridW = cols * w * scale + (cols - 1) * GAP;
     const gridH = rows * h * scale + (rows - 1) * GAP;
-    const label = Math.min(w, h) * 0.06;
+    // Wide, low boards still want a name you can read.
+    const label = Math.max(Math.min(w, h) * 0.06, 20);
     const corner = Math.min(w, h) * 0.04;
     this.slots = boards.map((b, i) => {
       const col = i % cols;
@@ -130,9 +134,13 @@ export abstract class VolleyScene<S> extends Phaser.Scene {
       const clip = this.make.graphics({}, false).fillStyle(0xffffff).fillRoundedRect(x, y, w * scale, h * scale, corner * scale);
       container.setMask(clip.createGeometryMask());
       this.boardLayer.add(container);
+      this.boardLayer.addAt(boxGlow(this, x, y, w * scale, h * scale, corner * scale, hex(b.color)), 0);
       const g = this.add.graphics();
       const slot: VolleySlot<S> = {
         playerId: b.playerId,
+        x,
+        y,
+        scale,
         container,
         dynamic: this.add.graphics(),
         nameText: text(this, label * 0.8, label * 0.85, b.name, label, b.color, { fontStyle: '700', stroke: '#140f2e', strokeThickness: label * 0.15 }).setOrigin(0, 0.5),
@@ -154,11 +162,16 @@ export abstract class VolleyScene<S> extends Phaser.Scene {
     const b = slot.board;
     const size = Math.min(this.boardW, this.boardH);
     const good = b.place === 1;
-    slot.banner.add(this.add.rectangle(0, 0, this.boardW * 0.7, size * 0.36, 0x0a0720, 0.85).setStrokeStyle(size * 0.008, hex(good ? COLORS.accent : COLORS.muted)));
+    slot.banner.add(resultCard(this, this.boardW * 0.7, size * 0.36, hex(good ? COLORS.accent : COLORS.muted), good));
     slot.banner.add(text(this, 0, -size * 0.08, this.resultTitle(b), size * 0.09, good ? COLORS.accent : COLORS.text, { fontStyle: '700' }));
     slot.banner.add(text(this, 0, size * 0.07, `+${b.points.toLocaleString()}`, size * 0.12, COLORS.text, { fontStyle: '700' }));
     slot.banner.setScale(0.3).setAlpha(0);
     this.tweens.add({ targets: slot.banner, scale: 1, alpha: 1, duration: 350, ease: 'Back.easeOut' });
+    if (good) {
+      const [x, y] = [slot.x + (this.boardW * slot.scale) / 2, slot.y + (this.boardH * slot.scale) / 2];
+      burst(this, x, y, hex(COLORS.accent), 50);
+      shockwave(this, x, y, hex(COLORS.accent), (size * slot.scale) / 2);
+    }
   }
 
   update(time: number) {
@@ -166,7 +179,7 @@ export abstract class VolleyScene<S> extends Phaser.Scene {
     if (!v) return;
     const now = performance.now();
     const secs = Math.max(0, Math.ceil((this.phaseEndsAt - now) / 1000));
-    this.timerText.setText(v.phase === 'aim' ? String(secs) : '').setColor(secs <= 5 ? COLORS.danger : COLORS.text);
+    this.hud.clock(v.phase === 'aim' ? secs : null, 5);
     const seconds = v.phase === 'fly' ? (now - this.flyStartedAt) / 1000 : 0;
     for (const slot of this.slots) this.drawBoard(slot, slot.dynamic.clear(), seconds, time);
   }

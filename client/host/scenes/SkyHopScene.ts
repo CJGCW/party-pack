@@ -38,7 +38,6 @@ export class SkyHopScene extends BoardsScene<HopBoardState> {
   protected readonly scoring = 'best';
   protected readonly boardW = VIEW_W;
   protected readonly boardH = VIEW_H;
-  protected labelColor = '#2c2366';
   private platforms: Platform[] = [];
   private clock = { roundMs: 0, at: 0, playing: false };
 
