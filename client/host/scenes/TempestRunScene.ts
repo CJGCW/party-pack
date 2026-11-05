@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { DANGER, FIRE, INK, SKY, glow } from '../art';
 import type { BoardsHostView } from '../../../shared/boards';
 import {
   BOARD_SIZE,
@@ -63,7 +64,7 @@ export class TempestRunScene extends BoardsScene<TempestBoardState, TempestRound
   protected drawStatic(_slot: Slot, g: Phaser.GameObjects.Graphics) {
     const tube = this.tube;
     const edges = tube.closed ? tube.lanes : tube.lanes + 1;
-    g.lineStyle(4, 0x5ec8f2, 0.35);
+    g.lineStyle(4, SKY, 0.35);
     for (let i = 0; i < edges; i++) {
       const a = tube.start + i * tube.span;
       const near = tubePoint(tube, a, 1);
@@ -77,7 +78,8 @@ export class TempestRunScene extends BoardsScene<TempestBoardState, TempestRound
         const p = tubePoint(tube, tube.start + (i / steps) * tube.lanes * tube.span, depth);
         pts.push(new Phaser.Math.Vector2(p.x, p.y));
       }
-      g.lineStyle(depth ? 8 : 4, 0x5ec8f2, depth ? 0.9 : 0.5).strokePoints(pts, tube.closed);
+      if (depth) g.lineStyle(16, SKY, 0.16).strokePoints(pts, tube.closed);
+      g.lineStyle(depth ? 8 : 4, SKY, depth ? 0.9 : 0.5).strokePoints(pts, tube.closed);
     }
   }
 
@@ -109,7 +111,10 @@ export class TempestRunScene extends BoardsScene<TempestBoardState, TempestRound
       const tip = tubePoint(tube, a, Math.max(0, d - 0.06));
       const back = tubePoint(tube, a, Math.min(1, d + 0.03));
       const near = d > 0.82;
-      g.fillStyle(near ? 0xff5d73 : 0xff9f43, 1).fillPoints([p1, tip, p2, back].map((p) => new Phaser.Math.Vector2(p.x, p.y)), true);
+      const shape = [p1, tip, p2, back].map((p) => new Phaser.Math.Vector2(p.x, p.y));
+      if (near) glow(g, back.x, back.y, 70, DANGER);
+      g.fillStyle(near ? DANGER : FIRE, 1).fillPoints(shape, true);
+      g.lineStyle(3, INK, 1).strokePoints(shape, true);
     }
 
     // The player: a claw on the rim.
@@ -119,7 +124,8 @@ export class TempestRunScene extends BoardsScene<TempestBoardState, TempestRound
     const right = tubePoint(tube, a + half, 1.04);
     const point = tubePoint(tube, a, 0.9);
     const pulse = slot.board.endedAtMs === null ? 1 : 0.4;
-    g.fillStyle(0x140f2e, pulse).fillTriangle(left.x, left.y, right.x, right.y, point.x, point.y);
+    glow(g, (left.x + right.x) / 2, (left.y + right.y) / 2, 70, color, pulse);
+    g.fillStyle(INK, pulse).fillTriangle(left.x, left.y, right.x, right.y, point.x, point.y);
     g.lineStyle(10, color, pulse).strokeTriangle(left.x, left.y, right.x, right.y, point.x, point.y);
   }
 }

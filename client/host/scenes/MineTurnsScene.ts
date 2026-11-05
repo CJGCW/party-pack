@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
+import { FIRE, FLOOR_DARK, ball, block, brick, glow } from '../art';
+import { burst, impact } from '../fx';
 import { BOOM, COLS, HIDDEN, ROWS } from '../../../shared/games/minesweeper';
 import type { TurnsView } from '../../../shared/games/mineTurns';
+import { GameHud } from '../hud';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
 import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, hex, text } from '../theme';
@@ -19,9 +22,8 @@ export class MineTurnsScene extends Phaser.Scene {
   private viewAt = 0;
   private g!: Phaser.GameObjects.Graphics;
   private numbers: Phaser.GameObjects.Text[] = [];
-  private headerText!: Phaser.GameObjects.Text;
+  private hud!: GameHud;
   private leftText!: Phaser.GameObjects.Text;
-  private timerText!: Phaser.GameObjects.Text;
   private list!: Phaser.GameObjects.Container;
   private overlay!: Phaser.GameObjects.Container;
   private phaseKey = '';
@@ -34,9 +36,7 @@ export class MineTurnsScene extends Phaser.Scene {
     this.view = null;
     this.phaseKey = '';
     addBackdrop(this);
-    text(this, 60, 70, 'MINE DASH', 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
-    this.headerText = text(this, WIDTH / 2, 70, '', 36);
-    this.timerText = text(this, WIDTH - 120, 70, '', 64, COLORS.text, { fontStyle: '700' });
+    this.hud = new GameHud(this, 'MINE DASH');
     this.g = this.add.graphics();
     this.numbers = Array.from({ length: COLS * ROWS }, (_, c) => text(this, BOARD_X + (c % COLS) * CELL + CELL / 2, BOARD_Y + Math.floor(c / COLS) * CELL + CELL / 2 + 2, '', CELL * 0.55, COLORS.text, { fontStyle: '700' }));
     this.leftText = text(this, WIDTH / 2 + 240, BOARD_Y + 40, '', 44, COLORS.accent, { fontStyle: '700' });
@@ -47,9 +47,18 @@ export class MineTurnsScene extends Phaser.Scene {
   }
 
   private applyView(v: TurnsView) {
+    // A mine found since the last update.
+    if (this.view) {
+      const known = new Set(this.view.mines.map((m) => m.cell));
+      for (const m of v.mines) {
+        if (known.has(m.cell)) continue;
+        burst(this, BOARD_X + (m.cell % COLS + 0.5) * CELL, BOARD_Y + (Math.floor(m.cell / COLS) + 0.5) * CELL, FIRE, 40);
+        impact(this, 0.004);
+      }
+    }
     this.view = v;
     this.viewAt = performance.now();
-    this.headerText.setText(`Round ${v.puzzleNumber} of ${v.totalPuzzles} · Find the mines!`);
+    this.hud.setHeader(`Round ${v.puzzleNumber} of ${v.totalPuzzles} · Find the mines!`);
     this.leftText.setText(v.phase === 'play' ? `${v.left} MINES LEFT` : 'FIELD CLEAR!');
     const pk = `${v.puzzleNumber}|${v.phase}`;
     if (pk !== this.phaseKey) {
@@ -63,7 +72,10 @@ export class MineTurnsScene extends Phaser.Scene {
       const x = WIDTH / 2 + 20;
       const y = BOARD_Y + 140 + i * 110;
       const up = p.id === v.turn;
-      this.list.add(this.add.rectangle(x, y, 440, 92, up ? 0x3b3185 : 0x2a2160, 0.95).setOrigin(0, 0.5).setStrokeStyle(up ? 6 : 3, hex(p.color)));
+      const card = this.add.graphics();
+      block(card, x, y - 46, 440, 92, up ? 0x4a3f9a : 0x2c2366);
+      if (up) card.lineStyle(5, hex(p.color), 1).strokeRoundedRect(x + 2, y - 44, 436, 88, 14);
+      this.list.add(card);
       this.list.add(text(this, x + 20, y, p.name, 34, p.color, { fontStyle: '700' }).setOrigin(0, 0.5));
       const status = v.phase === 'result' || v.phase === 'gameEnd' ? `+${p.points}` : String(p.found);
       this.list.add(text(this, x + 420, y, status, 44, COLORS.text, { fontStyle: '700' }).setOrigin(1, 0.5));
@@ -75,17 +87,17 @@ export class MineTurnsScene extends Phaser.Scene {
     const g = this.g.clear();
     if (!v) return;
     const secs = Math.max(0, Math.ceil((v.turnMs - (performance.now() - this.viewAt)) / 1000));
-    this.timerText.setText(v.phase === 'play' ? String(secs) : '');
+    this.hud.clock(v.phase === 'play' ? secs : null, 5);
     const owners = new Map(v.mines.map((m) => [m.cell, v.players.find((p) => p.id === m.by)?.color]));
     v.squares.forEach((sq, c) => {
       const x = BOARD_X + (c % COLS) * CELL;
       const y = BOARD_Y + Math.floor(c / COLS) * CELL;
       const owner = owners.get(c);
-      g.fillStyle(sq === HIDDEN ? ((c + Math.floor(c / COLS)) % 2 ? 0x4a3f9a : 0x433892) : sq === BOOM ? (owner ? hex(owner) : 0x5a1f3a) : 0x1f1848, 1).fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
-      if (sq === HIDDEN) g.fillStyle(0xffffff, 0.08).fillRect(x + 4, y + 4, CELL - 8, 8);
+      if (sq === HIDDEN) brick(g, x, y, CELL, CELL, (c + Math.floor(c / COLS)) % 2 ? 0x5548ac : 0x4a3f9a);
+      else g.fillStyle(sq === BOOM ? (owner ? hex(owner) : 0x5a1f3a) : FLOOR_DARK, 1).fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
       if (sq === BOOM) {
-        g.fillStyle(0x140f2e, 1).fillCircle(x + CELL / 2, y + CELL / 2, CELL * 0.26);
-        g.fillStyle(0xff9f43, 0.6 + 0.4 * Math.sin(time / 150)).fillCircle(x + CELL / 2 + 6, y + CELL / 2 - 6, CELL * 0.08);
+        glow(g, x + CELL / 2, y + CELL / 2, CELL * 0.7, FIRE, 0.6 + 0.4 * Math.sin(time / 150));
+        ball(g, x + CELL / 2, y + CELL / 2, CELL * 0.26, 0x3a3358);
       }
       const label = sq > 0 ? String(sq) : '';
       if (this.numbers[c].text !== label) this.numbers[c].setText(label).setColor(NUMBER_COLORS[sq] ?? COLORS.text);

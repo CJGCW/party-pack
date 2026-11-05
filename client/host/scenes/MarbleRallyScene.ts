@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { FLOOR_A, FLOOR_DARK, GOLD, GOOD, INK, SKY, STONE, ball, shade, softShadow } from '../art';
+import { burst } from '../fx';
 import type { BoardView } from '../../../shared/boards';
 import { BALL_R, COURSES, TILE, type MarbleState } from '../../../shared/games/marbleRally';
 import { BoardsScene, type BoardSlot } from '../boardsScene';
@@ -33,6 +35,13 @@ export class MarbleRallyScene extends BoardsScene<MarbleState> {
     return `${board.state.checkpoints} checkpoints · ${board.state.falls} falls`;
   }
 
+  protected onSnapshot(slot: Slot, prev: MarbleState, next: MarbleState) {
+    if (next.checkpoints > prev.checkpoints) {
+      const at = this.screenOf(slot, next.x * TILE, TOP + next.y * TILE);
+      burst(this, at.x, at.y, GOOD, 24);
+    }
+  }
+
   /** The course is drawn on the first update (the board doesn't know which before then). */
   protected drawStatic(slot: Slot, g: Phaser.GameObjects.Graphics) {
     this.drawn.set(slot.playerId, g);
@@ -40,23 +49,24 @@ export class MarbleRallyScene extends BoardsScene<MarbleState> {
   }
 
   private drawCourse(g: Phaser.GameObjects.Graphics, course: number) {
-    g.clear().fillGradientStyle(0x3a2f6e, 0x3a2f6e, 0x8b7cf6, 0x8b7cf6, 1).fillRect(0, 0, BOARD_W, BOARD_H);
+    g.clear().fillGradientStyle(FLOOR_DARK, FLOOR_DARK, FLOOR_A, FLOOR_A, 1).fillRect(0, 0, BOARD_W, BOARD_H);
     const rows = COURSES[course].rows;
     rows.forEach((row, y) =>
       [...row].forEach((ch, x) => {
         if (ch === '.') return;
         const px = x * TILE;
         const py = TOP + y * TILE;
-        g.fillStyle(0x4a3f9a, 1).fillRect(px, py + TILE, TILE, DEPTH);
-        const color = ch === 'G' ? 0xffd166 : ch === 'C' ? 0x4cd37a : ch === 'S' ? 0x5ec8f2 : '<>^v'.includes(ch) ? 0xc8bfff : 0xe8e4ff;
+        g.fillStyle(shade(STONE, -0.45), 1).fillRect(px, py + TILE, TILE, DEPTH);
+        const color = ch === 'G' ? GOLD : ch === 'C' ? GOOD : ch === 'S' ? SKY : '<>^v'.includes(ch) ? shade(STONE, 0.25) : shade(STONE, 0.45);
         g.fillStyle(color, 1).fillRect(px, py, TILE, TILE);
-        g.lineStyle(1, 0x9a93b8, 0.5).strokeRect(px, py, TILE, TILE);
+        g.fillStyle(0xffffff, 0.12).fillRect(px, py, TILE, 4);
+        g.lineStyle(2, INK, 0.5).strokeRect(px, py, TILE, TILE);
         if ('<>^v'.includes(ch)) {
           // Arrows downhill.
           const [dx, dy] = ch === '>' ? [1, 0] : ch === '<' ? [-1, 0] : ch === 'v' ? [0, 1] : [0, -1];
           const cx = px + TILE / 2;
           const cy = py + TILE / 2;
-          g.fillStyle(0x8b7cf6, 1).fillTriangle(cx + dx * 14, cy + dy * 14, cx - dx * 8 - dy * 10, cy - dy * 8 + dx * 10, cx - dx * 8 + dy * 10, cy - dy * 8 - dx * 10);
+          g.fillStyle(INK, 0.6).fillTriangle(cx + dx * 14, cy + dy * 14, cx - dx * 8 - dy * 10, cy - dy * 8 + dx * 10, cx - dx * 8 + dy * 10, cy - dy * 8 - dx * 10);
         }
       }),
     );
@@ -75,9 +85,7 @@ export class MarbleRallyScene extends BoardsScene<MarbleState> {
     const x = (jumped ? s.x : lerp(prev.x, s.x, t)) * TILE;
     const y = TOP + (jumped ? s.y : lerp(prev.y, s.y, t)) * TILE;
     const r = BALL_R * TILE * (1 - s.falling * 0.8);
-    g.fillStyle(0x000000, 0.25 * (1 - s.falling)).fillEllipse(x + 4, y + 6, r * 2, r * 1.2);
-    g.fillStyle(0x140f2e, 1).fillCircle(x, y + s.falling * 30, r + 3);
-    g.fillStyle(hex(slot.board.color), 1).fillCircle(x, y + s.falling * 30, r);
-    g.fillStyle(0xffffff, 0.5).fillCircle(x - r * 0.35, y - r * 0.35 + s.falling * 30, r * 0.3);
+    softShadow(g, x + 3, y + r * 0.8, r * 2, r * 1.1, 0.3 * (1 - s.falling));
+    ball(g, x, y + s.falling * 30, r, hex(slot.board.color));
   }
 }

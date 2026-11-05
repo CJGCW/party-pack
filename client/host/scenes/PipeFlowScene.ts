@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { FLOOR_A, FLOOR_B, INK, SKY, STONE, ball, checkerFloor, glow, shade } from '../art';
+import { burst } from '../fx';
 import type { BoardView } from '../../../shared/boards';
 import { pieceSegments, waterSegments } from '../../../shared/games/pipeDraw';
 import { COLS, ROWS, type PipeState } from '../../../shared/games/pipeFlow';
@@ -32,28 +34,33 @@ export class PipeFlowScene extends BoardsScene<PipeState> {
     return { title: `${board.boardScore} FILLED`, good: board.place === 1 };
   }
 
+  /** Water reaching a new square throws up a little spray. */
+  protected onSnapshot(slot: Slot, prev: PipeState, next: PipeState) {
+    const fresh = waterSegments(next, COLS, CELL, 0, TOP);
+    if (fresh.length <= waterSegments(prev, COLS, CELL, 0, TOP).length) return;
+    const tip = fresh[fresh.length - 1];
+    const at = this.screenOf(slot, tip.x2, tip.y2);
+    burst(this, at.x, at.y, SKY, 8);
+  }
+
   protected drawStatic(_slot: Slot, g: Phaser.GameObjects.Graphics) {
-    g.fillStyle(0x241d55, 1).fillRect(0, TOP, BOARD_W, ROWS * CELL);
-    g.lineStyle(2, 0xffffff, 0.06);
-    for (let c = 1; c < COLS; c++) g.lineBetween(c * CELL, TOP, c * CELL, TOP + ROWS * CELL);
-    for (let r = 1; r < ROWS; r++) g.lineBetween(0, TOP + r * CELL, BOARD_W, TOP + r * CELL);
+    checkerFloor(g, 0, TOP, COLS, ROWS, CELL, FLOOR_A, FLOOR_B);
   }
 
   protected drawBoard(slot: Slot, g: Phaser.GameObjects.Graphics, _t: number, time: number) {
     const s = slot.curr!.snap;
     s.pieces.forEach((piece, c) => {
       for (const seg of pieceSegments(piece, (c % COLS) * CELL, TOP + Math.floor(c / COLS) * CELL, CELL)) {
-        g.lineStyle(34, 0x140f2e, 1).lineBetween(seg.x1, seg.y1, seg.x2, seg.y2);
-        g.lineStyle(26, 0x8b8fa8, 1).lineBetween(seg.x1, seg.y1, seg.x2, seg.y2);
+        g.lineStyle(36, INK, 1).lineBetween(seg.x1, seg.y1, seg.x2, seg.y2);
+        g.lineStyle(26, shade(STONE, 0.3), 1).lineBetween(seg.x1, seg.y1, seg.x2, seg.y2);
       }
     });
     // The water, rippling a little.
     const shimmer = 0.85 + 0.15 * Math.sin(time / 200);
-    for (const seg of waterSegments(s, COLS, CELL, 0, TOP)) g.lineStyle(16, 0x5ec8f2, shimmer).lineBetween(seg.x1, seg.y1, seg.x2, seg.y2);
+    for (const seg of waterSegments(s, COLS, CELL, 0, TOP)) g.lineStyle(16, SKY, shimmer).lineBetween(seg.x1, seg.y1, seg.x2, seg.y2);
     // The tap.
     const src = { x: (s.source.cell % COLS) * CELL + CELL / 2, y: TOP + Math.floor(s.source.cell / COLS) * CELL + CELL / 2 };
-    g.fillStyle(0x140f2e, 1).fillCircle(src.x, src.y, CELL * 0.36);
-    g.fillStyle(0x2a6fb5, 1).fillCircle(src.x, src.y, CELL * 0.3);
-    g.fillStyle(0xffffff, 0.6).fillCircle(src.x - 8, src.y - 8, CELL * 0.08);
+    glow(g, src.x, src.y, CELL * 0.8, SKY);
+    ball(g, src.x, src.y, CELL * 0.3, SKY);
   }
 }

@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { FLOOR_A, FLOOR_B, GOLD, INK, WOOD, ball, block, shade, softShadow } from '../art';
+import { burst, impact } from '../fx';
 import type { BoardView } from '../../../shared/boards';
 import { BALL_R, BOARD_H, BOARD_W, HEAD_R, HEAD_Y, throwAt, throwsFor, type HeadState, type Throw } from '../../../shared/games/headBall';
 import { BoardsScene, type BoardSlot } from '../boardsScene';
@@ -28,13 +30,20 @@ export class HeadBallScene extends BoardsScene<HeadState> {
   }
 
   protected onSnapshot(slot: Slot, prev: HeadState, next: HeadState) {
-    if (next.bonks > prev.bonks) this.bonkAt.set(slot.playerId, performance.now());
+    if (next.bonks > prev.bonks) {
+      this.bonkAt.set(slot.playerId, performance.now());
+      impact(this, 0.004);
+    }
+    if (next.met.length > prev.met.length) {
+      const at = this.screenOf(slot, next.x, HEAD_Y - HEAD_R);
+      burst(this, at.x, at.y, GOLD, 12);
+    }
   }
 
   protected drawStatic(_slot: Slot, g: Phaser.GameObjects.Graphics) {
-    g.fillGradientStyle(0x5ec8f2, 0x5ec8f2, 0xbfe9ff, 0xbfe9ff, 1).fillRect(0, 0, BOARD_W, BOARD_H);
-    g.fillStyle(0x4cae5c, 1).fillRect(0, HEAD_Y + 80, BOARD_W, BOARD_H - HEAD_Y - 80);
-    g.fillStyle(0x56c26a, 1);
+    g.fillGradientStyle(FLOOR_A, FLOOR_A, shade(FLOOR_B, 0.2), shade(FLOOR_B, 0.2), 1).fillRect(0, 0, BOARD_W, BOARD_H);
+    g.fillStyle(0x2f7d4f, 1).fillRect(0, HEAD_Y + 80, BOARD_W, BOARD_H - HEAD_Y - 80);
+    g.fillStyle(0x2c7549, 1);
     for (let x = 0; x < BOARD_W; x += 80) g.fillRect(x, HEAD_Y + 80, 40, BOARD_H - HEAD_Y - 80);
   }
 
@@ -66,12 +75,11 @@ export class HeadBallScene extends BoardsScene<HeadState> {
           [22, 18],
           [-14, 18],
         ].map(([x, y]) => new Phaser.Math.Vector2(p.x + x * c - y * sn, p.y + x * sn + y * c));
-        g.fillStyle(0x140f2e, 1).fillPoints(pts, true);
-        g.fillStyle(0x8f5f34, 1).fillPoints(pts.map((q) => new Phaser.Math.Vector2(p.x + (q.x - p.x) * 0.8, p.y + (q.y - p.y) * 0.8)), true);
+        g.fillStyle(INK, 1).fillPoints(pts, true);
+        g.fillStyle(WOOD, 1).fillPoints(pts.map((q) => new Phaser.Math.Vector2(p.x + (q.x - p.x) * 0.8, p.y + (q.y - p.y) * 0.8)), true);
       } else {
-        g.fillStyle(0x140f2e, 1).fillCircle(p.x, p.y, BALL_R + 3);
-        g.fillStyle(0xffffff, 1).fillCircle(p.x, p.y, BALL_R);
-        g.fillStyle(0x140f2e, 1).fillCircle(p.x, p.y, BALL_R * 0.35);
+        ball(g, p.x, p.y, BALL_R, 0xffffff);
+        g.fillStyle(INK, 1).fillCircle(p.x + 2, p.y + 2, BALL_R * 0.3);
       }
     }
     // The player: a head on a body, bobbing up after a header, seeing stars when stunned.
@@ -79,16 +87,15 @@ export class HeadBallScene extends BoardsScene<HeadState> {
     const bonk = Math.max(0, 1 - (performance.now() - (this.bonkAt.get(slot.playerId) ?? -1e9)) / 250);
     const hy = HEAD_Y - bonk * 18;
     const color = hex(slot.board.color);
-    g.fillStyle(0x140f2e, 1).fillRoundedRect(x - 34, hy + 30, 68, 70, 16);
-    g.fillStyle(color, 1).fillRoundedRect(x - 30, hy + 34, 60, 62, 14);
-    g.fillStyle(0x140f2e, 1).fillCircle(x, hy, HEAD_R + 3);
-    g.fillStyle(0xf2c9a0, 1).fillCircle(x, hy, HEAD_R);
+    softShadow(g, x, HEAD_Y + 100, 90, 20);
+    block(g, x - 34, hy + 30, 68, 70, color);
+    ball(g, x, hy, HEAD_R, 0xf2c9a0);
     g.fillStyle(color, 1).fillEllipse(x, hy - HEAD_R * 0.6, HEAD_R * 1.7, HEAD_R * 0.8);
-    g.fillStyle(0x140f2e, 1).fillCircle(x - 12, hy + 4, 4).fillCircle(x + 12, hy + 4, 4);
+    g.fillStyle(INK, 1).fillCircle(x - 12, hy + 4, 4).fillCircle(x + 12, hy + 4, 4);
     if (s.stunMs > 0) {
       for (let k = 0; k < 3; k++) {
         const a = time / 200 + (k * Math.PI * 2) / 3;
-        g.fillStyle(0xffd166, 1).fillCircle(x + Math.cos(a) * 46, hy - 40 + Math.sin(a) * 10, 6);
+        ball(g, x + Math.cos(a) * 46, hy - 40 + Math.sin(a) * 10, 6, GOLD);
       }
     }
   }

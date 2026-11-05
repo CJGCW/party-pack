@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { FLOOR_A, FLOOR_B, INK, block, shade } from '../art';
 import type { BoardView } from '../../../shared/boards';
 import { BALLOON_COLORS, COLS, EMPTY, ROWS, STONE, STONE_COLOR, type PoppitState } from '../../../shared/games/poppit';
 import { BoardsScene, type BoardSlot } from '../boardsScene';
@@ -18,9 +19,10 @@ const POP_MS = 450;
 export function drawBalloon(g: Phaser.GameObjects.Graphics, x: number, y: number, size: number, color: number, gift: boolean) {
   const w = size * 0.78;
   const h = size * 0.88;
-  g.fillStyle(0x140f2e, 1).fillEllipse(x, y, w + 6, h + 6);
-  g.fillStyle(color, 1).fillEllipse(x, y, w, h);
-  g.fillStyle(0xffffff, 0.45).fillEllipse(x - w * 0.18, y - h * 0.2, w * 0.22, h * 0.28);
+  g.fillStyle(INK, 1).fillEllipse(x, y, w + 6, h + 6);
+  g.fillStyle(shade(color, -0.3), 1).fillEllipse(x, y, w, h);
+  g.fillStyle(color, 1).fillEllipse(x - 1, y - 3, w * 0.86, h * 0.84);
+  g.fillStyle(0xffffff, 0.55).fillEllipse(x - w * 0.18, y - h * 0.22, w * 0.22, h * 0.28);
   g.fillStyle(color, 1).fillTriangle(x - 6, y + h / 2 + 6, x + 6, y + h / 2 + 6, x, y + h / 2 - 2);
   if (gift) {
     g.fillStyle(0xffffff, 1).fillRect(x - 3, y - h / 2 + 4, 6, h - 8);
@@ -61,7 +63,7 @@ export class PoppitScene extends BoardsScene<PoppitState> {
   }
 
   protected drawStatic(_slot: Slot, g: Phaser.GameObjects.Graphics) {
-    g.fillStyle(0x241d55, 1).fillRect(0, TOP, BOARD_W, ROWS * CELL);
+    for (let c = 0; c < COLS; c++) g.fillStyle(c % 2 ? FLOOR_A : FLOOR_B, 1).fillRect(c * CELL, TOP, CELL, ROWS * CELL);
   }
 
   protected drawBoard(slot: Slot, g: Phaser.GameObjects.Graphics) {
@@ -71,7 +73,7 @@ export class PoppitScene extends BoardsScene<PoppitState> {
       if (color === EMPTY) return;
       const x = (c % COLS) * CELL + CELL / 2;
       const y = TOP + Math.floor(c / COLS) * CELL + CELL / 2;
-      if (color === STONE) g.fillStyle(0x140f2e, 1).fillRect(x - 36, y - 36, 72, 72).fillStyle(hex(STONE_COLOR), 1).fillRect(x - 32, y - 32, 64, 64);
+      if (color === STONE) block(g, x - 37, y - 37, 74, 74, hex(STONE_COLOR));
       else drawBalloon(g, x, y, CELL, FILLS[color], gifts.has(c));
     });
     // Bursts where balloons just popped: a ring and a few bits flying out.

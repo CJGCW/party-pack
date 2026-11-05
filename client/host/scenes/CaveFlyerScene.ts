@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { GOLD, INK, STONE, ball, block, glow, shade } from '../art';
 import type { BoardView, BoardsHostView } from '../../../shared/boards';
 import {
   BLOCK_W,
@@ -18,8 +19,8 @@ type Slot = BoardSlot<CaveBoardState, CaveBoardState>;
 
 /** The cave's outline is worked out every this many units across the window. */
 const STEP = 16;
-const ROCK = 0x3b2f6e;
-const ROCK_EDGE = 0x8b7cf6;
+const ROCK = shade(STONE, -0.42);
+const ROCK_EDGE = shade(STONE, 0.3);
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -74,13 +75,13 @@ export class CaveFlyerScene extends BoardsScene<CaveBoardState> {
     roof.push(new Phaser.Math.Vector2(VIEW_W + STEP, 0));
     floor.push(new Phaser.Math.Vector2(VIEW_W + STEP, VIEW_H));
     g.fillStyle(ROCK, 1).fillPoints(roof, true).fillPoints(floor, true);
-    g.lineStyle(8, ROCK_EDGE, 0.8).strokePoints(roof.slice(1, -1), false).strokePoints(floor.slice(1, -1), false);
+    g.lineStyle(14, INK, 1).strokePoints(roof.slice(1, -1), false).strokePoints(floor.slice(1, -1), false);
+    g.lineStyle(6, ROCK_EDGE, 1).strokePoints(roof.slice(1, -1), false).strokePoints(floor.slice(1, -1), false);
 
     // Blocks in the way.
     for (const b of blocksBetween(this.seed, distance - BLOCK_W, distance + VIEW_W)) {
       const bx = b.x - distance;
-      g.fillStyle(ROCK, 1).fillRoundedRect(bx, b.top, BLOCK_W, b.bottom - b.top, 10);
-      g.lineStyle(6, ROCK_EDGE, 0.9).strokeRoundedRect(bx, b.top, BLOCK_W, b.bottom - b.top, 10);
+      block(g, bx, b.top, BLOCK_W, b.bottom - b.top, STONE);
     }
 
     // A trail behind the copter, fading out.
@@ -105,21 +106,21 @@ export class CaveFlyerScene extends BoardsScene<CaveBoardState> {
     g.lineStyle(10, color, 1).lineBetween(at(-r * 0.6, 0).x, at(-r * 0.6, 0).y, at(-r * 2, -r * 0.2).x, at(-r * 2, -r * 0.2).y);
     g.fillStyle(color, 1).fillCircle(at(-r * 2, -r * 0.2).x, at(-r * 2, -r * 0.2).y, r * 0.3);
     // The body and its window.
-    g.fillStyle(0x140f2e, 1).fillCircle(x, y, r + 4);
-    g.fillStyle(crashed ? 0x555066 : color, 1).fillCircle(x, y, r);
+    ball(g, x, y, r, crashed ? 0x555066 : color);
     const w = at(r * 0.35, -r * 0.15);
-    g.fillStyle(0xdff6ff, 0.9).fillCircle(w.x, w.y, r * 0.42);
+    ball(g, w.x, w.y, r * 0.38, 0xbfe9ff);
     // The rotor: a blade whose visible length spins.
     if (!crashed) {
       const spin = Math.abs(Math.sin(time / 30)) * r * 1.6 + r * 0.3;
       const hub = at(0, -r * 1.15);
-      g.lineStyle(5, 0x140f2e, 1).lineBetween(at(0, -r).x, at(0, -r).y, hub.x, hub.y);
+      g.lineStyle(5, INK, 1).lineBetween(at(0, -r).x, at(0, -r).y, hub.x, hub.y);
       g.lineStyle(6, 0xffffff, 0.9).lineBetween(hub.x - spin * Math.cos(tilt), hub.y - spin * Math.sin(tilt), hub.x + spin * Math.cos(tilt), hub.y + spin * Math.sin(tilt));
     }
     // Climbing: a puff under the copter.
     if (thrusting) {
       const p = at(0, r * 1.3);
-      g.fillStyle(0xffd166, 0.55 + 0.25 * Math.sin(time / 40)).fillCircle(p.x, p.y, r * 0.38);
+      glow(g, p.x, p.y, r * 1.1, GOLD, 0.8);
+      g.fillStyle(GOLD, 0.7 + 0.25 * Math.sin(time / 40)).fillCircle(p.x, p.y, r * 0.32);
     }
   }
 }

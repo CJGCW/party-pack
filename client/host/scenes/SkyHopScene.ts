@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { DANGER, FLOOR_B, GOLD, GOOD, INK, SKY, STONE, WOOD, block, shade, softShadow } from '../art';
 import type { BoardView, BoardsHostView } from '../../../shared/boards';
 import {
   HOPPER_R,
@@ -18,12 +19,12 @@ type Slot = BoardSlot<HopBoardState, HopBoardState>;
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const PLATFORM_COLORS: Record<Platform['kind'], number> = {
-  ground: 0x4caf6a,
-  normal: 0x4cd37a,
-  moving: 0x5ec8f2,
-  breaking: 0xb07a4a,
-  spring: 0x4cd37a,
-  checkpoint: 0xffd166,
+  ground: STONE,
+  normal: GOOD,
+  moving: SKY,
+  breaking: WOOD,
+  spring: GOOD,
+  checkpoint: GOLD,
 };
 /** The sky darkens from day to space as you climb (this high is all the way). */
 const SPACE_AT = 18_000;
@@ -75,7 +76,7 @@ export class SkyHopScene extends BoardsScene<HopBoardState> {
 
     // The sky, darker the higher they are, with stars coming out.
     const dark = Math.min(1, best / SPACE_AT);
-    const sky = Phaser.Display.Color.Interpolate.ColorWithColor(Phaser.Display.Color.ValueToColor(0x6ec6f5), Phaser.Display.Color.ValueToColor(0x140f2e), 100, dark * 100);
+    const sky = Phaser.Display.Color.Interpolate.ColorWithColor(Phaser.Display.Color.ValueToColor(shade(FLOOR_B, 0.28)), Phaser.Display.Color.ValueToColor(INK), 100, dark * 100);
     g.fillStyle(Phaser.Display.Color.GetColor(sky.r, sky.g, sky.b), 1).fillRect(0, 0, VIEW_W, VIEW_H);
     if (dark > 0.3) {
       g.fillStyle(0xffffff, (dark - 0.3) * 1.2);
@@ -93,14 +94,13 @@ export class SkyHopScene extends BoardsScene<HopBoardState> {
       if (sy > VIEW_H + 40 || broken.has(p.n)) continue;
       const px = platformX(p, ms);
       const color = PLATFORM_COLORS[p.kind];
-      g.fillStyle(0x140f2e, 0.5).fillRoundedRect(px + 4, sy + 6, p.w, PLATFORM_H, 10);
-      g.fillStyle(color, 1).fillRoundedRect(px, sy, p.w, PLATFORM_H, 10);
-      if (p.kind === 'breaking') g.lineStyle(4, 0x6b4520, 1).lineBetween(px + p.w * 0.35, sy, px + p.w * 0.5, sy + PLATFORM_H).lineBetween(px + p.w * 0.6, sy, px + p.w * 0.7, sy + PLATFORM_H);
+      block(g, px, sy, p.w, PLATFORM_H + 4, color);
+      if (p.kind === 'breaking') g.lineStyle(4, shade(WOOD, -0.5), 1).lineBetween(px + p.w * 0.35, sy, px + p.w * 0.5, sy + PLATFORM_H).lineBetween(px + p.w * 0.6, sy, px + p.w * 0.7, sy + PLATFORM_H);
       if (p.kind === 'spring') {
         const cx = px + p.w / 2;
-        g.lineStyle(6, 0xff5d73, 1);
+        g.lineStyle(6, DANGER, 1);
         for (let k = 0; k < 3; k++) g.lineBetween(cx - 16, sy - 6 - k * 10, cx + 16, sy - 11 - k * 10);
-        g.fillStyle(0xff5d73, 1).fillRect(cx - 20, sy - 36, 40, 8);
+        block(g, cx - 22, sy - 40, 44, 12, DANGER);
       }
     }
 
@@ -111,10 +111,13 @@ export class SkyHopScene extends BoardsScene<HopBoardState> {
     for (const dx of [0, VIEW_W, -VIEW_W]) {
       const hx = x + dx;
       if (hx < -HOPPER_R * 2 || hx > VIEW_W + HOPPER_R * 2) continue;
-      g.fillStyle(0x140f2e, 1).fillEllipse(hx, sy, (HOPPER_R + 4) * 2 / squash, (HOPPER_R + 4) * 2 * squash);
-      g.fillStyle(curr.falling && Math.floor(time / 120) % 2 ? 0xff5d73 : color, 1).fillEllipse(hx, sy, (HOPPER_R * 2) / squash, HOPPER_R * 2 * squash);
+      const body = curr.falling && Math.floor(time / 120) % 2 ? DANGER : color;
+      softShadow(g, hx, sy + HOPPER_R * 1.1, HOPPER_R * 1.6, HOPPER_R * 0.4, 0.2);
+      g.fillStyle(INK, 1).fillEllipse(hx, sy, (HOPPER_R + 4) * 2 / squash, (HOPPER_R + 4) * 2 * squash);
+      g.fillStyle(shade(body, -0.3), 1).fillEllipse(hx, sy, (HOPPER_R * 2) / squash, HOPPER_R * 2 * squash);
+      g.fillStyle(body, 1).fillEllipse(hx - 1, sy - 3, (HOPPER_R * 1.7) / squash, HOPPER_R * 1.6 * squash);
       g.fillStyle(0xffffff, 1).fillCircle(hx - 9, sy - 6, 8).fillCircle(hx + 9, sy - 6, 8);
-      g.fillStyle(0x140f2e, 1).fillCircle(hx - 8, sy - 5, 4).fillCircle(hx + 10, sy - 5, 4);
+      g.fillStyle(INK, 1).fillCircle(hx - 8, sy - 5, 4).fillCircle(hx + 10, sy - 5, 4);
     }
   }
 }

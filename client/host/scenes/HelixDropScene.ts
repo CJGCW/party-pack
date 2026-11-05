@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { DANGER, FIRE, GOLD, GOOD, INK, SKY, STONE, ball, gridFloor, glow, shade, softShadow } from '../art';
 import type { BoardView, BoardsHostView } from '../../../shared/boards';
 import {
   BALL_R,
@@ -23,7 +24,7 @@ const R_POLE = 70;
 const TILT = 0.3;
 const THICK = 26;
 const STEPS = 6;
-const RING_COLORS = [0x5ec8f2, 0x4cd37a];
+const RING_COLORS = [SKY, GOOD];
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const lerpAngle = (a: number, b: number, t: number) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * t;
@@ -57,7 +58,9 @@ export class HelixDropScene extends BoardsScene<HelixBoardState> {
     return { title: `${board.boardScore} ${board.boardScore === 1 ? 'RING' : 'RINGS'}`, good: board.place === 1 };
   }
 
-  protected drawStatic() {}
+  protected drawStatic(_slot: Slot, g: Phaser.GameObjects.Graphics) {
+    gridFloor(g, VIEW_W, VIEW_H, 60, 4, 0x8b7cf6);
+  }
 
   protected drawBoard(slot: Slot, g: Phaser.GameObjects.Graphics, t: number, time: number) {
     const prev = slot.prev!.snap;
@@ -70,17 +73,20 @@ export class HelixDropScene extends BoardsScene<HelixBoardState> {
 
     // The far halves of the rings, then the pole, then the near halves over it.
     for (const near of [false, true]) {
-      if (near) g.fillStyle(0x8b7cf6, 1).fillRect(CX - R_POLE, 0, R_POLE * 2, VIEW_H);
+      if (near) {
+        g.fillStyle(INK, 1).fillRect(CX - R_POLE - 4, 0, R_POLE * 2 + 8, VIEW_H);
+        g.fillStyle(STONE, 1).fillRect(CX - R_POLE, 0, R_POLE * 2, VIEW_H);
+        g.fillStyle(0xffffff, 0.18).fillRect(CX - R_POLE + 12, 0, 22, VIEW_H);
+      }
       for (let n = last; n >= first; n--) this.ring(g, n, n * RING_GAP - top, angle, near);
     }
 
     // The ball, sitting on the front of the ring below it (red and flashing after landing on red).
     const ballY = BALL_SCREEN_Y + R * TILT - BALL_R;
-    const color = curr.respawning && Math.floor(time / 120) % 2 ? 0xff5d73 : curr.fire ? 0xffa62b : hex(slot.board.color);
-    g.fillStyle(0x000000, 0.3).fillEllipse(CX + 4, ballY + BALL_R + 6, BALL_R * 2, BALL_R * 0.6);
-    g.fillStyle(0x140f2e, 1).fillCircle(CX, ballY, BALL_R + 4);
-    g.fillStyle(color, 1).fillCircle(CX, ballY, BALL_R);
-    g.fillStyle(0xffffff, 0.6).fillCircle(CX - BALL_R * 0.35, ballY - BALL_R * 0.35, BALL_R * 0.3);
+    const color = curr.respawning && Math.floor(time / 120) % 2 ? DANGER : curr.fire ? FIRE : hex(slot.board.color);
+    softShadow(g, CX + 4, ballY + BALL_R + 6, BALL_R * 2, BALL_R * 0.6);
+    if (curr.fire) glow(g, CX, ballY, BALL_R * 4, FIRE);
+    ball(g, CX, ballY, BALL_R, color);
   }
 
   /** Ring `n` at screen height `y`: its slices round the tower, the near or the far ones. */
@@ -88,7 +94,7 @@ export class HelixDropScene extends BoardsScene<HelixBoardState> {
     if (y < -RING_GAP || y > VIEW_H + RING_GAP) return;
     const slices = ringAt(this.seed, n);
     const checkpoint = n % CHECKPOINT_EVERY === 0;
-    const base = checkpoint ? 0xffd166 : RING_COLORS[n % 2];
+    const base = checkpoint ? GOLD : RING_COLORS[n % 2];
     const span = (Math.PI * 2) / SEGMENTS;
     slices.forEach((slice, k) => {
       if (slice === 'gap') return;
@@ -104,11 +110,12 @@ export class HelixDropScene extends BoardsScene<HelixBoardState> {
         const a = k * span + angle + (i / STEPS) * span;
         top.push(new Phaser.Math.Vector2(CX + R_POLE * Math.sin(a), y + R_POLE * TILT * Math.cos(a)));
       }
-      const color = slice === 'danger' ? 0xff5d73 : base;
+      const color = slice === 'danger' ? DANGER : base;
       // Its front edge, a little darker, for some thickness.
       const edge = top.slice(0, STEPS + 1).map((p) => new Phaser.Math.Vector2(p.x, p.y + THICK));
-      g.fillStyle(Phaser.Display.Color.ValueToColor(color).darken(30).color, near ? 1 : 0.5).fillPoints([...top.slice(0, STEPS + 1), ...edge.reverse()], true);
+      g.fillStyle(shade(color, -0.35), near ? 1 : 0.5).fillPoints([...top.slice(0, STEPS + 1), ...edge.reverse()], true);
       g.fillStyle(color, near ? 1 : 0.5).fillPoints(top, true);
+      if (near) g.lineStyle(3, INK, 1).strokePoints(top, true);
     });
   }
 }

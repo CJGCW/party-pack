@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { DANGER, GOLD, GOOD, STONE, ball, block, checkerFloor, glow, shade } from '../art';
+import { burst, popText } from '../fx';
 import type { BoardView } from '../../../shared/boards';
 import { BOARD_H, BOARD_W, BOX_HALF, COIN_R, DODGE_LEVELS, DOT_R, dotAt, type DodgeState } from '../../../shared/games/dodgeBox';
 import { BoardsScene, type BoardSlot } from '../boardsScene';
@@ -26,6 +28,18 @@ export class DodgeBoxScene extends BoardsScene<DodgeState> {
     return `${s.coins.length}/${DODGE_LEVELS[s.level].coins.length} coins · ${s.deaths} hits`;
   }
 
+  protected onSnapshot(slot: Slot, prev: DodgeState, next: DodgeState) {
+    if (next.deaths > prev.deaths) {
+      const at = this.screenOf(slot, prev.x, prev.y);
+      burst(this, at.x, at.y, hex(slot.board.color), 30);
+    }
+    if (next.coins.length > prev.coins.length) {
+      const at = this.screenOf(slot, next.x, next.y);
+      burst(this, at.x, at.y, GOLD, 16);
+      popText(this, at.x, at.y - 20, `${next.coins.length}/${DODGE_LEVELS[next.level].coins.length}`, '#ffd166', 30);
+    }
+  }
+
   /** The level's drawn on the first update (the board doesn't know its level before then). */
   protected drawStatic(slot: Slot, g: Phaser.GameObjects.Graphics) {
     this.drawn.set(slot.playerId, g);
@@ -40,29 +54,27 @@ export class DodgeBoxScene extends BoardsScene<DodgeState> {
     const back = this.drawn.get(slot.playerId);
     if (back && back.getData('level') !== s.level) {
       back.setData('level', s.level);
-      back.clear().fillStyle(0xe8e4ff, 1).fillRect(0, 0, BOARD_W, BOARD_H);
-      for (let y = 0; y < BOARD_H; y += 50) for (let x = (y / 50) % 2 ? 50 : 0; x < BOARD_W; x += 100) back.fillStyle(0xd8d2fa, 1).fillRect(x, y, 50, 50);
-      back.fillStyle(0x9be8b0, 1).fillRect(...level.start).fillRect(...level.goal);
-      for (const c of level.checkpoints) back.fillStyle(0x9be8b0, 1).fillRect(...c);
-      for (const w of level.walls) back.fillStyle(0x2a2160, 1).fillRect(...w);
+      back.clear();
+      checkerFloor(back, 0, 0, Math.ceil(BOARD_W / 50), Math.ceil(BOARD_H / 50), 50);
+      back.fillStyle(shade(GOOD, -0.45), 1).fillRect(...level.start).fillRect(...level.goal);
+      for (const c of level.checkpoints) back.fillStyle(shade(GOOD, -0.45), 1).fillRect(...c);
+      for (const w of level.walls) block(back, w[0], w[1], w[2], w[3], STONE);
     }
     const ms = v.phase === 'play' ? v.roundMs + (performance.now() - slot.curr!.at) : 0;
     const got = new Set(s.coins);
     level.coins.forEach(([x, y], i) => {
       if (got.has(i)) return;
-      g.fillStyle(0x140f2e, 1).fillCircle(x, y, COIN_R + 3);
-      g.fillStyle(0xffd166, 1).fillCircle(x, y, COIN_R);
+      glow(g, x, y, COIN_R * 2.8, GOLD);
+      ball(g, x, y, COIN_R, GOLD);
     });
     for (const p of level.dots) {
       const d = dotAt(p, ms);
-      g.fillStyle(0x140f2e, 1).fillCircle(d.x, d.y, DOT_R + 3);
-      g.fillStyle(0x5e7cf2, 1).fillCircle(d.x, d.y, DOT_R);
+      ball(g, d.x, d.y, DOT_R, DANGER);
     }
     // Back to the start after a hit: no sliding there.
     const jumped = Math.hypot(prev.x - s.x, prev.y - s.y) > 60;
     const x = jumped ? s.x : lerp(prev.x, s.x, t);
     const y = jumped ? s.y : lerp(prev.y, s.y, t);
-    g.fillStyle(0x140f2e, 1).fillRect(x - BOX_HALF - 3, y - BOX_HALF - 3, BOX_HALF * 2 + 6, BOX_HALF * 2 + 6);
-    g.fillStyle(hex(slot.board.color), 1).fillRect(x - BOX_HALF, y - BOX_HALF, BOX_HALF * 2, BOX_HALF * 2);
+    block(g, x - BOX_HALF - 3, y - BOX_HALF - 3, BOX_HALF * 2 + 6, BOX_HALF * 2 + 6, hex(slot.board.color));
   }
 }

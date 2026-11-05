@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { DANGER, FIRE, FLOOR_DARK, INK, ball, brick, glow } from '../art';
+import { burst, impact } from '../fx';
 import type { BoardView } from '../../../shared/boards';
 import { BOOM, COLS, FLAGGED, HIDDEN, ROWS, type MineState } from '../../../shared/games/minesweeper';
 import { BoardsScene, type BoardSlot } from '../boardsScene';
@@ -30,6 +32,16 @@ export class MinesweeperScene extends BoardsScene<MineState> {
     return `${board.boardScore}%`;
   }
 
+  /** A mine going off. */
+  protected onSnapshot(slot: Slot, prev: MineState, next: MineState) {
+    next.squares.forEach((sq, c) => {
+      if (sq !== BOOM || prev.squares[c] === BOOM) return;
+      const at = this.screenOf(slot, (c % COLS + 0.5) * CELL, TOP + (Math.floor(c / COLS) + 0.5) * CELL);
+      burst(this, at.x, at.y, FIRE, 40);
+      impact(this, 0.005);
+    });
+  }
+
   protected drawStatic(slot: Slot) {
     const texts = Array.from({ length: COLS * ROWS }, (_, c) => text(this, (c % COLS) * CELL + CELL / 2, TOP + Math.floor(c / COLS) * CELL + CELL / 2 + 2, '', CELL * 0.55, COLORS.text, { fontStyle: '700' }));
     slot.container.add(texts);
@@ -43,20 +55,21 @@ export class MinesweeperScene extends BoardsScene<MineState> {
       const x = (c % COLS) * CELL;
       const y = TOP + Math.floor(c / COLS) * CELL;
       const covered = sq === HIDDEN || sq === FLAGGED;
-      g.fillStyle(covered ? ((c + Math.floor(c / COLS)) % 2 ? 0x4a3f9a : 0x433892) : sq === BOOM ? 0x5a1f3a : 0x1f1848, 1).fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
-      if (covered) g.fillStyle(0xffffff, 0.08).fillRect(x + 4, y + 4, CELL - 8, 8);
+      if (covered) brick(g, x, y, CELL, CELL, (c + Math.floor(c / COLS)) % 2 ? 0x5548ac : 0x4a3f9a);
+      else g.fillStyle(sq === BOOM ? 0x5a1f3a : FLOOR_DARK, 1).fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
       if (sq === FLAGGED) {
+        g.lineStyle(9, INK, 1).lineBetween(x + CELL * 0.38, y + CELL * 0.2, x + CELL * 0.38, y + CELL * 0.8);
         g.lineStyle(5, 0xffffff, 1).lineBetween(x + CELL * 0.38, y + CELL * 0.22, x + CELL * 0.38, y + CELL * 0.8);
-        g.fillStyle(0xff5d73, 1).fillTriangle(x + CELL * 0.38, y + CELL * 0.22, x + CELL * 0.75, y + CELL * 0.36, x + CELL * 0.38, y + CELL * 0.5);
+        g.fillStyle(DANGER, 1).fillTriangle(x + CELL * 0.38, y + CELL * 0.22, x + CELL * 0.75, y + CELL * 0.36, x + CELL * 0.38, y + CELL * 0.5);
       }
       if (sq === BOOM) {
-        g.fillStyle(0x140f2e, 1).fillCircle(x + CELL / 2, y + CELL / 2, CELL * 0.26);
-        g.fillStyle(0xff9f43, 0.6 + 0.4 * Math.sin(time / 150)).fillCircle(x + CELL / 2 + 6, y + CELL / 2 - 6, CELL * 0.08);
+        glow(g, x + CELL / 2, y + CELL / 2, CELL * 0.7, FIRE, 0.6 + 0.4 * Math.sin(time / 150));
+        ball(g, x + CELL / 2, y + CELL / 2, CELL * 0.26, 0x3a3358);
       }
       const label = sq > 0 ? String(sq) : '';
       if (texts && texts[c].text !== label) texts[c].setText(label).setColor(NUMBER_COLORS[sq] ?? COLORS.text);
     });
     // Locked after a mine: a wash over the board.
-    if (s.lockedMs > 0 && this.view?.phase === 'play') g.fillStyle(0xff5d73, 0.18).fillRect(0, TOP, BOARD_W, ROWS * CELL);
+    if (s.lockedMs > 0 && this.view?.phase === 'play') g.fillStyle(DANGER, 0.18).fillRect(0, TOP, BOARD_W, ROWS * CELL);
   }
 }

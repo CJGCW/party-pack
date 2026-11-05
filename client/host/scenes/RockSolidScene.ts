@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { DANGER, FLOOR_A, FLOOR_DARK, GOLD, INK, STONE, ball, block, shade, softShadow } from '../art';
+import { burst, impact } from '../fx';
 import type { BoardView } from '../../../shared/boards';
 import { BOARD_H, BOARD_W, GROUND_Y, HEARTS, ROCK_R, rocksFor, type Rock, type RockState } from '../../../shared/games/rockSolid';
 import { BoardsScene, type BoardSlot } from '../boardsScene';
@@ -29,12 +31,17 @@ export class RockSolidScene extends BoardsScene<RockState> {
   }
 
   protected onSnapshot(slot: Slot, prev: RockState, next: RockState) {
-    if (next.hits > prev.hits) this.hitAt.set(slot.playerId, performance.now());
+    if (next.hits > prev.hits) {
+      this.hitAt.set(slot.playerId, performance.now());
+      const at = this.screenOf(slot, BOARD_W / 2, GROUND_Y - 30);
+      burst(this, at.x, at.y, DANGER, 30);
+      impact(this, 0.004);
+    }
   }
 
   protected drawStatic(_slot: Slot, g: Phaser.GameObjects.Graphics) {
-    g.fillGradientStyle(0x3a2f6e, 0x3a2f6e, 0x1d1640, 0x1d1640, 1).fillRect(0, 0, BOARD_W, BOARD_H);
-    g.fillStyle(0x6d6496, 1).fillRect(0, GROUND_Y + 30, BOARD_W, BOARD_H - GROUND_Y - 30);
+    g.fillGradientStyle(FLOOR_A, FLOOR_A, FLOOR_DARK, FLOOR_DARK, 1).fillRect(0, 0, BOARD_W, BOARD_H);
+    block(g, -20, GROUND_Y + 30, BOARD_W + 40, BOARD_H - GROUND_Y, STONE);
   }
 
   protected drawBoard(slot: Slot, g: Phaser.GameObjects.Graphics, _t: number, time: number) {
@@ -54,29 +61,30 @@ export class RockSolidScene extends BoardsScene<RockState> {
         const k = Math.min(1, (now - (r.at - r.fall)) / r.fall);
         const x = cx + r.drift * 60 * (1 - k);
         const y = -ROCK_R + (GROUND_Y - 40 + ROCK_R) * k * k;
-        g.fillStyle(0x000000, 0.2 + 0.3 * k).fillEllipse(cx, GROUND_Y + 28, 40 + 60 * k, 14);
+        softShadow(g, cx, GROUND_Y + 28, 40 + 60 * k, 14, 0.2 + 0.3 * k);
         if (now > r.at) {
           // Bounced off (or landed): it flies off to the side.
           const b = (now - r.at) / 250;
-          g.fillStyle(0x8a7f6a, 1 - b).fillCircle(x + (r.drift >= 0 ? 1 : -1) * 120 * b, GROUND_Y - 60 - 80 * b + 120 * b * b, ROCK_R);
+          ball(g, x + (r.drift >= 0 ? 1 : -1) * 120 * b, GROUND_Y - 60 - 80 * b + 120 * b * b, ROCK_R, shade(STONE, 0.15), 1 - b);
           continue;
         }
-        g.fillStyle(0x140f2e, 1).fillCircle(x, y, ROCK_R + 3);
-        g.fillStyle(0x8a7f6a, 1).fillCircle(x, y, ROCK_R);
-        g.fillStyle(0xffffff, 0.2).fillCircle(x - 10, y - 10, ROCK_R * 0.35);
+        ball(g, x, y, ROCK_R, shade(STONE, 0.15));
       }
     }
     // The blob: soft and coloured, or grey stone.
     const hit = performance.now() - (this.hitAt.get(slot.playerId) ?? -1e9) < HIT_MS;
     const squash = s.hard ? 1 : 1 + 0.04 * Math.sin(time / 150);
-    const bodyColor = out ? 0x444444 : hit ? 0xff5d73 : s.hard ? 0x9a93b8 : hex(slot.board.color);
-    g.fillStyle(0x140f2e, 1).fillEllipse(cx, GROUND_Y, 136 * squash, 116 / squash);
-    g.fillStyle(bodyColor, 1).fillEllipse(cx, GROUND_Y, 128 * squash, 108 / squash);
+    const bodyColor = out ? 0x444444 : hit ? DANGER : s.hard ? 0x9a93b8 : hex(slot.board.color);
+    softShadow(g, cx, GROUND_Y + 54, 150, 22);
+    g.fillStyle(INK, 1).fillEllipse(cx, GROUND_Y, 136 * squash, 116 / squash);
+    g.fillStyle(shade(bodyColor, -0.3), 1).fillEllipse(cx, GROUND_Y, 128 * squash, 108 / squash);
+    g.fillStyle(bodyColor, 1).fillEllipse(cx - 2, GROUND_Y - 6, 112 * squash, 90 / squash);
+    g.fillStyle(0xffffff, 0.45).fillEllipse(cx - 34, GROUND_Y - 34, 34, 18);
     if (s.hard) g.lineStyle(3, 0x6d6496, 1).lineBetween(cx - 30, GROUND_Y - 30, cx - 10, GROUND_Y - 5).lineBetween(cx + 20, GROUND_Y - 35, cx + 35, GROUND_Y + 10);
     g.fillStyle(0xffffff, 1).fillCircle(cx - 22, GROUND_Y - 12, 10).fillCircle(cx + 22, GROUND_Y - 12, 10);
     g.fillStyle(0x140f2e, 1).fillCircle(cx - 20, GROUND_Y - 10, 5).fillCircle(cx + 24, GROUND_Y - 10, 5);
     // Energy left.
-    g.fillStyle(0x140f2e, 1).fillRect(20, BOARD_H - 24, BOARD_W - 40, 14);
-    g.fillStyle(s.energy < 0.25 ? 0xff5d73 : 0xffd166, 1).fillRect(22, BOARD_H - 22, (BOARD_W - 44) * s.energy, 10);
+    g.fillStyle(INK, 1).fillRoundedRect(20, BOARD_H - 26, BOARD_W - 40, 18, 9);
+    g.fillStyle(s.energy < 0.25 ? DANGER : GOLD, 1).fillRoundedRect(23, BOARD_H - 23, Math.max(12, (BOARD_W - 46) * s.energy), 12, 6);
   }
 }

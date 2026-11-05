@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { INK, WOOD, ball, block, brick, softShadow } from '../art';
+import { burst } from '../fx';
 import type { BoardView, BoardsHostView } from '../../../shared/boards';
 import { BOARD_SIZE, FRAME, GRID, SHELL_R, TILE, type Picture, type TiltBoardState, type TiltRound } from '../../../shared/games/tileTilt';
 import { BoardsScene, type BoardSlot } from '../boardsScene';
@@ -47,7 +49,12 @@ export class TileTiltScene extends BoardsScene<TiltBoardState, TiltRound> {
     const now = performance.now();
     next.flipped.forEach((bits, row) => {
       const fresh = bits & ~(prev.flipped[row] ?? 0);
-      for (let col = 0; col < GRID; col++) if (fresh & (1 << col)) flips.set(row * GRID + col, now);
+      for (let col = 0; col < GRID; col++) {
+        if (!(fresh & (1 << col))) continue;
+        flips.set(row * GRID + col, now);
+        const at = this.screenOf(slot, FRAME.x + (col + 0.5) * TILE, FRAME.y + (row + 0.5) * TILE);
+        burst(this, at.x, at.y, hex(slot.board.color), 5);
+      }
     });
     this.flips.set(slot.playerId, flips);
   }
@@ -55,8 +62,7 @@ export class TileTiltScene extends BoardsScene<TiltBoardState, TiltRound> {
   /** The frame and, under where the tiles go, the round's picture. */
   protected drawStatic(slot: Slot, g: Phaser.GameObjects.Graphics) {
     this.flips.delete(slot.playerId);
-    g.fillStyle(0x6b4b2a, 1).fillRoundedRect(FRAME.x - 34, FRAME.y - 34, FRAME.size + 68, FRAME.size + 68, 30);
-    g.fillStyle(0x8a6238, 1).fillRoundedRect(FRAME.x - 22, FRAME.y - 22, FRAME.size + 44, FRAME.size + 44, 22);
+    block(g, FRAME.x - 36, FRAME.y - 36, FRAME.size + 72, FRAME.size + 72, WOOD);
     drawPicture(g, this.picture);
   }
 
@@ -79,22 +85,19 @@ export class TileTiltScene extends BoardsScene<TiltBoardState, TiltRound> {
       const y = FRAME.y + row * TILE + 3;
       // A dark backing fills the whole square, so no picture shows between face-down tiles.
       if (!up) g.fillStyle(0x1a1442, 1).fillRect(FRAME.x + col * TILE, FRAME.y + row * TILE, TILE, TILE);
-      g.fillStyle((row + col) % 2 ? 0x3b3185 : 0x342b78, 1).fillRoundedRect(x, y, w, TILE - 6, Math.min(10, w / 2));
-      if (w > 30) g.fillStyle(0xffffff, 0.12).fillCircle(x + w / 2, y + (TILE - 6) / 2, 12);
+      brick(g, x, y, w, TILE - 6, (row + col) % 2 ? 0x4a3f9a : 0x3b3185);
     }
 
     // The shell: a dome in the player's colour with a pattern on its back.
     const x = lerp(prev.x, curr.x, t);
     const y = lerp(prev.y, curr.y, t);
     const color = hex(slot.board.color);
-    g.fillStyle(0x000000, 0.3).fillCircle(x + 6, y + 8, SHELL_R);
-    g.fillStyle(0x140f2e, 1).fillCircle(x, y, SHELL_R + 4);
-    g.fillStyle(color, 1).fillCircle(x, y, SHELL_R);
-    g.lineStyle(4, 0x140f2e, 0.45);
+    softShadow(g, x + 5, y + SHELL_R * 0.9, SHELL_R * 2.1, SHELL_R);
+    ball(g, x, y, SHELL_R, color);
+    g.lineStyle(4, INK, 0.4);
     const hexPts = Array.from({ length: 6 }, (_, k) => new Phaser.Math.Vector2(x + Math.cos((k * Math.PI) / 3) * SHELL_R * 0.48, y + Math.sin((k * Math.PI) / 3) * SHELL_R * 0.48));
     g.strokePoints(hexPts, true);
     for (const p of hexPts) g.lineBetween(p.x, p.y, x + (p.x - x) * 2, y + (p.y - y) * 2);
-    g.fillStyle(0xffffff, 0.35).fillCircle(x - SHELL_R * 0.35, y - SHELL_R * 0.4, SHELL_R * 0.22);
   }
 }
 

@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { DANGER, FLOOR_A, FLOOR_B, GOLD, INK, SKY, STONE, WOOD, ball, block, shade, softShadow } from '../art';
+import { burst } from '../fx';
 import type { BoardView } from '../../../shared/boards';
 import { BAR_END, BAR_START, BAR_Y, BOARD_H, BOARD_W, LIVES, type BarState } from '../../../shared/games/barDash';
 import { BoardsScene, type BoardSlot } from '../boardsScene';
@@ -28,17 +30,25 @@ export class BarDashScene extends BoardsScene<BarState> {
   }
 
   protected onSnapshot(slot: Slot, prev: BarState, next: BarState) {
-    if (next.oops > prev.oops) this.oopsAt.set(slot.playerId, performance.now());
+    if (next.oops > prev.oops) {
+      this.oopsAt.set(slot.playerId, performance.now());
+      const at = this.screenOf(slot, BAR_END + 40, BAR_Y[next.bar]);
+      burst(this, at.x, at.y, DANGER, 30);
+    }
+    // A drink landing with a customer: sparks at your end of the bar.
+    if (next.served > prev.served) {
+      const at = this.screenOf(slot, BAR_END - 40, BAR_Y[next.bar]);
+      burst(this, at.x, at.y, GOLD, 10);
+    }
   }
 
   protected drawStatic(_slot: Slot, g: Phaser.GameObjects.Graphics) {
-    g.fillStyle(0x3a2a1f, 1).fillRect(0, 0, BOARD_W, BOARD_H);
+    for (let i = 0; i * 44 < BOARD_H; i++) g.fillStyle(i % 2 ? FLOOR_A : FLOOR_B, 1).fillRect(0, i * 44, BOARD_W, 44);
     for (const y of BAR_Y) {
-      g.fillStyle(0x140f2e, 1).fillRect(BAR_START - 6, y + 14, BAR_END - BAR_START + 12, 22);
-      g.fillStyle(0xb07a45, 1).fillRect(BAR_START - 4, y + 16, BAR_END - BAR_START + 8, 18);
+      block(g, BAR_START - 6, y + 12, BAR_END - BAR_START + 12, 26, WOOD);
       // The door at the far end, and the taps at yours.
-      g.fillStyle(0x6b4423, 1).fillRect(BAR_START - 36, y - 30, 26, 60);
-      g.fillStyle(0x9a93b8, 1).fillRect(BAR_END + 12, y - 20, 14, 40);
+      block(g, BAR_START - 38, y - 32, 30, 66, shade(WOOD, -0.35));
+      block(g, BAR_END + 10, y - 22, 18, 42, STONE);
     }
   }
 
@@ -50,27 +60,29 @@ export class BarDashScene extends BoardsScene<BarState> {
     for (let i = 0; i < s.customers.length; i += 2) {
       const y = BAR_Y[s.customers[i]];
       const x = ease(s.customers, prev.customers, i);
-      g.fillStyle(0x140f2e, 1).fillCircle(x, y - 18, 20);
-      g.fillStyle(CUSTOMER_COLORS[(s.customers[i] + i) % CUSTOMER_COLORS.length], 1).fillCircle(x, y - 18, 17);
-      g.fillStyle(0xffffff, 1).fillCircle(x + 6, y - 22, 4);
+      ball(g, x, y - 18, 17, CUSTOMER_COLORS[s.customers[i] % CUSTOMER_COLORS.length]);
+      g.fillStyle(0xffffff, 1).fillCircle(x + 8, y - 21, 5);
+      g.fillStyle(INK, 1).fillCircle(x + 10, y - 21, 2.5);
     }
     for (let i = 0; i < s.drinks.length; i += 2) {
       const y = BAR_Y[s.drinks[i]];
       const x = ease(s.drinks, prev.drinks, i);
-      g.fillStyle(0xffd166, 1).fillRect(x - 8, y - 4, 16, 20);
-      g.fillStyle(0xffffff, 1).fillRect(x - 8, y - 8, 16, 6);
+      block(g, x - 10, y - 6, 20, 24, GOLD);
+      g.fillStyle(0xffffff, 1).fillRoundedRect(x - 11, y - 11, 22, 9, 4);
     }
     for (let i = 0; i < s.glasses.length; i += 2) {
       const y = BAR_Y[s.glasses[i]];
       const x = ease(s.glasses, prev.glasses, i);
-      g.lineStyle(3, 0xbfe9ff, 1).strokeRect(x - 8, y - 4, 16, 20);
+      g.fillStyle(SKY, 0.25).fillRoundedRect(x - 9, y - 5, 18, 22, 4);
+      g.lineStyle(3, INK, 1).strokeRoundedRect(x - 10, y - 6, 20, 24, 5);
+      g.lineStyle(2, 0xbfe9ff, 1).strokeRoundedRect(x - 8, y - 4, 16, 20, 4);
     }
     // You, at your bar's taps.
     const y = BAR_Y[s.bar];
     const oops = performance.now() - (this.oopsAt.get(slot.playerId) ?? -1e9) < OOPS_MS;
-    g.fillStyle(0x140f2e, 1).fillCircle(BAR_END + 40, y - 6, 24);
-    g.fillStyle(oops ? 0xff5d73 : hex(slot.board.color), 1).fillCircle(BAR_END + 40, y - 6, 21);
-    g.fillStyle(0xffffff, 1).fillRect(BAR_END + 24, y - 34, 32, 8);
-    if (oops) g.fillStyle(0xff5d73, 0.15 + 0.1 * Math.sin(time / 40)).fillRect(0, 0, BOARD_W, BOARD_H);
+    softShadow(g, BAR_END + 40, y + 16, 40, 12);
+    ball(g, BAR_END + 40, y - 6, 21, oops ? DANGER : hex(slot.board.color));
+    block(g, BAR_END + 24, y - 36, 32, 12, 0xffffff);
+    if (oops) g.fillStyle(DANGER, 0.15 + 0.1 * Math.sin(time / 40)).fillRect(0, 0, BOARD_W, BOARD_H);
   }
 }
