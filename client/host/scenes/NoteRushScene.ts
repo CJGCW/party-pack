@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { DANGER, FLOOR_DARK, GOLD, GOOD, INK, SKY, block } from '../art';
+import { burst } from '../fx';
 import type { BoardView } from '../../../shared/boards';
 import { LANE_PITCHES, LANES, LEAD_MS, TEMPOS, chartFor, type Hit, type Note, type NoteRound, type NoteState } from '../../../shared/games/noteRush';
 import { serverNow } from '../../clock';
@@ -9,8 +11,8 @@ type Slot = BoardSlot<NoteState, NoteState>;
 const BOARD_W = 320;
 const BOARD_H = 520;
 const LINE_Y = 450;
-const LANE_COLORS = [0xff5d73, 0xffd166, 0x4cd37a, 0x5ec8f2];
-const HIT_COLORS: Record<Hit, number> = { perfect: 0xffd166, good: 0x4cd37a, ok: 0x9a93b8, miss: 0xff5d73, stray: 0xff5d73 };
+const LANE_COLORS = [DANGER, GOLD, GOOD, SKY];
+const HIT_COLORS: Record<Hit, number> = { perfect: GOLD, good: GOOD, ok: 0x9a93b8, miss: DANGER, stray: DANGER };
 /** Notes are scheduled to play this far ahead. */
 const SCHEDULE_AHEAD_MS = 1_500;
 
@@ -45,14 +47,20 @@ export class NoteRushScene extends BoardsScene<NoteState, NoteRound> {
   }
 
   protected onSnapshot(slot: Slot, prev: NoteState, next: NoteState) {
-    if (next.judgedId !== prev.judgedId) this.judgedAt.set(slot.playerId, performance.now());
+    if (next.judgedId === prev.judgedId) return;
+    this.judgedAt.set(slot.playerId, performance.now());
+    if (next.judged === 'perfect' || next.judged === 'good') {
+      const at = this.screenOf(slot, (next.judgedLane + 0.5) * (BOARD_W / LANES), LINE_Y);
+      burst(this, at.x, at.y, LANE_COLORS[next.judgedLane], next.judged === 'perfect' ? 14 : 7);
+    }
   }
 
   protected drawStatic(_slot: Slot, g: Phaser.GameObjects.Graphics) {
-    g.fillStyle(0x140f2e, 1).fillRect(0, 0, BOARD_W, BOARD_H);
+    g.fillStyle(FLOOR_DARK, 1).fillRect(0, 0, BOARD_W, BOARD_H);
     const w = BOARD_W / LANES;
     for (let l = 0; l < LANES; l++) g.fillStyle(LANE_COLORS[l], 0.08).fillRect(l * w + 4, 40, w - 8, BOARD_H - 50);
-    g.fillStyle(0xffffff, 0.8).fillRect(0, LINE_Y - 2, BOARD_W, 4);
+    g.fillStyle(INK, 1).fillRect(0, LINE_Y - 4, BOARD_W, 8);
+    g.fillStyle(0xffffff, 0.85).fillRect(0, LINE_Y - 2, BOARD_W, 4);
   }
 
   /** Plays the tune: each note a soft pluck at its lane's pitch, handed to the audio clock a little ahead. */
@@ -116,8 +124,7 @@ export class NoteRushScene extends BoardsScene<NoteState, NoteRound> {
     this.chart.forEach((n, i) => {
       if (hit.has(i) || n.at < t - 200 || n.at > t + LEAD_MS) return;
       const y = LINE_Y - ((n.at - t) / LEAD_MS) * (LINE_Y - 40);
-      g.fillStyle(0x140f2e, 1).fillRoundedRect(n.lane * w + 8, y - 14, w - 16, 28, 10);
-      g.fillStyle(LANE_COLORS[n.lane], n.at < t ? 0.4 : 1).fillRoundedRect(n.lane * w + 11, y - 11, w - 22, 22, 8);
+      block(g, n.lane * w + 8, y - 15, w - 16, 30, LANE_COLORS[n.lane], n.at < t ? 0.4 : 1);
     });
     // The last tap's judgement, flashing on its lane at the line.
     const at = this.judgedAt.get(slot.playerId);

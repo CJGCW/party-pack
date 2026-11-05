@@ -81,6 +81,15 @@ export function checkerFloor(g: G, x: number, y: number, cols: number, rows: num
   }
 }
 
+export const GRASS = 0x2f7d4f;
+export const GRASS_DARK = 0x276b43;
+export const SEA = 0x1f4f8f;
+
+/** An outdoor sky: the house dusk, from top to bottom of `h`. */
+export function duskSky(g: G, x: number, y: number, w: number, h: number) {
+  g.fillGradientStyle(0x2a2360, 0x2a2360, 0x6a56b8, 0x6a56b8, 1).fillRect(x, y, w, h);
+}
+
 /** A dark floor with grid lines, a brighter one every `major`. */
 export function gridFloor(g: G, w: number, h: number, cell: number, major: number, color = SKY) {
   g.fillGradientStyle(0x161045, 0x161045, FLOOR_DARK, FLOOR_DARK, 1);

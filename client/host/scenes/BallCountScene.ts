@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { FLOOR_A, FLOOR_DARK, GOLD, INK, WOOD, ball, block, shade } from '../art';
 import type { VolleyBoardView } from '../../../shared/volleys';
 import { guessPoints, type CountBoardState } from '../../../shared/games/ballCount';
 import { VolleyScene, type VolleySlot } from '../volleyScene';
@@ -31,7 +32,7 @@ export class BallCountScene extends VolleyScene<CountBoardState> {
   }
 
   protected drawStatic(slot: Slot, g: Phaser.GameObjects.Graphics) {
-    g.fillStyle(0x1d1640, 1).fillRect(0, 0, BOARD_W, BOARD_H);
+    g.fillGradientStyle(FLOOR_A, FLOOR_A, FLOOR_DARK, FLOOR_DARK, 1).fillRect(0, 0, BOARD_W, BOARD_H);
     const label = text(this, BOARD_W / 2, BOARD_H - 40, '', 34, COLORS.text, { fontStyle: '700' });
     slot.container.add(label);
     this.labels.set(slot.playerId, label);
@@ -45,18 +46,17 @@ export class BallCountScene extends VolleyScene<CountBoardState> {
     const open = s.actual !== null;
     const shake = !open && v.phase === 'aim' ? Math.sin(time / 37 + cx) * 4 : 0;
     // The box: lid off at the reveal, with the balls inside.
-    g.fillStyle(0x140f2e, 1).fillRoundedRect(cx - 104 + shake, cy - 64, 208, 128, 14);
-    g.fillStyle(0xb07a45, 1).fillRoundedRect(cx - 100 + shake, cy - 60, 200, 120, 12);
+    block(g, cx - 104 + shake, cy - 64, 208, 128, WOOD);
     if (open) {
-      g.fillStyle(0x3a2a1f, 1).fillRoundedRect(cx - 88, cy - 48, 176, 96, 8);
+      g.fillStyle(INK, 1).fillRoundedRect(cx - 88, cy - 48, 176, 96, 8);
       for (let i = 0; i < (s.actual ?? 0); i++) {
         const x = cx - 74 + (i % 7) * 25;
         const y = cy - 30 + Math.floor(i / 7) * 26;
-        g.fillStyle(0xffd166, 1).fillCircle(x, y, 10);
+        ball(g, x, y, 9, GOLD);
       }
     } else {
-      g.fillStyle(0x8f5f34, 1).fillRect(cx - 100 + shake, cy - 10, 200, 8);
-      if (s.guessed) g.fillStyle(hex(slot.board.color), 1).fillCircle(cx + shake, cy, 20);
+      g.fillStyle(shade(WOOD, -0.4), 1).fillRect(cx - 100 + shake, cy - 10, 200, 8);
+      if (s.guessed) ball(g, cx + shake, cy, 18, hex(slot.board.color));
     }
     const label = this.labels.get(slot.playerId);
     label?.setText(open ? (s.guess === null ? `${s.actual}: no guess` : `${s.guess} → ${s.actual}  +${guessPoints(s.guess, s.actual!)}`) : s.guessed ? 'GUESSED' : 'feeling…');
