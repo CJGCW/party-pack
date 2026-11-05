@@ -114,8 +114,11 @@ Add-on games in `local/` go into the app too, since it's built from this folder 
 
 ## Games
 
-**Other games.** Under **Other games** in the lobby, the VIP can list games you play away from the
-app (board games, cards, charades…), separated by commas or new lines (up to 20). They get a
+**Other games.** Set the games you play away from the app (board games, cards, charades…) ahead of
+time as `"externalGames"` in `party-pack.config.json`, a list of up to 20 names, such as
+`["Charades", "Uno"]`. Every new room starts with that list, and the file's read as each room is
+made, so changing it needs no restart. The VIP can still change the list for that room under **Other
+games** in the lobby (names separated by commas or new lines), which doesn't change the file. They get a
 wheel of their own. Before each round, whoever came last in the round before picks **App game** or
 **Other game** on their phone, and that wheel spins. If there's no loser (the first round, or
 everyone tied) the VIP picks; tied losers are picked between at random; and after 15 seconds a

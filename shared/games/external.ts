@@ -1,6 +1,7 @@
 import type { GameInfo, WheelEntry } from '../protocol';
 
-// Games played away from the app (board games, cards, anything): the VIP lists them in the lobby,
+// Games played away from the app (board games, cards, anything): set ahead of time in
+// party-pack.config.json (see server/config.ts), and the VIP can change them in the lobby,
 // they get a wheel of their own (the loser of each round picks which wheel to spin), and when one comes up the app waits until the VIP marks
 // it finished, tapping who won. Each winner scores a full round's points (see WIN_POINTS_PER_PUZZLE).
 

@@ -2,5 +2,6 @@
   "debugMode": false,
   "woochaDebug": false,
   "woochaware": false,
-  "blockbustersThemes": false
+  "blockbustersThemes": false,
+  "externalGames": []
 }

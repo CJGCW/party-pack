@@ -26,7 +26,7 @@ import { PICK_EM, PICK_EM_COOP } from '../shared/games/pickEm';
 import { TRIVIA, TRIVIA_QUEST } from '../shared/games/trivia';
 import { STANDINGS_MS } from '../shared/timing';
 import { MICROGAMES, WOOCHAWARE, findMicrogame } from '../shared/games/woochaware';
-import { config } from './config';
+import { config, configuredExternalGames } from './config';
 import { removeFlag, saveFlag, type FlagRecord } from './flags';
 import { GAMES, findGame } from './games';
 import type { GameOptions, MiniGame, RoundResult } from './games/MiniGame';
@@ -172,7 +172,7 @@ export class Room {
     ),
     rounds: DEFAULT_ROUNDS,
     puzzlesPerRound: DEFAULT_PUZZLES,
-    externalGames: [],
+    externalGames: configuredExternalGames(),
   };
   private session: Session | null = null;
   private spin: { entries: WheelEntry[]; targetIndex: number; stopsAt: number; endsAt: number; call: CallState | null; wheel: WheelKind | null } | null = null;

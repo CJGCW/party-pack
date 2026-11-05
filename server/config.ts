@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { parseExternalGames } from '../shared/games/external';
 
 export interface Config {
   /**
@@ -64,3 +65,24 @@ function loadConfig(): Config {
 }
 
 export const config = loadConfig();
+
+/**
+ * The other games a new room's lobby starts with: `externalGames` in party-pack.config.json, a list
+ * of names. It's read as each room is made, so changing the file needs no restart. Names are
+ * tidied as the lobby's box does (no blanks or repeats, 20 at most).
+ */
+export function configuredExternalGames(file = CONFIG_FILE): string[] {
+  if (!existsSync(file)) return [];
+  try {
+    const list: unknown = JSON.parse(readFileSync(file, 'utf8')).externalGames;
+    if (list === undefined) return [];
+    if (!Array.isArray(list) || list.some((name) => typeof name !== 'string')) {
+      console.warn(`externalGames in ${file} should be a list of names: ignoring it.`);
+      return [];
+    }
+    return parseExternalGames(list.join('\n'));
+  } catch (err) {
+    console.warn(`Couldn't read ${file}, starting with no other games:`, err);
+    return [];
+  }
+}
