@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import type { PickHostPlayer, PickHostView } from '../../../shared/games/pickEm';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
@@ -51,6 +52,7 @@ export class PickEmScene extends Phaser.Scene {
     this.phaseKey = '';
     this.tiles = [];
     addBackdrop(this);
+    addHudBar(this);
 
     text(this, 170, 60, "PICK 'EM", 56, COLORS.accent, { fontStyle: '700' });
     this.headerText = text(this, WIDTH / 2, 60, '', 42);

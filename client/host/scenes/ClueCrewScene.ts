@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import { BOARD_COLS, type CrewHostPlayer, type CrewHostView } from '../../../shared/games/clueCrew';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
@@ -31,6 +32,7 @@ export class ClueCrewScene extends Phaser.Scene {
 
   create() {
     addBackdrop(this, { blobs: false });
+    addHudBar(this);
     text(this, 80, 64, 'CLUE CREW', 30, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5).setLetterSpacing(6);
     this.headerText = text(this, WIDTH / 2, 64, '', 30, COLORS.muted);
     this.clueLayer = this.add.container(0, 0);

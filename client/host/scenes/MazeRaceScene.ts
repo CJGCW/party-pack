@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import { E, N, S, W, type Maze, type MazeHostPlayer, type MazeHostView } from '../../../shared/games/mazeRace';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
@@ -44,6 +45,7 @@ export class MazeRaceScene extends Phaser.Scene {
     this.view = null;
     this.renderKey = '';
     addBackdrop(this);
+    addHudBar(this);
     text(this, 230, 70, 'MAZE RACE', 54, COLORS.accent, { fontStyle: '700' });
     this.headerText = text(this, WIDTH / 2 - 100, 70, '', 40);
     this.timerText = text(this, WIDTH - 140, 70, '', 64, COLORS.text, { fontStyle: '700' });

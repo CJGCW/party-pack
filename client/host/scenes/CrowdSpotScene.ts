@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { playerCard } from '../art';
+import { addHudBar } from '../hud';
 import { EYES, FIELD_H, FIELD_W, FINDS, HAT_COLORS, HAT_KINDS, MOUTHS, PERSON_R, SKINS, findFor, personAt, type Find, type Person, type SpotHostView } from '../../../shared/games/crowdSpot';
 import { serverNow } from '../../clock';
 import { listen, net } from '../net';
@@ -50,6 +52,7 @@ export class CrowdSpotScene extends Phaser.Scene {
     this.view = null;
     this.findKey = this.phaseKey = '';
     addBackdrop(this);
+    addHudBar(this);
     text(this, 60, 70, 'CROWD SPOT', 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
     this.headerText = text(this, WIDTH / 2, 70, '', 36);
     this.timerText = text(this, WIDTH - 120, 70, '', 64, COLORS.text, { fontStyle: '700' });
@@ -90,7 +93,7 @@ export class CrowdSpotScene extends Phaser.Scene {
       const x = WIDTH / 2 + (i - (v.boards.length - 1) / 2) * w;
       const y = HEIGHT - 60;
       const s = b.state;
-      this.list.add(this.add.rectangle(x, y, w - 14, 80, s.found ? 0x2f6e45 : s.lockedMs > 0 ? 0x6e2f3a : 0x2a2160, 0.95).setStrokeStyle(3, hex(b.color)));
+      this.list.add(playerCard(this, x, y, w - 14, 80, s.found ? 0x2f6e45 : s.lockedMs > 0 ? 0x6e2f3a : 0x2c2366, hex(b.color)));
       this.list.add(text(this, x, y - 16, b.name, 26, b.color, { fontStyle: '700' }));
       this.list.add(text(this, x, y + 18, s.found ? `${((s.foundMs ?? 0) / 1000).toFixed(1)}s` : v.phase === 'result' || v.phase === 'gameEnd' ? `+${b.points}` : `${b.boardScore}`, 24, COLORS.text, { fontStyle: '700' }));
     });

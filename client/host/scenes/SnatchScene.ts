@@ -1,4 +1,7 @@
 import Phaser from 'phaser';
+import { DANGER, GOLD, INK, ball, glow, playerCard, shade, softShadow } from '../art';
+import { burst, shockwave } from '../fx';
+import { addHudBar } from '../hud';
 import { GRABS, type SnatchView } from '../../../shared/games/snatch';
 import { serverNow } from '../../clock';
 import { listen, net } from '../net';
@@ -25,6 +28,7 @@ export class SnatchScene extends Phaser.Scene {
     this.view = null;
     this.phaseKey = '';
     addBackdrop(this);
+    addHudBar(this);
     text(this, 60, 70, 'SNATCH', 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
     this.headerText = text(this, WIDTH / 2, 70, '', 40);
     this.g = this.add.graphics();
@@ -37,6 +41,10 @@ export class SnatchScene extends Phaser.Scene {
   }
 
   private applyView(v: SnatchView) {
+    if (this.view?.phase === 'grab' && v.phase === 'won' && v.players.some((p) => p.id === v.winner)) {
+      burst(this, WIDTH / 2, 470, GOLD, 70);
+      shockwave(this, WIDTH / 2, 470, GOLD, 320);
+    }
     this.view = v;
     this.headerText.setText(`Round ${v.puzzleNumber} of ${v.totalPuzzles} · Grab ${Math.min(v.grab, GRABS)} of ${GRABS}`);
     const winner = v.players.find((p) => p.id === v.winner);
@@ -54,7 +62,7 @@ export class SnatchScene extends Phaser.Scene {
       const x = WIDTH / 2 + (i - (v.players.length - 1) / 2) * w;
       const y = HEIGHT - 150;
       const done = v.phase === 'result' || v.phase === 'gameEnd';
-      this.list.add(this.add.rectangle(x, y, w - 16, 110, p.locked ? 0x3a3350 : 0x2a2160, 0.95).setStrokeStyle(4, hex(p.color)));
+      this.list.add(playerCard(this, x, y, w - 16, 110, p.locked ? 0x3a3350 : 0x2c2366, hex(p.color)));
       this.list.add(text(this, x, y - 22, p.name, 30, p.color, { fontStyle: '700' }));
       this.list.add(text(this, x, y + 22, done ? `${p.grabs} · +${p.points}` : p.locked ? 'LOCKED' : `${p.grabs} grabbed`, 28, p.locked ? COLORS.danger : COLORS.text, { fontStyle: '700' }));
     });
@@ -72,15 +80,18 @@ export class SnatchScene extends Phaser.Scene {
     const [cx, cy] = [WIDTH / 2, 470];
     if (up) {
       const treasure = v.kind === 'treasure';
-      g.fillStyle(treasure ? 0xffd166 : 0xff5d73, 0.25 + 0.1 * Math.sin(time / 80)).fillCircle(cx, cy, 300);
+      glow(g, cx, cy, 420, treasure ? GOLD : DANGER, 0.9 + 0.1 * Math.sin(time / 80));
       this.bigText.setText(treasure ? '★' : '✖').setColor(treasure ? COLORS.accent : COLORS.danger);
     } else {
       // The cover: a dome, trembling a little.
       const shake = v.phase === 'grab' ? Math.sin(time / 40) * 3 : 0;
-      g.fillStyle(0x140f2e, 1).fillEllipse(cx + shake, cy + 10, 520, 440);
-      g.fillStyle(0x8b7cf6, 1).fillEllipse(cx + shake, cy, 500, 420);
-      g.fillStyle(0xffffff, 0.25).fillEllipse(cx - 120 + shake, cy - 110, 120, 70);
-      g.fillStyle(0x140f2e, 1).fillCircle(cx + shake, cy - 215, 34);
+      const dome = 0x8b7cf6;
+      softShadow(g, cx, cy + 220, 460, 50);
+      g.fillStyle(INK, 1).fillEllipse(cx + shake, cy + 6, 524, 444);
+      g.fillStyle(shade(dome, -0.3), 1).fillEllipse(cx + shake, cy, 500, 420);
+      g.fillStyle(dome, 1).fillEllipse(cx - 6 + shake, cy - 16, 450, 372);
+      g.fillStyle(0xffffff, 0.3).fillEllipse(cx - 120 + shake, cy - 120, 130, 70);
+      ball(g, cx + shake, cy - 222, 30, GOLD);
       this.bigText.setText('?').setColor(COLORS.text);
     }
   }

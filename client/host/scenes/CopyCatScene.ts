@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { playerCard } from '../art';
+import { addHudBar } from '../hud';
 import { MOVE_MS, TRACE_HZ, type CopyView, type Trace } from '../../../shared/games/copyCat';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
@@ -28,6 +30,7 @@ export class CopyCatScene extends Phaser.Scene {
     this.view = null;
     this.phaseKey = '';
     addBackdrop(this);
+    addHudBar(this);
     text(this, 60, 70, 'COPY CAT', 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
     this.headerText = text(this, WIDTH / 2, 70, '', 36);
     this.msgText = text(this, BOX_X + BOX / 2, 170, '', 44, COLORS.accent, { fontStyle: '700' });
@@ -57,7 +60,7 @@ export class CopyCatScene extends Phaser.Scene {
       const x = WIDTH - 520;
       const y = 240 + i * 86;
       const isLeader = p.id === v.leader;
-      this.list.add(this.add.rectangle(x, y, 440, 74, p.done ? 0x2f6e45 : 0x2a2160, 0.95).setOrigin(0, 0.5).setStrokeStyle(3, hex(p.color)));
+      this.list.add(playerCard(this, x + 220, y, 440, 74, p.done ? 0x2f6e45 : 0x2a2160, hex(p.color)));
       this.list.add(text(this, x + 16, y - 14, `${isLeader ? '★ ' : ''}${p.name}`, 28, p.color, { fontStyle: '700' }).setOrigin(0, 0.5));
       const right =
         v.phase === 'result' || v.phase === 'gameEnd' ? `+${p.points}` : v.phase === 'score' ? (isLeader ? `+${p.turnPoints}` : `${p.match ?? 0}% · +${p.turnPoints}`) : isLeader ? 'leading' : p.done ? 'copied' : '';

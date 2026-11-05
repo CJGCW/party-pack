@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import { cardLabel, parseCard } from '../../../shared/cards';
 import { totalLabel, type TwentyOneHostView, type TwentyOneSeat } from '../../../shared/games/twentyOne';
 import { addCardRow } from '../cards';
@@ -36,6 +37,7 @@ export class TwentyOneScene extends Phaser.Scene {
     this.view = null;
     this.lastSeq = 0;
     addBackdrop(this, { blobs: false });
+    addHudBar(this);
     text(this, 80, 64, 'TWENTY-ONE', 30, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5).setLetterSpacing(6);
     this.headerText = text(this, WIDTH / 2, 64, '', 30, COLORS.muted);
     this.timerText = text(this, WIDTH - 80, 64, '', 56, COLORS.text, { fontStyle: '700' }).setOrigin(1, 0.5);

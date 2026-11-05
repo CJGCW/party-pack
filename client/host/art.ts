@@ -90,6 +90,14 @@ export function duskSky(g: G, x: number, y: number, w: number, h: number) {
   g.fillGradientStyle(0x2a2360, 0x2a2360, 0x6a56b8, 0x6a56b8, 1).fillRect(x, y, w, h);
 }
 
+/** A player's card, centred on (x, y): a chunky panel with their colour along the top. */
+export function playerCard(scene: Phaser.Scene, x: number, y: number, w: number, h: number, fill: number, color: number) {
+  const g = scene.add.graphics();
+  block(g, x - w / 2, y - h / 2, w, h, fill);
+  g.fillStyle(color, 1).fillRoundedRect(x - w / 2 + 8, y - h / 2 + 5, w - 16, 6, 3);
+  return g;
+}
+
 /** A dark floor with grid lines, a brighter one every `major`. */
 export function gridFloor(g: G, w: number, h: number, cell: number, major: number, color = SKY) {
   g.fillGradientStyle(0x161045, 0x161045, FLOOR_DARK, FLOOR_DARK, 1);

@@ -6,6 +6,18 @@ import { COLORS, HEIGHT, WIDTH, hex, text } from './theme';
 export const HUD_H = 118;
 const TIMER = { x: WIDTH - 140, y: 66, w: 170, h: 88 };
 
+/** The bar across the top of a game's screen: a dark band fading out, over a line of gold and red. */
+export function addHudBar(scene: Phaser.Scene) {
+  const bar = scene.add.graphics();
+  bar.fillGradientStyle(0x0a0720, 0x0a0720, 0x0a0720, 0x0a0720, 0.75, 0.75, 0, 0);
+  bar.fillRect(0, 0, WIDTH, HUD_H);
+  bar.fillGradientStyle(hex(COLORS.accent), 0xff5d73, hex(COLORS.accent), 0xff5d73, 0, 0.5, 0, 0.5);
+  bar.fillRect(0, HUD_H - 3, WIDTH / 2, 3);
+  bar.fillGradientStyle(0xff5d73, hex(COLORS.accent), 0xff5d73, hex(COLORS.accent), 0.5, 0, 0.5, 0);
+  bar.fillRect(WIDTH / 2, HUD_H - 3, WIDTH / 2, 3);
+  return bar;
+}
+
 /**
  * The top of a game's screen, for the boards, arena and volleys scenes: its title, the round, the
  * clock (which pulses as time runs out) and the big countdown, ending in GO!
@@ -24,13 +36,7 @@ export class GameHud {
     title: string,
     private readonly countX = WIDTH / 2,
   ) {
-    const bar = scene.add.graphics();
-    bar.fillGradientStyle(0x0a0720, 0x0a0720, 0x0a0720, 0x0a0720, 0.75, 0.75, 0, 0);
-    bar.fillRect(0, 0, WIDTH, HUD_H);
-    bar.fillGradientStyle(hex(COLORS.accent), 0xff5d73, hex(COLORS.accent), 0xff5d73, 0, 0.5, 0, 0.5);
-    bar.fillRect(0, HUD_H - 3, WIDTH / 2, 3);
-    bar.fillGradientStyle(0xff5d73, hex(COLORS.accent), 0xff5d73, hex(COLORS.accent), 0.5, 0, 0.5, 0);
-    bar.fillRect(WIDTH / 2, HUD_H - 3, WIDTH / 2, 3);
+    addHudBar(scene);
     this.titleText = text(scene, 60, 62, title, 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
     this.header = text(scene, WIDTH / 2, 62, '', 40);
     this.timerBox = scene.add.graphics({ x: TIMER.x, y: TIMER.y }).setVisible(false);

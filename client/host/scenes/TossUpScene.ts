@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import {
   BOARD_COLS,
   BOARD_ROWS,
@@ -58,6 +59,7 @@ export class TossUpScene extends Phaser.Scene {
     this.bannerTimer = null;
 
     addBackdrop(this);
+    addHudBar(this);
     text(this, 210, 60, 'LETTER DROP', 56, COLORS.accent, { fontStyle: '700' });
     this.headerText = text(this, WIDTH / 2, 60, '', 44);
     this.valueText = text(this, WIDTH - 200, 60, '', 52, COLORS.accent, { fontStyle: '700' });

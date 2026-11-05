@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import {
   WORD_LENGTH,
   describeDefinition,
@@ -54,6 +55,7 @@ export class WordleRaceScene extends Phaser.Scene {
     this.countdownText = null;
 
     addBackdrop(this);
+    addHudBar(this);
     text(this, 200, 60, 'WORD RUSH', 56, COLORS.accent, { fontStyle: '700' });
     this.roundText = text(this, WIDTH / 2, 60, '', 44);
     this.timerText = text(this, WIDTH - 160, 60, '', 56, COLORS.text, { fontStyle: '700' });

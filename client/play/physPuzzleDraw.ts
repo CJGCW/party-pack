@@ -2,10 +2,13 @@
 
 import { BOARD_H, BOARD_W, TOP, toBoard, type PieceView, type PuzzleLevel } from '../../shared/physPuzzle';
 
-export const PIECE_COLORS: Record<PieceView['kind'], string> = { ball: '#ff5d73', stroke: '#2a2160', plank: '#c8934f', bouncer: '#4cd37a', fan: '#5ec8f2' };
+export const PIECE_COLORS: Record<PieceView['kind'], string> = { ball: '#ff5d73', stroke: '#e8e4ff', plank: '#c8934f', bouncer: '#4cd37a', fan: '#5ec8f2' };
 
 export function drawLevel(ctx: CanvasRenderingContext2D, level: PuzzleLevel) {
-  ctx.fillStyle = '#bfe9ff';
+  const sky = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+  sky.addColorStop(0, '#2a2360');
+  sky.addColorStop(1, '#6a56b8');
+  ctx.fillStyle = sky;
   ctx.fillRect(0, TOP, BOARD_W, BOARD_H - TOP);
   // The goal: a flag over a glowing box.
   const g = level.goal;
@@ -30,10 +33,10 @@ export function drawLevel(ctx: CanvasRenderingContext2D, level: PuzzleLevel) {
       else ctx.moveTo(p.x, p.y);
     });
     ctx.closePath();
-    ctx.fillStyle = '#4cae5c';
+    ctx.fillStyle = '#2f7d4f';
     ctx.fill();
     ctx.lineWidth = 3;
-    ctx.strokeStyle = '#2f7a3b';
+    ctx.strokeStyle = '#140f2e';
     ctx.stroke();
   }
 }

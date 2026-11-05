@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import { PLAY_GRACE_MS, controlsHint, findMicrogame, type WoochaHostPlayer, type WoochaHostView } from '../../../shared/games/woochaware';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
@@ -35,6 +36,7 @@ export class WoochaWareScene extends Phaser.Scene {
     this.view = null;
     this.phaseKey = '';
     addBackdrop(this);
+    addHudBar(this);
 
     text(this, 200, 60, 'WOOCHAWARE', 52, COLORS.accent, { fontStyle: '700' });
     this.headerText = text(this, WIDTH / 2, 60, '', 40);

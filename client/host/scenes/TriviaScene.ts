@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import { ANSWER_LETTERS, MAX_LIVES, type TeamState, type TriviaHostPlayer, type TriviaHostView } from '../../../shared/games/trivia';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
@@ -55,6 +56,7 @@ export class TriviaScene extends Phaser.Scene {
     this.phaseKey = '';
     this.tiles = [];
     addBackdrop(this, { blobs: false });
+    addHudBar(this);
 
     this.timerBar = this.add.graphics();
     this.titleText = text(this, 80, 64, 'TRIVIA', 30, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5).setLetterSpacing(6);

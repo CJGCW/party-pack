@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import {
   LEVELS,
   PAINTS,
@@ -48,6 +49,7 @@ export class StarSplatScene extends Phaser.Scene {
     this.view = null;
     this.phaseKey = '';
     addBackdrop(this);
+    addHudBar(this);
     text(this, 230, 70, 'STAR SPLAT', 54, COLORS.accent, { fontStyle: '700' });
     this.headerText = text(this, WIDTH / 2, 70, '', 40);
     this.timerText = text(this, WIDTH - 150, 70, '', 64, COLORS.text, { fontStyle: '700' });

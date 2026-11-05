@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { DANGER, GOLD, INK, STONE, ball, shade } from '../art';
 import { roundOf } from '../../../shared/protocol';
 import type { CallState, RoomState, SpinState } from '../../../shared/protocol';
 import { listen, net } from '../net';
@@ -178,8 +179,15 @@ export class SpinnerScene extends Phaser.Scene {
       g.slice(0, 0, RADIUS, start, end, false);
       g.strokePath();
     });
-    g.lineStyle(14, 0xffffff, 1);
-    g.strokeCircle(0, 0, RADIUS);
+    // Light on the top of the wheel, and a rim with lamps round it.
+    g.fillStyle(0xffffff, 0.08).fillEllipse(-RADIUS * 0.15, -RADIUS * 0.3, RADIUS * 1.3, RADIUS * 1.0);
+    g.lineStyle(30, INK, 1).strokeCircle(0, 0, RADIUS + 4);
+    g.lineStyle(20, STONE, 1).strokeCircle(0, 0, RADIUS + 4);
+    g.lineStyle(4, shade(STONE, 0.4), 1).strokeCircle(0, 0, RADIUS - 2);
+    for (let i = 0; i < 28; i++) {
+      const a = (i / 28) * Math.PI * 2;
+      ball(g, Math.cos(a) * (RADIUS + 4), Math.sin(a) * (RADIUS + 4), 7, i % 2 ? GOLD : 0xffffff);
+    }
     wheel.add(g);
 
     // Labels read outward from the hub along the middle of each slice.
@@ -197,19 +205,21 @@ export class SpinnerScene extends Phaser.Scene {
       return label;
     });
 
-    const hub = this.add.circle(0, 0, 54, 0x140f2e).setStrokeStyle(10, 0xffffff);
+    const hub = this.add.graphics();
+    ball(hub, 0, 0, 52, GOLD);
     wheel.add(hub);
 
     // The arrow sits above the wheel pointing down at the top slice, pivoting near its top.
     this.arrow = this.add.container(CENTER_X, CENTER_Y - RADIUS - 30);
     this.layer.add(this.arrow);
     const a = this.add.graphics();
-    a.fillStyle(0xffffff, 1);
-    a.fillTriangle(-40, -30, 40, -30, 0, 70);
-    a.fillStyle(0xff3355, 1);
-    a.fillTriangle(-28, -22, 28, -22, 0, 52);
-    a.fillStyle(0xffffff, 1);
-    a.fillCircle(0, -30, 22);
+    a.fillStyle(INK, 1);
+    a.fillTriangle(-46, -36, 46, -36, 0, 80);
+    a.fillStyle(shade(DANGER, -0.3), 1);
+    a.fillTriangle(-36, -28, 36, -28, 0, 62);
+    a.fillStyle(DANGER, 1);
+    a.fillTriangle(-36, -28, 18, -28, 0, 62);
+    ball(a, 0, -30, 22, 0xffffff);
     this.arrow.add(a);
   }
 

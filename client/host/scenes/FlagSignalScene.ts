@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { DANGER, GOLD, INK, SKY, playerCard, shade, softShadow } from '../art';
+import { addHudBar } from '../hud';
 import { levelAt, sequenceFor, type Dir, type FlagHostView } from '../../../shared/games/flagSignal';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
@@ -33,6 +35,7 @@ export class FlagSignalScene extends Phaser.Scene {
     this.view = null;
     this.phaseKey = '';
     addBackdrop(this);
+    addHudBar(this);
     text(this, 60, 70, 'FLAG SIGNAL', 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
     this.headerText = text(this, WIDTH / 2, 70, '', 40);
     this.timerText = text(this, WIDTH - 140, 70, '', 64, COLORS.text, { fontStyle: '700' });
@@ -66,7 +69,7 @@ export class FlagSignalScene extends Phaser.Scene {
       const y = HEIGHT - 130;
       const out = b.endedAtMs !== null;
       const s = b.state;
-      this.list.add(this.add.rectangle(x, y, w - 16, 110, out ? 0x3a3350 : 0x2a2160, 0.95).setStrokeStyle(4, hex(b.color)));
+      this.list.add(playerCard(this, x, y, w - 16, 110, out ? 0x3a3350 : 0x2c2366, hex(b.color)));
       this.list.add(text(this, x, y - 24, b.name, 30, b.color, { fontStyle: '700' }));
       const line = v.phase === 'result' || v.phase === 'gameEnd' ? `+${b.points}` : out ? 'OUT' : s.stage === 'answer' ? `${s.done}/${s.need}` : `${b.boardScore} done`;
       this.list.add(text(this, x, y + 22, line, 30, out ? COLORS.danger : s.done === s.need && s.stage === 'answer' ? COLORS.accent : COLORS.text, { fontStyle: '700' }));
@@ -86,24 +89,26 @@ export class FlagSignalScene extends Phaser.Scene {
     const [cx, cy] = [WIDTH / 2, 520];
     const dir = at?.stage === 'show' ? this.seq[at.signal] : null;
     const bob = Math.sin(time / 300) * 4;
-    g.fillStyle(0x140f2e, 1).fillEllipse(cx, cy + 40 + bob, 230, 260);
-    g.fillStyle(0xf2f2f2, 1).fillEllipse(cx, cy + 40 + bob, 214, 244);
-    g.fillStyle(0x140f2e, 1).fillRect(cx - 107, cy + 10 + bob, 214, 22);
-    g.fillStyle(0x140f2e, 1).fillCircle(cx - 34, cy - 30 + bob, 10).fillCircle(cx + 34, cy - 30 + bob, 10);
+    softShadow(g, cx, cy + 180, 230, 34);
+    g.fillStyle(INK, 1).fillEllipse(cx, cy + 40 + bob, 232, 262);
+    g.fillStyle(shade(0xf2f2f2, -0.25), 1).fillEllipse(cx, cy + 40 + bob, 214, 244);
+    g.fillStyle(0xf2f2f2, 1).fillEllipse(cx - 2, cy + 30 + bob, 194, 216);
+    g.fillStyle(GOLD, 1).fillRect(cx - 105, cy + 10 + bob, 210, 22);
+    g.fillStyle(INK, 1).fillCircle(cx - 34, cy - 30 + bob, 10).fillCircle(cx + 34, cy - 30 + bob, 10);
     const arm = (side: number, d: [number, number] | null, color: number) => {
       const sx = cx + side * 100;
       const sy = cy + bob;
       const [dx, dy] = d ?? [side * 0.6, 0.8];
       const ex = sx + dx * 150;
       const ey = sy + dy * 150;
-      g.lineStyle(22, 0x140f2e, 1).lineBetween(sx, sy, ex, ey);
+      g.lineStyle(22, INK, 1).lineBetween(sx, sy, ex, ey);
       g.lineStyle(14, 0xf2f2f2, 1).lineBetween(sx, sy, ex, ey);
       // The flag on the end.
       g.fillStyle(color, 1).fillTriangle(ex, ey, ex + (dy === 0 ? 0 : 60) * Math.sign(dx || 1), ey - 30, ex + 70 * (dx || 0.3), ey + 40 * (dy || 0.3));
     };
     const side = dir === 'left' ? -1 : 1;
-    arm(side, dir ? ARM[dir] : null, 0xff5d73);
-    arm(-side, null, 0x5ec8f2);
+    arm(side, dir ? ARM[dir] : null, DANGER);
+    arm(-side, null, SKY);
     // And in words, as each signal shows.
     if (dir) {
       const arrows: Record<Dir, string> = { up: '▲', down: '▼', left: '◀', right: '▶' };

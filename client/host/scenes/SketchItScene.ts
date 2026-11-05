@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { playerCard } from '../art';
+import { addHudBar } from '../hud';
 import { CANVAS_H, CANVAS_W, INK_COLORS, type SketchView } from '../../../shared/games/sketchIt';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
@@ -27,6 +29,7 @@ export class SketchItScene extends Phaser.Scene {
     this.view = null;
     this.phaseKey = this.drawnKey = '';
     addBackdrop(this);
+    addHudBar(this);
     text(this, 60, 70, 'SKETCH IT', 54, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5);
     this.headerText = text(this, WIDTH / 2, 70, '', 36);
     this.timerText = text(this, WIDTH - 120, 70, '', 64, COLORS.text, { fontStyle: '700' });
@@ -74,7 +77,7 @@ export class SketchItScene extends Phaser.Scene {
       const x = WIDTH - 340;
       const y = 220 + i * 86;
       const drawing = p.id === v.artist;
-      this.list.add(this.add.rectangle(x, y, 300, 74, p.gotIt !== null ? 0x2f6e45 : 0x2a2160, 0.95).setOrigin(0, 0.5).setStrokeStyle(3, hex(p.color)));
+      this.list.add(playerCard(this, x + 150, y, 300, 74, p.gotIt !== null ? 0x2f6e45 : 0x2a2160, hex(p.color)));
       this.list.add(text(this, x + 16, y - 14, `${drawing ? '✎ ' : ''}${p.name}`, 28, p.color, { fontStyle: '700' }).setOrigin(0, 0.5));
       const right =
         v.phase === 'result' || v.phase === 'gameEnd' ? `+${p.points}` : v.phase === 'reveal' ? `+${p.turnPoints}` : p.gotIt !== null ? `got it! ${(p.gotIt / 1000).toFixed(0)}s` : drawing ? 'drawing' : '';

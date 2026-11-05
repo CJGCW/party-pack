@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
+import { burst, shockwave } from '../fx';
 import { net } from '../net';
-import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, panel, text } from '../theme';
+import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, panel, text, hex } from '../theme';
 
 const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
 
@@ -33,6 +34,8 @@ export class ResultsScene extends Phaser.Scene {
       }).setScale(0);
       this.tweens.add({ targets: crown, scale: 1, duration: 700, delay: 300, ease: 'Elastic.easeOut' });
       this.time.delayedCall(400, () => {
+        shockwave(this, WIDTH / 2, 230, hex(winner.color), 520);
+        burst(this, WIDTH / 2, 230, hex(winner.color), 80);
         burstConfetti(this, WIDTH * 0.2, HEIGHT * 0.45, 90);
         burstConfetti(this, WIDTH * 0.8, HEIGHT * 0.45, 90);
       });

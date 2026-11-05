@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import {
   LETTER_VALUES,
   SIZE,
@@ -47,6 +48,7 @@ export class RackAttackScene extends Phaser.Scene {
     this.view = null;
     this.renderKey = '';
     addBackdrop(this);
+    addHudBar(this);
     text(this, 220, 70, 'RACK ATTACK', 54, COLORS.accent, { fontStyle: '700' });
     this.headerText = text(this, WIDTH / 2 + 250, 70, '', 40);
     this.timerText = text(this, WIDTH - 140, 70, '', 64, COLORS.text, { fontStyle: '700' });

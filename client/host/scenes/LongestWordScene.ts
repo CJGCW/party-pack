@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import { LETTER_COUNT, VOWELS, type LongestHostPlayer, type LongestHostView } from '../../../shared/games/longestWord';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
@@ -50,6 +51,7 @@ export class LongestWordScene extends Phaser.Scene {
     this.renderKey = '';
     this.shownLetters = 0;
     addBackdrop(this);
+    addHudBar(this);
     text(this, 250, 70, 'LONGEST WORD', 54, COLORS.accent, { fontStyle: '700' });
     this.headerText = text(this, WIDTH / 2 + 250, 70, '', 40);
     this.timerText = text(this, WIDTH - 140, 70, '', 64, COLORS.text, { fontStyle: '700' });

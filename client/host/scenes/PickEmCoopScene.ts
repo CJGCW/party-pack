@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addHudBar } from '../hud';
 import { COOP_PENALTY_MS, type CoopTile, type PickCoopHostView } from '../../../shared/games/pickEm';
 import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
@@ -51,6 +52,7 @@ export class PickEmCoopScene extends Phaser.Scene {
     this.view = null;
     this.listKey = '';
     addBackdrop(this, { blobs: false });
+    addHudBar(this);
     text(this, 80, 64, "TEAM PICK 'EM", 30, COLORS.accent, { fontStyle: '700' }).setOrigin(0, 0.5).setLetterSpacing(6);
     this.headerText = text(this, WIDTH / 2, 64, '', 30, COLORS.muted);
     this.clockText = text(this, WIDTH - 80, 64, '', 64, COLORS.text, { fontStyle: '700' }).setOrigin(1, 0.5);

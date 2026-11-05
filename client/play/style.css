@@ -1188,3 +1188,41 @@ body.gave-up #app { opacity: 0.4; pointer-events: none; filter: grayscale(0.5); 
 .cr-lenses { text-align: center; font-size: 28px; line-height: 1; letter-spacing: 6px; }
 .cr-tile.good .cr-badge { color: #4cd37a; }
 .cr-then { font-size: 22px; color: var(--muted); }
+
+
+/* ---------- The house style: chunky, lit from above, as on the TV ---------- */
+
+html, body {
+  background:
+    radial-gradient(60vmax 60vmax at 15% 10%, rgba(139, 124, 246, 0.2), transparent 70%),
+    radial-gradient(70vmax 70vmax at 90% 85%, rgba(255, 93, 115, 0.13), transparent 70%),
+    linear-gradient(180deg, #221a52, var(--bg));
+  background-attachment: fixed;
+}
+h1 { text-shadow: 0 3px 0 #140f2e, 0 6px 14px rgba(5, 3, 15, 0.6); }
+h2 { text-shadow: 0 2px 8px rgba(5, 3, 15, 0.6); }
+input { box-shadow: inset 0 3px 0 rgba(5, 3, 15, 0.35); }
+
+button {
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.22), 0 5px 0 rgba(5, 3, 15, 0.55), 0 8px 14px rgba(5, 3, 15, 0.3);
+  transition: transform 60ms ease-out, box-shadow 60ms ease-out, filter 60ms ease-out;
+}
+button:active { transform: translateY(4px); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.16), 0 1px 0 rgba(5, 3, 15, 0.55); }
+button:disabled { box-shadow: none; }
+.segmented button, .cr-door { box-shadow: none; }
+.segmented button:active { transform: none; }
+.badge { box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.3), 0 6px 0 rgba(5, 3, 15, 0.55); }
+.wr-top { padding: 4px 10px; border-radius: 12px; background: rgba(10, 7, 32, 0.45); box-shadow: inset 0 -2px 0 rgba(255, 209, 102, 0.25); }
+.wr-timer { font-weight: 700; }
+.wr-timer.low { animation: clock-pulse 1s ease-out infinite; }
+@keyframes clock-pulse {
+  0% { transform: scale(1.25); }
+  40%, 100% { transform: scale(1); }
+}
+.segmented { box-shadow: inset 0 2px 0 rgba(5, 3, 15, 0.4); }
+.pd-info-title { text-shadow: 0 3px 0 #140f2e; }
+canvas { border-radius: 8px; }
+.ss-dial { box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.12), 0 6px 0 rgba(5, 3, 15, 0.55); }
+@media (prefers-reduced-motion: reduce) {
+  button, .wr-timer.low { transition: none; animation: none; }
+}

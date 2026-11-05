@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { GOLD, ball, block } from '../art';
 import { roundOf } from '../../../shared/protocol';
 import type { PlayerInfo } from '../../../shared/protocol';
 import { net } from '../net';
@@ -78,11 +79,10 @@ export class StandingsScene extends Phaser.Scene {
   private buildRow(player: PlayerInfo, from: number, index: number): Row {
     const container = this.add.container(WIDTH / 2, this.slotY(index));
     const bg = this.add.graphics();
-    bg.fillStyle(COLORS.panel, 0.92);
-    bg.fillRoundedRect(-ROW_W / 2, -ROW_H / 2, ROW_W, ROW_H, 20);
-    bg.fillStyle(hex(player.color), 1);
-    bg.fillRoundedRect(-ROW_W / 2, -ROW_H / 2, 22, ROW_H, { tl: 20, bl: 20, tr: 0, br: 0 });
-    const rank = text(this, -ROW_W / 2 + 80, 0, `${index + 1}`, 44, COLORS.muted, { fontStyle: '700' });
+    block(bg, -ROW_W / 2, -ROW_H / 2, ROW_W, ROW_H, COLORS.panel);
+    bg.fillStyle(hex(player.color), 1).fillRoundedRect(-ROW_W / 2 + 6, -ROW_H / 2 + 8, 16, ROW_H - 22, 8);
+    if (index < 3) ball(bg, -ROW_W / 2 + 80, 0, 28, [GOLD, 0xc9cde0, 0xd98e4a][index]);
+    const rank = text(this, -ROW_W / 2 + 80, 0, `${index + 1}`, 40, index < 3 ? '#140f2e' : COLORS.muted, { fontStyle: '700' });
     const name = text(this, -ROW_W / 2 + 150, 0, player.name, 48, player.color, { fontStyle: '700' }).setOrigin(0, 0.5);
     const score = text(this, ROW_W / 2 - 40, 0, from.toLocaleString(), 52, COLORS.text, { fontStyle: '700' }).setOrigin(1, 0.5);
     container.add([bg, rank, name, score]);
