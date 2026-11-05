@@ -2,7 +2,7 @@ import { frameCells, hexCentre, initialsScale, type BlockbustersInput, type Bloc
 import { h } from '../dom';
 import type { Controller } from '../main';
 
-const TEAM_NAME: Record<Team, string> = { red: 'RED', white: 'WHITE' };
+const TEAM_NAME: Record<Team, string> = { red: 'PINK', white: 'BLUE' };
 /** What each team is trying to link. */
 const TEAM_GOAL: Record<Team, string> = { red: 'top ↕ bottom', white: 'left ↔ right' };
 
@@ -66,7 +66,7 @@ export function createBlockbusters(root: HTMLElement, send: (input: unknown) => 
 
   /**
    * Flat-topped hexagons in columns, odd columns half a hexagon lower, sized to the phone. Framed
-   * like the show by a ring of red hexagons above and below and white down the sides (clipped
+   * like the show by a ring of one team's hexagons above and below and the other's down the sides (clipped
    * by the board's edge), so the bands follow the hexagons' edges; between them the lines are dark.
    */
   function renderBoard(v: BlockbustersPlayerView) {

@@ -401,11 +401,11 @@ button.server-link { margin-top: 32px; width: 100%; font-size: 16px; }
   font-size: 9px;
   font-weight: 700;
 }
-.ra-cell.ra-tw { background: #a83250; }
-.ra-cell.ra-dw { background: #8a3f86; }
-.ra-cell.ra-tl { background: #2f6db5; }
-.ra-cell.ra-dl { background: #3d5a99; }
-.ra-cell.ra-star { background: #8a3f86; color: var(--accent); font-size: 14px; }
+.ra-cell.ra-tw { background: #d8435f; }
+.ra-cell.ra-dw { background: #b0559e; }
+.ra-cell.ra-tl { background: #2f8fc4; }
+.ra-cell.ra-dl { background: #4a6fc0; }
+.ra-cell.ra-star { background: #b0559e; color: var(--accent); font-size: 14px; }
 .ra-cell.target { outline: 2px dashed rgba(255, 209, 102, 0.5); outline-offset: -2px; }
 .ra-cell.filled, .ra-tile { background: #f6e7b8; color: var(--bg); }
 .ra-cell.pending { background: var(--accent); color: var(--bg); box-shadow: 0 0 0 2px #ffffff inset; }
@@ -654,8 +654,8 @@ button.server-link { margin-top: 32px; width: 100%; font-size: 16px; }
 
 .bb { display: flex; flex-direction: column; gap: 12px; min-height: calc(100dvh - 32px - var(--bars)); }
 .bb-team { padding: 2px 10px; border-radius: 999px; font-weight: 700; }
-.bb-team.red { background: var(--danger); color: var(--bg); }
-.bb-team.white { background: #f2f0ff; color: var(--bg); }
+.bb-team.red { background: #f472d0; color: var(--bg); }
+.bb-team.white { background: #5ec8f2; color: var(--bg); }
 /* The board, framed as on the show by a ring of red hexagons above and below and white ones down
    the sides (clipped by the board's edge); dark full-size hexagons behind make the lines between. */
 .bb-board {
@@ -674,8 +674,8 @@ button.server-link { margin-top: 32px; width: 100%; font-size: 16px; }
   /* A touch bigger, so neighbouring ring hexagons meet without a seam. */
   transform: scale(1.03);
 }
-.bb-ring.red { background: var(--danger); }
-.bb-ring.white { background: #f2f0ff; }
+.bb-ring.red { background: #f472d0; }
+.bb-ring.white { background: #5ec8f2; }
 .bb-hex-back {
   position: absolute;
   clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
@@ -697,8 +697,8 @@ button.server-link { margin-top: 32px; width: 100%; font-size: 16px; }
 }
 .bb-hex.pickable { background: #5a4dc0; color: #fff; cursor: pointer; }
 .bb-hex.current { background: var(--accent); color: var(--bg); }
-.bb-hex.red { background: var(--danger); color: var(--bg); }
-.bb-hex.white { background: #f2f0ff; color: var(--bg); }
+.bb-hex.red { background: #f472d0; color: var(--bg); }
+.bb-hex.white { background: #5ec8f2; color: var(--bg); }
 .bb-hex.path { filter: brightness(1.2); transform: scale(1); }
 .bb-letter {
   align-self: center;

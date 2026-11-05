@@ -4,12 +4,14 @@ import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
 import { COLORS, WIDTH, addBackdrop, hex, text } from '../theme';
 
-const RED = 0xff5d73;
-const WHITE = 0xf2f0ff;
+// The teams' ids are still 'red' and 'white'; this is how they look and what they're called.
+const RED = 0xf472d0;
+const WHITE = 0x5ec8f2;
+const TEAM_TEXT: Record<Team, string> = { red: '#f472d0', white: '#5ec8f2' };
 const INK = '#140f2e';
 /** The board's frame and the lines between hexagons. */
 const FRAME = 0x0b0820;
-const TEAM_NAME: Record<Team, string> = { red: 'RED', white: 'WHITE' };
+const TEAM_NAME: Record<Team, string> = { red: 'PINK', white: 'BLUE' };
 /** The board fills this box on the left of the screen. */
 const BOARD_BOX = { x: 70, y: 150, w: 980, h: 840 };
 const SIDE_X = 1130;
@@ -77,7 +79,7 @@ export class BlockbustersScene extends Phaser.Scene {
     this.view = view;
     this.viewAt = performance.now();
     this.phaseEndsAt = performance.now() + view.msLeft;
-    this.headerText.setText(`Board ${view.board} of ${view.totalBoards}   ·   ${view.topic}   ·   Red ${view.wins.red} – ${view.wins.white} White`);
+    this.headerText.setText(`Board ${view.board} of ${view.totalBoards}   ·   ${view.topic}   ·   Pink ${view.wins.red} – ${view.wins.white} Blue`);
     this.renderBoard(view);
     this.renderSide(view);
     this.overlay.removeAll(true);
@@ -182,12 +184,12 @@ export class BlockbustersScene extends Phaser.Scene {
     add(g);
     const mid = SIDE_X + SIDE_W / 2;
     if (view.phase === 'pick') {
-      const color = view.control === 'red' ? COLORS.danger : '#f2f0ff';
+      const color = TEAM_TEXT[view.control];
       add(text(this, mid, y + 150, `${TEAM_NAME[view.control]}`, 72, color, { fontStyle: '700' }).setLetterSpacing(6));
       add(text(this, mid, y + 240, 'is choosing a letter', 36, COLORS.text, { fontStyle: '700' }));
-      add(text(this, mid, y + 300, view.control === 'red' ? 'Red links top to bottom' : 'White links left to right', 28, COLORS.muted));
+      add(text(this, mid, y + 300, view.control === 'red' ? 'Pink links top to bottom' : 'Blue links left to right', 28, COLORS.muted));
     } else if (view.phase === 'boardEnd') {
-      const color = view.winner === 'red' ? COLORS.danger : view.winner === 'white' ? '#f2f0ff' : COLORS.muted;
+      const color = view.winner ? TEAM_TEXT[view.winner] : COLORS.muted;
       add(text(this, mid, y + 170, view.winner ? `${TEAM_NAME[view.winner]} WINS` : 'NO WINNER', 72, color, { fontStyle: '700' }).setLetterSpacing(4));
       add(text(this, mid, y + 260, view.winner ? 'the board!' : 'The board is full.', 36, COLORS.text, { fontStyle: '700' }));
     } else if (letter) {

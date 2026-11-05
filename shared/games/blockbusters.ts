@@ -10,10 +10,11 @@ export const BLOCKBUSTERS: GameInfo = {
 };
 
 /**
- * Red links the top and bottom edges; White links the left and right. With an even number of
- * players the teams are equal and the board is 4 by 4. With an odd number, Red is the smaller
- * team and the board is the show's 5 wide by 4 high, so Red needs 4 hexagons and White 5.
+ * Pink links the top and bottom edges; Blue links the left and right. With an even number of
+ * players the teams are equal and the board is 4 by 4. With an odd number, Pink is the smaller
+ * team and the board is the show's 5 wide by 4 high, so Pink needs 4 hexagons and Blue 5.
  */
+/** Shown to players as Pink ('red') and Blue ('white'). */
 export type Team = 'red' | 'white';
 
 export const boardSize = (playerCount: number) => (playerCount % 2 === 0 ? { cols: 4, rows: 4 } : { cols: 5, rows: 4 });

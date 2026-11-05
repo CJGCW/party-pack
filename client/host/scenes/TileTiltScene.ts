@@ -107,7 +107,7 @@ function drawPicture(g: Phaser.GameObjects.Graphics, picture: Picture) {
   const cx = x0 + size / 2;
   const cy = y0 + size / 2;
   const s = size / 840;
-  const bg = { sun: 0x7fd3f7, fish: 0x2a6fb5, rocket: 0x1b1450, flower: 0xb9e88a, cat: 0xc9a7f2 }[picture];
+  const bg = { sun: 0x3b3185, fish: 0x1f4f8f, rocket: 0x0f0b28, flower: 0x2f7d4f, cat: 0x4a3f9a }[picture];
   g.fillStyle(bg, 1).fillRect(x0, y0, size, size);
   switch (picture) {
     case 'sun': {

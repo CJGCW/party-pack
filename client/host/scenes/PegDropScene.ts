@@ -19,7 +19,7 @@ import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
 import { COLORS, HEIGHT, WIDTH, addBackdrop, burstConfetti, panel, text } from '../theme';
 
-const GOLD = 0xffa62b;
+const GOLD = 0xffd166;
 const MINT = 0x6ee7b7;
 const RAINBOW = [0xff5d73, 0xffa62b, 0xffd166, 0x6ee7b7, 0x5ec8f2, 0x8b7cf6, 0xf472d0];
 const SIDE_W = BOARD_LEFT - 60;
@@ -151,10 +151,12 @@ export class PegDropScene extends Phaser.Scene {
     this.meterFill = 0;
     this.focus = { x: WIDTH / 2, y: HEIGHT / 2 };
 
-    sphereTexture(this, 'pd-blue', 64, '#d6ecff', '#3d8bff', '#13306e');
-    sphereTexture(this, 'pd-gold', 64, '#fff3c4', '#ff9f1c', '#7a3900');
-    sphereTexture(this, 'pd-blue-lit', 64, '#ffffff', '#b5dcff', '#4f9dff');
-    sphereTexture(this, 'pd-gold-lit', 64, '#ffffff', '#ffe08a', '#ffa62b');
+    sphereTexture(this, 'pd-blue', 64, '#e3f6ff', '#5ec8f2', '#1c4f7a');
+    sphereTexture(this, 'pd-gold', 64, '#fff8df', '#ffd166', '#8a5a00');
+    sphereTexture(this, 'pd-purple', 64, '#f6e6ff', '#c264ff', '#4a1a7a');
+    sphereTexture(this, 'pd-blue-lit', 64, '#ffffff', '#bfeaff', '#5ec8f2');
+    sphereTexture(this, 'pd-gold-lit', 64, '#ffffff', '#ffe9b0', '#ffd166');
+    sphereTexture(this, 'pd-purple-lit', 64, '#ffffff', '#e6c2ff', '#c264ff');
     sphereTexture(this, 'pd-ball', 64, '#ffffff', '#c9cde0', '#4b4f66');
     sphereTexture(this, 'pd-dome', 128, '#fff6d6', '#ffc94a', '#8a5a00');
     glowTexture(this, 'pd-glow', 128);
@@ -256,7 +258,7 @@ export class PegDropScene extends Phaser.Scene {
     const { width: w, height: h } = CATCHER;
     const glow = this.add.image(0, h / 2, 'pd-glow').setDisplaySize(w * 1.6, 110).setTint(MINT).setAlpha(0.4).setBlendMode(Phaser.BlendModes.ADD);
     const g = this.add.graphics();
-    g.fillStyle(0x2fbf8a, 1);
+    g.fillStyle(MINT, 1);
     g.fillPoints([new Phaser.Geom.Point(-w / 2, 0), new Phaser.Geom.Point(w / 2, 0), new Phaser.Geom.Point(w / 2 - 22, h), new Phaser.Geom.Point(-w / 2 + 22, h)], true);
     g.fillStyle(0xb8ffe4, 0.6).fillRect(-w / 2 + 6, 3, w - 12, 7);
     g.lineStyle(4, 0xffffff, 0.9).lineBetween(-w / 2, 0, w / 2, 0);
@@ -277,8 +279,7 @@ export class PegDropScene extends Phaser.Scene {
         this.tweens.add({ targets: glow, alpha: 0.5, duration: 900 + (i % 5) * 150, yoyo: true, repeat: -1, delay: (i * 137) % 900 });
         this.pegLayer.add(glow);
       }
-      const img = this.add.image(p.x, p.y, p.gold ? 'pd-gold' : 'pd-blue').setDisplaySize(PEG_SIZE, PEG_SIZE).setVisible(!p.gone);
-      if (p.purple) img.setTint(0xd070ff);
+      const img = this.add.image(p.x, p.y, p.gold ? 'pd-gold' : p.purple ? 'pd-purple' : 'pd-blue').setDisplaySize(PEG_SIZE, PEG_SIZE).setVisible(!p.gone);
       this.pegLayer.add(img);
       return { img, glow, gold: p.gold };
     });
@@ -447,7 +448,7 @@ export class PegDropScene extends Phaser.Scene {
     const p = this.view!.pegs[hit.peg];
     this.lit.push(hit.peg);
     this.shotPoints += hit.points;
-    peg.img.setTexture(peg.gold ? 'pd-gold-lit' : 'pd-blue-lit');
+    peg.img.setTexture(peg.gold ? 'pd-gold-lit' : peg.img.texture.key === 'pd-purple' ? 'pd-purple-lit' : 'pd-blue-lit');
     const glow = peg.glow ?? this.add.image(p.x, p.y, 'pd-glow').setBlendMode(Phaser.BlendModes.ADD);
     if (!peg.glow) this.pegLayer.addAt(glow, 0);
     peg.glow = glow;

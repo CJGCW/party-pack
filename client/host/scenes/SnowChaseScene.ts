@@ -53,7 +53,7 @@ export class SnowChaseScene extends BoardsScene<SnowBoardState> {
 
   /** Snow. */
   protected drawStatic(_slot: Slot, g: Phaser.GameObjects.Graphics) {
-    g.fillGradientStyle(0xe6e4fb, 0xe6e4fb, 0xc9c6ee, 0xc9c6ee, 1).fillRect(0, 0, VIEW_W, VIEW_H);
+    g.fillGradientStyle(0x7f78cc, 0x7f78cc, 0x5a52a8, 0x5a52a8, 1).fillRect(0, 0, VIEW_W, VIEW_H);
   }
 
   protected drawBoard(slot: Slot, g: Phaser.GameObjects.Graphics, t: number, time: number) {

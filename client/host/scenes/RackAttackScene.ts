@@ -19,7 +19,7 @@ const BOARD_Y = 150;
 const PANEL_X = 1060;
 const PANEL_W = 780;
 
-const PREMIUM_COLOR = { TW: 0xa83250, DW: 0x8a3f86, TL: 0x2f6db5, DL: 0x3d5a99, STAR: 0x8a3f86 } as const;
+const PREMIUM_COLOR = { TW: 0xd8435f, DW: 0xb0559e, TL: 0x2f8fc4, DL: 0x4a6fc0, STAR: 0xb0559e } as const;
 const PREMIUM_LABEL = { TW: 'TRIPLE\nWORD', DW: 'DOUBLE\nWORD', TL: 'TRIPLE\nLETTER', DL: 'DOUBLE\nLETTER', STAR: '★' } as const;
 const TILE = 0xf6e7b8;
 const INK = '#140f2e';

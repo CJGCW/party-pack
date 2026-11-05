@@ -139,7 +139,7 @@ export class LongestWordScene extends Phaser.Scene {
       g.fillRoundedRect(x - TILE / 2, BOARD_Y - TILE / 2, TILE, TILE, 16);
       this.boardLayer.add(g);
       if (!letter) continue;
-      const t = text(this, x, BOARD_Y + 4, letter, TILE * 0.62, VOWELS.includes(letter) ? '#c0392b' : INK, { fontStyle: '700' });
+      const t = text(this, x, BOARD_Y + 4, letter, TILE * 0.62, VOWELS.includes(letter) ? '#d8435f' : INK, { fontStyle: '700' });
       this.boardLayer.add(t);
       // A newly picked letter flips up.
       if (i >= this.shownLetters) {

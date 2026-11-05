@@ -16,9 +16,9 @@ const TILE_H = 128;
 const TILE_GAP = 8;
 const BOARD_Y = 400;
 
-const TILE_EMPTY = 0x1f6f5c; // board cells with no puzzle in them
+const TILE_EMPTY = 0x3b3185; // board cells with no puzzle in them
 const TILE_PUZZLE = 0xffffff; // puzzle cells (blank until revealed)
-const TILE_FLASH = 0x5ec8f2; // a letter lighting up as it's revealed
+const TILE_FLASH = 0xffd166; // a letter lighting up as it's revealed
 const LETTER_COLOR = '#140f2e';
 
 
@@ -92,7 +92,7 @@ export class TossUpScene extends Phaser.Scene {
   private buildBoard() {
     const boardW = BOARD_COLS * TILE_W + (BOARD_COLS - 1) * TILE_GAP;
     const boardH = BOARD_ROWS * TILE_H + (BOARD_ROWS - 1) * TILE_GAP;
-    panel(this, WIDTH / 2 - boardW / 2 - 24, BOARD_Y - boardH / 2 - 24, boardW + 48, boardH + 48, 0x0d3b31, 1);
+    panel(this, WIDTH / 2 - boardW / 2 - 24, BOARD_Y - boardH / 2 - 24, boardW + 48, boardH + 48, 0x1a1442, 1);
 
     this.tiles = [];
     for (let r = 0; r < BOARD_ROWS; r++) {
@@ -100,7 +100,7 @@ export class TossUpScene extends Phaser.Scene {
       for (let c = 0; c < BOARD_COLS; c++) {
         const x = WIDTH / 2 - boardW / 2 + c * (TILE_W + TILE_GAP) + TILE_W / 2;
         const y = BOARD_Y - boardH / 2 + r * (TILE_H + TILE_GAP) + TILE_H / 2;
-        const rect = this.add.rectangle(x, y, TILE_W, TILE_H, TILE_EMPTY).setStrokeStyle(3, 0x0d3b31);
+        const rect = this.add.rectangle(x, y, TILE_W, TILE_H, TILE_EMPTY).setStrokeStyle(3, 0x140f2e);
         const letter = text(this, x, y, '', 86, LETTER_COLOR, { fontStyle: '700' });
         row.push({ rect, letter });
       }
