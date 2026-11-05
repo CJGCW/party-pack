@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import type { ArenaEntry, ArenaHostView } from '../../../shared/arena';
 import { BLOCK, HITS, LAYOUTS, SHELL_R, TANK_R, WORLD_H, WORLD_W, type TankWorld } from '../../../shared/games/tankYard';
+import { FIRE, GOLD, INK, STONE, ball, block, checkerFloor, glow, softShadow } from '../art';
 import { ArenaScene } from '../arenaScene';
+import { burst } from '../fx';
 import { hex } from '../theme';
 
 /** A burst grows and fades over this long. */
@@ -29,21 +31,21 @@ export class TankYardScene extends ArenaScene<TankWorld> {
 
   protected onUpdate(_prev: TankWorld, next: TankWorld) {
     const now = performance.now();
-    for (const b of next.bursts) this.bursts.push({ ...b, at: now });
+    for (const b of next.bursts) {
+      this.bursts.push({ ...b, at: now });
+      const at = this.screenOf(b.x, b.y);
+      burst(this, at.x, at.y, FIRE, 22);
+    }
   }
 
   /** Dirt, and the yard's walls. */
   protected drawStatic(g: Phaser.GameObjects.Graphics, view: ArenaHostView<TankWorld>) {
     this.bursts = [];
-    g.fillStyle(0x6b5a3e, 1).fillRect(0, 0, WORLD_W, WORLD_H);
-    g.fillStyle(0x76644a, 1);
-    for (let y = 0; y < WORLD_H; y += BLOCK) for (let x = (y / BLOCK) % 2 ? 0 : BLOCK; x < WORLD_W; x += BLOCK * 2) g.fillRect(x, y, BLOCK, BLOCK);
+    checkerFloor(g, 0, 0, Math.ceil(WORLD_W / BLOCK), Math.ceil(WORLD_H / BLOCK), BLOCK);
     LAYOUTS[view.world.layout].forEach((row, y) =>
       [...row].forEach((c, x) => {
         if (c !== '#') return;
-        g.fillStyle(0x3a3350, 1).fillRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
-        g.fillStyle(0x5a527a, 1).fillRect(x * BLOCK + 4, y * BLOCK + 4, BLOCK - 8, BLOCK - 8);
-        g.fillStyle(0x6d6496, 1).fillRect(x * BLOCK + 4, y * BLOCK + 4, BLOCK - 8, 14);
+        block(g, x * BLOCK, y * BLOCK, BLOCK, BLOCK, STONE);
       }),
     );
   }
@@ -71,16 +73,14 @@ export class TankYardScene extends ArenaScene<TankWorld> {
           [l / 2, w / 2],
           [-l / 2, w / 2],
         ].map(([a, b]) => new Phaser.Math.Vector2(x + (a + fwd) * c - (b + side) * s, y + (a + fwd) * s + (b + side) * c));
-      g.fillStyle(0x000000, 0.25 * alpha).fillCircle(x + 6, y + 8, TANK_R);
-      g.fillStyle(0x140f2e, alpha).fillPoints(box(0, 0, TANK_R * 2 + 6, TANK_R * 1.7 + 6), true);
+      softShadow(g, x + 6, y + 10, TANK_R * 2.4, TANK_R * 2, 0.3 * alpha);
+      g.fillStyle(INK, alpha).fillPoints(box(0, 0, TANK_R * 2 + 6, TANK_R * 1.7 + 6), true);
       g.fillStyle(0x2a2440, alpha).fillPoints(box(0, -TANK_R * 0.68, TANK_R * 2, TANK_R * 0.36), true);
       g.fillStyle(0x2a2440, alpha).fillPoints(box(0, TANK_R * 0.68, TANK_R * 2, TANK_R * 0.36), true);
       g.fillStyle(hex(tank.color), alpha).fillPoints(box(0, 0, TANK_R * 1.7, TANK_R * 1.0), true);
       g.fillStyle(0x140f2e, alpha).fillPoints(box(TANK_R * 0.75, 0, TANK_R * 1.1, 12), true);
       g.fillStyle(0xdddddd, alpha).fillPoints(box(TANK_R * 0.75, 0, TANK_R * 1.1 - 4, 7), true);
-      g.fillStyle(0x140f2e, alpha).fillCircle(x, y, TANK_R * 0.45);
-      g.fillStyle(hex(tank.color), alpha).fillCircle(x, y, TANK_R * 0.36);
-      g.fillStyle(0xffffff, 0.35 * alpha).fillCircle(x - 4, y - 4, TANK_R * 0.14);
+      ball(g, x, y, TANK_R * 0.4, hex(tank.color), alpha);
     }
     for (const sh of curr.shells) {
       const was = prev.shells.find((o) => o.id === sh.id);
@@ -88,16 +88,16 @@ export class TankYardScene extends ArenaScene<TankWorld> {
       const near = was && Math.hypot(was.x - sh.x, was.y - sh.y) < 60;
       const x = near ? lerp(was.x, sh.x, t) : sh.x;
       const y = near ? lerp(was.y, sh.y, t) : sh.y;
-      g.fillStyle(0x140f2e, 1).fillCircle(x, y, SHELL_R + 3);
-      g.fillStyle(hex(sh.color), 1).fillCircle(x, y, SHELL_R);
-      g.fillStyle(0xffffff, 0.8).fillCircle(x - 2, y - 2, SHELL_R * 0.4);
+      glow(g, x, y, SHELL_R * 3.2, hex(sh.color));
+      ball(g, x, y, SHELL_R, hex(sh.color));
     }
     const now = performance.now();
     this.bursts = this.bursts.filter((b) => now - b.at < BURST_MS);
     for (const b of this.bursts) {
       const p = (now - b.at) / BURST_MS;
-      g.fillStyle(0xffd166, 1 - p).fillCircle(b.x, b.y, 10 + 30 * p);
-      g.fillStyle(0xff5d2a, (1 - p) * 0.8).fillCircle(b.x, b.y, 6 + 18 * p);
+      glow(g, b.x, b.y, 40 + 50 * p, FIRE, 1 - p);
+      g.fillStyle(GOLD, 1 - p).fillCircle(b.x, b.y, 10 + 30 * p);
+      g.fillStyle(0xffffff, (1 - p) * 0.8).fillCircle(b.x, b.y, 6 + 14 * p);
     }
   }
 }

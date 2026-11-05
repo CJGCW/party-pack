@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import type { ArenaHostView } from '../../../shared/arena';
 import { FRUIT_R, PLAYER_R, WORLD, type FruitWorld } from '../../../shared/games/fruitRush';
+import { GOLD, INK, WOOD, ball, glow, shade, softShadow } from '../art';
 import { ArenaScene } from '../arenaScene';
+import { burst } from '../fx';
 import { hex } from '../theme';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -19,10 +21,22 @@ export class FruitRushScene extends ArenaScene<FruitWorld> {
     super(FruitRushScene.KEY);
   }
 
+  /** Fruit that's gone has been picked up: a little sparkle where it was. */
+  protected onUpdate(prev: FruitWorld, next: FruitWorld) {
+    const still = new Set(next.fruit.map((f) => f.id));
+    for (const f of prev.fruit) {
+      if (still.has(f.id) || f.falling < 1) continue;
+      const at = this.screenOf(f.x, f.y);
+      burst(this, at.x, at.y, f.gold ? GOLD : FRUIT_COLORS[f.id % FRUIT_COLORS.length], f.gold ? 28 : 12);
+    }
+  }
+
   /** Grass with mown stripes and a fence. */
   protected drawStatic(g: Phaser.GameObjects.Graphics, _view: ArenaHostView<FruitWorld>) {
-    for (let i = 0; i < 10; i++) g.fillStyle(i % 2 ? 0x4fb862 : 0x56c26a, 1).fillRect(0, i * 100, WORLD, 100);
-    g.lineStyle(14, 0x8a6238, 1).strokeRect(7, 7, WORLD - 14, WORLD - 14);
+    for (let i = 0; i < 10; i++) g.fillStyle(i % 2 ? 0x2f7d4f : 0x2c7549, 1).fillRect(0, i * 100, WORLD, 100);
+    g.lineStyle(22, INK, 1).strokeRect(11, 11, WORLD - 22, WORLD - 22);
+    g.lineStyle(14, WOOD, 1).strokeRect(11, 11, WORLD - 22, WORLD - 22);
+    g.lineStyle(4, shade(WOOD, 0.3), 1).strokeRect(9, 9, WORLD - 18, WORLD - 18);
   }
 
   protected drawWorld(g: Phaser.GameObjects.Graphics, prev: FruitWorld, curr: FruitWorld, t: number) {
@@ -32,23 +46,21 @@ export class FruitRushScene extends ArenaScene<FruitWorld> {
         // A shadow where it'll land, growing, and the fruit dropping onto it.
         g.fillStyle(0x000000, 0.15 + 0.2 * f.falling).fillEllipse(f.x, f.y + 6, FRUIT_R * 2 * f.falling + 6, FRUIT_R * f.falling + 3);
         const drop = (1 - f.falling) * 300;
-        g.fillStyle(color, f.falling).fillCircle(f.x, f.y - drop, FRUIT_R);
+        ball(g, f.x, f.y - drop, FRUIT_R, color, f.falling);
         continue;
       }
-      g.fillStyle(0x000000, 0.25).fillEllipse(f.x + 4, f.y + 10, FRUIT_R * 2, FRUIT_R * 0.8);
-      g.fillStyle(0x140f2e, 1).fillCircle(f.x, f.y, FRUIT_R + 3);
-      g.fillStyle(color, 1).fillCircle(f.x, f.y, FRUIT_R);
-      g.fillStyle(0x3aa86a, 1).fillEllipse(f.x + 6, f.y - FRUIT_R, 14, 8);
-      if (f.gold) g.fillStyle(0xffffff, 0.8).fillCircle(f.x - 7, f.y - 7, 6);
+      if (f.gold) glow(g, f.x, f.y, FRUIT_R * 3, GOLD);
+      softShadow(g, f.x + 3, f.y + FRUIT_R * 0.9, FRUIT_R * 2, FRUIT_R * 0.8);
+      ball(g, f.x, f.y, FRUIT_R, color);
+      g.fillStyle(INK, 1).fillEllipse(f.x + 6, f.y - FRUIT_R * 1.02, 18, 11);
+      g.fillStyle(0x4cd37a, 1).fillEllipse(f.x + 6, f.y - FRUIT_R * 1.02, 14, 7);
     }
     for (const p of curr.players) {
       const was = prev.players.find((o) => o.playerId === p.playerId);
       const x = was ? lerp(was.x, p.x, t) : p.x;
       const y = was ? lerp(was.y, p.y, t) : p.y;
-      g.fillStyle(0x000000, 0.3).fillCircle(x + 5, y + 9, PLAYER_R);
-      g.fillStyle(0x140f2e, 1).fillCircle(x, y, PLAYER_R + 5);
-      g.fillStyle(hex(p.color), 1).fillCircle(x, y, PLAYER_R);
-      g.fillStyle(0xffffff, 0.45).fillCircle(x - PLAYER_R * 0.35, y - PLAYER_R * 0.35, PLAYER_R * 0.3);
+      softShadow(g, x + 4, y + PLAYER_R * 0.85, PLAYER_R * 2, PLAYER_R * 0.9);
+      ball(g, x, y, PLAYER_R, hex(p.color));
     }
   }
 }

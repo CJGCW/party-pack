@@ -15,7 +15,6 @@ export const CASTLE_SIEGE: GameInfo = {
 
 export const COLS = 40;
 export const ROWS = 24;
-export const CELL = 24;
 export const CANNON_MS = 8_000;
 export const FIRE_MS = 18_000;
 export const REPAIR_MS = 22_000;

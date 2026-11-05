@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CELL, COLS, ROWS, SHELL_MS, castleOf, landOf, type SiegeView } from '../../../shared/games/castleSiege';
+import { COLS, ROWS, SHELL_MS, castleOf, landOf, type SiegeView } from '../../../shared/games/castleSiege';
 import { GOLD, INK, STONE, ball, block, brick, glow, shade } from '../art';
 import { burst, impact } from '../fx';
 import { GameHud } from '../hud';
@@ -7,8 +7,10 @@ import { listen, net } from '../net';
 import { showRoundScores } from '../roundScores';
 import { COLORS, WIDTH, addBackdrop, burstConfetti, hex, text } from '../theme';
 
-const MAP_X = (WIDTH - COLS * CELL) / 2 - 150;
-const MAP_Y = 180;
+/** A square of the map, in TV pixels. */
+const CELL = 36;
+const MAP_X = 60;
+const MAP_Y = 190;
 
 /** The TV during Castle Siege: the whole map, everyone's walls and castle, shells arcing over in the fire. */
 export class CastleSiegeScene extends Phaser.Scene {

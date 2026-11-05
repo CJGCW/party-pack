@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import type { ArenaEntry } from '../../../shared/arena';
 import { LAVA_Y, LEDGES, RIDER_R, WORLD_H, WORLD_W, type JousterView, type JoustWorld } from '../../../shared/games/skyJoust';
+import { FIRE, FLOOR_A, FLOOR_DARK, GOLD, INK, STONE, ball, block, shade } from '../art';
 import { ArenaScene } from '../arenaScene';
+import { burst, impact } from '../fx';
 import { hex } from '../theme';
 
 /** Wings stay up this long after a flap. */
@@ -33,6 +35,12 @@ export class SkyJoustScene extends ArenaScene<JoustWorld> {
     for (const r of next.riders) {
       const was = prev.riders.find((o) => o.playerId === r.playerId);
       if (was && r.flaps > was.flaps) this.flappedAt.set(r.playerId, performance.now());
+      // Knocked out of the air.
+      if (was && !was.down && r.down) {
+        const at = this.screenOf(was.x, was.y);
+        burst(this, at.x, at.y, hex(r.color), 40);
+        impact(this, 0.004);
+      }
       if (r.vx < -20) this.facingLeft.set(r.playerId, true);
       else if (r.vx > 20) this.facingLeft.set(r.playerId, false);
     }
@@ -42,20 +50,21 @@ export class SkyJoustScene extends ArenaScene<JoustWorld> {
   protected drawStatic(g: Phaser.GameObjects.Graphics) {
     this.flappedAt.clear();
     this.facingLeft.clear();
-    g.fillStyle(0x1a1236, 1).fillRect(0, 0, WORLD_W, WORLD_H);
-    g.fillStyle(0x241a48, 1);
+    g.fillGradientStyle(FLOOR_DARK, FLOOR_DARK, FLOOR_A, FLOOR_A, 1);
+    g.fillRect(0, 0, WORLD_W, WORLD_H);
+    g.fillStyle(shade(STONE, -0.45), 1);
     for (let i = 0; i < 12; i++) g.fillTriangle(i * 140, 0, i * 140 + 70, 50 + (i % 3) * 30, i * 140 + 140, 0);
     for (const [left, top, width] of LEDGES) {
-      g.fillStyle(0x140f2e, 1).fillRoundedRect(left - 4, top - 4, width + 8, 30, 10);
-      g.fillStyle(0x6d6496, 1).fillRoundedRect(left, top, width, 22, 8);
-      g.fillStyle(0x8f87b8, 1).fillRect(left + 8, top + 2, width - 16, 5);
+      block(g, left - 4, top - 4, width + 8, 32, STONE);
     }
   }
 
   protected drawWorld(g: Phaser.GameObjects.Graphics, prev: JoustWorld, curr: JoustWorld, t: number, time: number) {
     // The lava, bubbling.
-    g.fillStyle(0xff5d2a, 1).fillRect(0, LAVA_Y, WORLD_W, WORLD_H - LAVA_Y);
-    g.fillStyle(0xffb02e, 1);
+    g.fillGradientStyle(FIRE, FIRE, 0xc23a1e, 0xc23a1e, 1);
+    g.fillRect(0, LAVA_Y, WORLD_W, WORLD_H - LAVA_Y);
+    g.fillStyle(FIRE, 0.14).fillRect(0, LAVA_Y - 46, WORLD_W, 46);
+    g.fillStyle(GOLD, 1);
     for (let x = 0; x < WORLD_W; x += 40) g.fillCircle(x + 20, LAVA_Y + 4 + 6 * Math.sin(time / 300 + x * 0.05), 14);
     const now = performance.now();
     for (const r of curr.riders) {
@@ -93,11 +102,12 @@ export class SkyJoustScene extends ArenaScene<JoustWorld> {
     g.fillStyle(0x140f2e, alpha).fillTriangle(x - dir * 4, y - 6, x - dir * RIDER_R * 1.4, y + wy - 4, x + dir * 12, y + 4);
     g.fillStyle(color, alpha * 0.8).fillTriangle(x - dir * 4, y - 4, x - dir * RIDER_R * 1.25, y + wy, x + dir * 8, y + 4);
     // The body and head.
-    g.fillStyle(0x140f2e, alpha).fillEllipse(x, y, RIDER_R * 2 + 8, RIDER_R * 1.5 + 8);
-    g.fillStyle(color, alpha).fillEllipse(x, y, RIDER_R * 2, RIDER_R * 1.5);
-    g.fillStyle(0x140f2e, alpha).fillCircle(x + dir * RIDER_R * 0.8, y - RIDER_R * 0.7, 14);
-    g.fillStyle(color, alpha).fillCircle(x + dir * RIDER_R * 0.8, y - RIDER_R * 0.7, 11);
-    g.fillStyle(0xffd166, alpha).fillTriangle(x + dir * (RIDER_R * 0.8 + 8), y - RIDER_R * 0.75, x + dir * (RIDER_R * 0.8 + 22), y - RIDER_R * 0.6, x + dir * (RIDER_R * 0.8 + 8), y - RIDER_R * 0.5);
-    g.fillStyle(0x140f2e, alpha).fillCircle(x + dir * (RIDER_R * 0.8 + 3), y - RIDER_R * 0.8, 3);
+    g.fillStyle(INK, alpha).fillEllipse(x, y, RIDER_R * 2 + 8, RIDER_R * 1.5 + 8);
+    g.fillStyle(shade(color, -0.32), alpha).fillEllipse(x, y, RIDER_R * 2, RIDER_R * 1.5);
+    g.fillStyle(color, alpha).fillEllipse(x, y - 3, RIDER_R * 1.8, RIDER_R * 1.2);
+    g.fillStyle(0xffffff, 0.45 * alpha).fillEllipse(x - RIDER_R * 0.3, y - RIDER_R * 0.4, RIDER_R * 0.6, RIDER_R * 0.28);
+    ball(g, x + dir * RIDER_R * 0.8, y - RIDER_R * 0.7, 12, color, alpha);
+    g.fillStyle(GOLD, alpha).fillTriangle(x + dir * (RIDER_R * 0.8 + 8), y - RIDER_R * 0.75, x + dir * (RIDER_R * 0.8 + 22), y - RIDER_R * 0.6, x + dir * (RIDER_R * 0.8 + 8), y - RIDER_R * 0.5);
+    g.fillStyle(INK, alpha).fillCircle(x + dir * (RIDER_R * 0.8 + 3), y - RIDER_R * 0.8, 3);
   }
 }

@@ -15,7 +15,9 @@ import {
   keepFacing,
   type GuardWorld,
 } from '../../../shared/games/keepGuard';
+import { FIRE, FLOOR_A, FLOOR_B, FLOOR_DARK, GOLD, INK, STONE, ball, glow, shade } from '../art';
 import { ArenaScene } from '../arenaScene';
+import { burst, shockwave } from '../fx';
 import { hex } from '../theme';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -47,12 +49,35 @@ export class KeepGuardScene extends ArenaScene<GuardWorld> {
     return k ? `${[...k.bricks].filter((b) => b === '1').length} bricks` : 'in';
   }
 
+  /** Bricks going send up chips of stone; a keep falling sends up a lot more. */
+  protected onUpdate(prev: GuardWorld, next: GuardWorld) {
+    const n = next.keeps.length;
+    next.keeps.forEach((k, i) => {
+      const was = prev.keeps[i];
+      if (!was) return;
+      const { x, y } = keepCenter(i, n);
+      const facing = keepFacing(i, n);
+      if (was.alive && !k.alive) {
+        const at = this.screenOf(x, y);
+        burst(this, at.x, at.y, hex(k.color), 60);
+        shockwave(this, at.x, at.y, hex(k.color), 200);
+      }
+      for (let b = 0; b < k.bricks.length; b++) {
+        if (was.bricks[b] !== '1' || k.bricks[b] === '1') continue;
+        const ring = Math.floor(b / BRICKS_PER_RING);
+        const a = facing - Math.PI / 2 + ((b % BRICKS_PER_RING) + 0.5) * (Math.PI / BRICKS_PER_RING);
+        const r = (BRICK_RINGS[ring][0] + BRICK_RINGS[ring][1]) / 2;
+        const at = this.screenOf(x + Math.cos(a) * r, y + Math.sin(a) * r);
+        burst(this, at.x, at.y, 0xc8bfff, 12);
+      }
+    });
+  }
+
   /** The arena floor, with faint rings. */
   protected drawStatic(g: Phaser.GameObjects.Graphics) {
-    g.fillStyle(0x0c0920, 1).fillRect(0, 0, WORLD, WORLD);
-    g.fillStyle(0x2a2160, 1).fillCircle(CENTER, CENTER, ARENA_R);
-    g.lineStyle(2, 0x8b7cf6, 0.12);
-    for (let r = 80; r < ARENA_R; r += 80) g.strokeCircle(CENTER, CENTER, r);
+    g.fillStyle(FLOOR_DARK, 1).fillRect(0, 0, WORLD, WORLD);
+    for (let r = ARENA_R, i = 0; r > 0; r -= 80, i++) g.fillStyle(i % 2 ? FLOOR_A : FLOOR_B, 1).fillCircle(CENTER, CENTER, r);
+    g.lineStyle(16, INK, 1).strokeCircle(CENTER, CENTER, ARENA_R);
     g.lineStyle(8, 0x8b7cf6, 1).strokeCircle(CENTER, CENTER, ARENA_R);
   }
 
@@ -64,10 +89,9 @@ export class KeepGuardScene extends ArenaScene<GuardWorld> {
       const facing = keepFacing(i, n);
       const color = hex(k.color);
       if (!k.alive) {
-        g.fillStyle(0x140f2e, 1).fillCircle(x, y, RUBBLE_R + 4);
-        g.fillStyle(0x4a4470, 1).fillCircle(x, y, RUBBLE_R);
-        g.fillStyle(0x5e5888, 1);
-        for (let j = 0; j < 7; j++) g.fillCircle(x + Math.cos(facing + (j - 3) * 0.4) * RUBBLE_R * 0.6, y + Math.sin(facing + (j - 3) * 0.4) * RUBBLE_R * 0.6, 18);
+        g.fillStyle(INK, 1).fillCircle(x, y, RUBBLE_R + 4);
+        g.fillStyle(shade(STONE, -0.3), 1).fillCircle(x, y, RUBBLE_R);
+        for (let j = 0; j < 7; j++) ball(g, x + Math.cos(facing + (j - 3) * 0.4) * RUBBLE_R * 0.6, y + Math.sin(facing + (j - 3) * 0.4) * RUBBLE_R * 0.6, 17, STONE);
         return;
       }
       // Bricks, ring by ring.
@@ -75,28 +99,33 @@ export class KeepGuardScene extends ArenaScene<GuardWorld> {
         for (let b = 0; b < BRICKS_PER_RING; b++) {
           if (k.bricks[r * BRICKS_PER_RING + b] !== '1') continue;
           const a0 = facing - Math.PI / 2 + b * step;
-          g.fillStyle(0x140f2e, 1);
+          g.fillStyle(INK, 1);
           sector(g, x, y, inner - 2, outer + 2, a0, a0 + step);
           g.fillStyle(r ? 0xc8bfff : 0x9d92e0, 1);
           sector(g, x, y, inner + 2, outer - 2, a0 + 0.03, a0 + step - 0.03);
+          g.fillStyle(0xffffff, 0.3);
+          sector(g, x, y, outer - 8, outer - 3, a0 + 0.06, a0 + step - 0.06);
         }
       });
       // The keep itself, in their colour, with a little crown.
-      g.fillStyle(0x140f2e, 1).fillCircle(x, y, CORE_R + 5);
-      g.fillStyle(color, 1).fillCircle(x, y, CORE_R);
+      ball(g, x, y, CORE_R, color);
       const cx = x + Math.cos(facing) * CORE_R * 0.35;
       const cy = y + Math.sin(facing) * CORE_R * 0.35;
-      g.fillStyle(0xffd166, 1).fillCircle(cx, cy, 14);
+      ball(g, cx, cy, 13, GOLD);
       // The shield, eased between updates.
       const was = prev.keeps[i];
       const shield = facing + (was && was.alive ? lerp(was.shield, k.shield, t) : k.shield);
-      g.lineStyle(22, 0x140f2e, 1);
+      g.lineStyle(24, INK, 1);
       g.beginPath();
       g.arc(x, y, SHIELD_R, shield - SHIELD_HALF - 0.02, shield + SHIELD_HALF + 0.02, false);
       g.strokePath();
-      g.lineStyle(14, color, 1);
+      g.lineStyle(15, color, 1);
       g.beginPath();
       g.arc(x, y, SHIELD_R, shield - SHIELD_HALF, shield + SHIELD_HALF, false);
+      g.strokePath();
+      g.lineStyle(4, shade(color, 0.5), 1);
+      g.beginPath();
+      g.arc(x, y, SHIELD_R + 4, shield - SHIELD_HALF + 0.03, shield + SHIELD_HALF - 0.03, false);
       g.strokePath();
     });
     for (const b of curr.balls) {
@@ -105,9 +134,8 @@ export class KeepGuardScene extends ArenaScene<GuardWorld> {
       const near = was && Math.hypot(was.x - b.x, was.y - b.y) < 80;
       const x = near ? lerp(was.x, b.x, t) : b.x;
       const y = near ? lerp(was.y, b.y, t) : b.y;
-      g.fillStyle(0xffffff, 0.15 + 0.05 * Math.sin(time / 90)).fillCircle(x, y, BALL_R * 2);
-      g.fillStyle(0x140f2e, 1).fillCircle(x, y, BALL_R + 3);
-      g.fillStyle(b.hot ? 0xffa62b : 0xffffff, 1).fillCircle(x, y, BALL_R);
+      glow(g, x, y, BALL_R * (3.4 + 0.3 * Math.sin(time / 90)), b.hot ? FIRE : 0xffffff);
+      ball(g, x, y, BALL_R, b.hot ? FIRE : 0xffffff);
     }
   }
 }

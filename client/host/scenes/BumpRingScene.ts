@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { BALL_R, CENTER, RADIUS, WORLD, type RingWorld } from '../../../shared/games/bumpRing';
+import { DANGER, FLOOR_A, FLOOR_B, FLOOR_DARK, INK, SKY, ball, shade, softShadow } from '../art';
 import { ArenaScene } from '../arenaScene';
+import { burst, shockwave } from '../fx';
 import { hex } from '../theme';
 
 /** A ball falling off shrinks away over this long. */
@@ -21,23 +23,32 @@ export class BumpRingScene extends ArenaScene<RingWorld> {
   }
 
   protected onUpdate(prev: RingWorld, next: RingWorld) {
-    for (const b of next.balls) if (!b.on && prev.balls.find((o) => o.playerId === b.playerId)?.on) this.fellAt.set(b.playerId, performance.now());
+    for (const b of next.balls) {
+      if (b.on || !prev.balls.find((o) => o.playerId === b.playerId)?.on) continue;
+      this.fellAt.set(b.playerId, performance.now());
+      const at = this.screenOf(b.x, b.y);
+      burst(this, at.x, at.y, SKY, 30);
+      shockwave(this, at.x, at.y, SKY, 120);
+    }
   }
 
   /** The drop below: dark water. */
   protected drawStatic(g: Phaser.GameObjects.Graphics) {
     this.fellAt.clear();
-    g.fillStyle(0x0c0920, 1).fillRect(0, 0, WORLD, WORLD);
-    g.lineStyle(2, 0x5ec8f2, 0.06);
+    g.fillStyle(FLOOR_DARK, 1).fillRect(0, 0, WORLD, WORLD);
+    g.lineStyle(2, SKY, 0.08);
     for (let r = 60; r < WORLD; r += 60) g.strokeCircle(CENTER, CENTER, r);
   }
 
   protected drawWorld(g: Phaser.GameObjects.Graphics, prev: RingWorld, curr: RingWorld, t: number, time: number) {
     // The platform: what's left of it, and a red rim once it's crumbling.
     const radius = lerp(prev.radius, curr.radius, t);
-    g.fillStyle(0x3b3185, 1).fillCircle(CENTER, CENTER, radius);
-    g.fillStyle(0x4a3f9a, 1).fillCircle(CENTER, CENTER, radius * 0.85);
-    g.lineStyle(10, radius < RADIUS ? 0xff5d73 : 0x8b7cf6, radius < RADIUS ? 0.6 + 0.3 * Math.sin(time / 120) : 1).strokeCircle(CENTER, CENTER, radius);
+    // A thick disc: its side showing below, then the top in rings.
+    g.fillStyle(INK, 1).fillCircle(CENTER, CENTER + 18, radius + 6);
+    g.fillStyle(shade(FLOOR_B, -0.35), 1).fillCircle(CENTER, CENTER + 16, radius);
+    g.fillStyle(INK, 1).fillCircle(CENTER, CENTER, radius + 5);
+    for (let i = 0; i < 5; i++) g.fillStyle(i % 2 ? FLOOR_A : FLOOR_B, 1).fillCircle(CENTER, CENTER, radius * (1 - i * 0.18));
+    g.lineStyle(10, radius < RADIUS ? DANGER : 0x8b7cf6, radius < RADIUS ? 0.6 + 0.3 * Math.sin(time / 120) : 1).strokeCircle(CENTER, CENTER, radius);
     const now = performance.now();
     for (const b of curr.balls) {
       const was = prev.balls.find((o) => o.playerId === b.playerId);
@@ -50,10 +61,8 @@ export class BumpRingScene extends ArenaScene<RingWorld> {
         size = BALL_R * (1 - p);
       }
       const color = hex(b.color);
-      g.fillStyle(0x000000, 0.3).fillCircle(x + 6, y + 10, size);
-      g.fillStyle(0x140f2e, 1).fillCircle(x, y, size + 5);
-      g.fillStyle(color, 1).fillCircle(x, y, size);
-      g.fillStyle(0xffffff, 0.45).fillCircle(x - size * 0.35, y - size * 0.35, size * 0.3);
+      softShadow(g, x + 4, y + size * 0.85, size * 2, size * 0.9);
+      ball(g, x, y, size, color);
     }
   }
 }

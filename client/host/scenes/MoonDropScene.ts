@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
 import type { ArenaEntry, ArenaHostView } from '../../../shared/arena';
 import { LANDER_R, WORLD_H, WORLD_W, moonFor, type MoonWorld } from '../../../shared/games/moonDrop';
+import { FIRE, FLOOR_DARK, GOLD, INK, STONE, ball, block, glow, shade } from '../art';
 import { ArenaScene } from '../arenaScene';
-import { hex, text } from '../theme';
+import { burst, impact, popText, shockwave } from '../fx';
+import { COLORS, hex, text } from '../theme';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -25,19 +27,44 @@ export class MoonDropScene extends ArenaScene<MoonWorld> {
     return l.status === 'flying' ? `fuel ${l.fuel}%` : l.status === 'crashed' ? 'crashed' : String(l.score);
   }
 
+  /** A landing or a crash gets its moment. */
+  protected onUpdate(prev: MoonWorld, next: MoonWorld) {
+    for (const l of next.landers) {
+      const was = prev.landers.find((o) => o.playerId === l.playerId);
+      if (!was || was.status !== 'flying' || l.status === 'flying') continue;
+      const at = this.screenOf(l.x, l.y);
+      if (l.status === 'crashed') {
+        burst(this, at.x, at.y, FIRE, 50);
+        impact(this, 0.005);
+      } else {
+        shockwave(this, at.x, at.y, GOLD, 120);
+        burst(this, at.x, at.y, GOLD, 30);
+        popText(this, at.x, at.y - 50, `+${l.score}`, COLORS.accent, 48);
+      }
+    }
+  }
+
   protected drawStatic(g: Phaser.GameObjects.Graphics, view: ArenaHostView<MoonWorld>) {
-    g.fillStyle(0x07051a, 1).fillRect(0, 0, WORLD_W, WORLD_H);
+    g.fillStyle(FLOOR_DARK, 1).fillRect(0, 0, WORLD_W, WORLD_H);
     let s = view.seed;
     const rand = () => ((s = (s * 16807) % 2147483647) / 2147483647);
     for (let i = 0; i < 140; i++) g.fillStyle(0xffffff, 0.2 + rand() * 0.6).fillCircle(rand() * WORLD_W, rand() * WORLD_H * 0.7, rand() * 2 + 0.5);
     const { points, pads } = moonFor(view.seed);
     const outline = [new Phaser.Math.Vector2(0, WORLD_H), ...points.map(([x, y]) => new Phaser.Math.Vector2(x, y)), new Phaser.Math.Vector2(WORLD_W, WORLD_H)];
-    g.fillStyle(0x6d6496, 1).fillPoints(outline, true);
-    g.lineStyle(4, 0x9a93b8, 1).strokePoints(outline.slice(1, -1), false);
+    g.fillStyle(STONE, 1).fillPoints(outline, true);
+    // Craters, only those fully under the surface.
+    const surfaceAt = (x: number) => points.reduce((y, p, i) => (i && points[i - 1][0] <= x && x <= p[0] ? points[i - 1][1] + ((p[1] - points[i - 1][1]) * (x - points[i - 1][0])) / Math.max(1, p[0] - points[i - 1][0]) : y), WORLD_H);
+    for (let i = 0; i < 26; i++) {
+      const [cx, r] = [rand() * WORLD_W, 8 + rand() * 20];
+      const cy = surfaceAt(cx) + r + 14 + rand() * 120;
+      if (cy < WORLD_H) g.fillStyle(shade(STONE, -0.22), 1).fillEllipse(cx, cy, r * 2.4, r * 1.3);
+    }
+    g.lineStyle(10, INK, 1).strokePoints(outline.slice(1, -1), false);
+    g.lineStyle(4, shade(STONE, 0.35), 1).strokePoints(outline.slice(1, -1), false);
     for (const label of this.padLabels) label.destroy();
     this.padLabels = pads.map((p) => {
-      g.fillStyle(0xffd166, 1).fillRect(p.x0, p.y - 4, p.x1 - p.x0, 8);
-      const t = text(this, (p.x0 + p.x1) / 2, p.y + 34, `x${p.mult}`, 34, '#ffd166', { fontStyle: '700' });
+      block(g, p.x0, p.y - 6, p.x1 - p.x0, 15, GOLD);
+      const t = text(this, (p.x0 + p.x1) / 2, p.y + 34, `x${p.mult}`, 34, COLORS.accent, { fontStyle: '700', stroke: '#140f2e', strokeThickness: 6 });
       this.worldLayer.add(t);
       return t;
     });
@@ -53,17 +80,18 @@ export class MoonDropScene extends ArenaScene<MoonWorld> {
       const s = Math.sin(a);
       const at = (px: number, py: number) => new Phaser.Math.Vector2(x + px * c - py * s, y + px * s + py * c);
       if (l.status === 'crashed') {
-        g.fillStyle(0xff5d2a, 0.5 + 0.3 * Math.sin(time / 90)).fillCircle(x, y, LANDER_R * 1.3);
-        g.fillStyle(0x444444, 1).fillCircle(x - 8, y + 6, 8).fillCircle(x + 10, y + 2, 6);
+        glow(g, x, y, LANDER_R * 2.4, FIRE, 0.7 + 0.3 * Math.sin(time / 90));
+        ball(g, x - 8, y + 6, 8, 0x4a4470);
+        ball(g, x + 10, y + 2, 6, 0x4a4470);
         continue;
       }
-      if (l.thrusting) g.fillStyle(0xffd166, 0.9).fillTriangle(at(-8, LANDER_R).x, at(-8, LANDER_R).y, at(8, LANDER_R).x, at(8, LANDER_R).y, at(0, LANDER_R + 22 + 8 * Math.sin(time / 40)).x, at(0, LANDER_R + 22 + 8 * Math.sin(time / 40)).y);
+      if (l.thrusting) glow(g, at(0, LANDER_R + 8).x, at(0, LANDER_R + 8).y, 46, FIRE);
+      if (l.thrusting) g.fillStyle(GOLD, 0.95).fillTriangle(at(-8, LANDER_R).x, at(-8, LANDER_R).y, at(8, LANDER_R).x, at(8, LANDER_R).y, at(0, LANDER_R + 22 + 8 * Math.sin(time / 40)).x, at(0, LANDER_R + 22 + 8 * Math.sin(time / 40)).y);
       // Legs, then the body and its window.
-      g.lineStyle(4, 0x140f2e, 1).lineBetween(at(-10, 6).x, at(-10, 6).y, at(-20, LANDER_R).x, at(-20, LANDER_R).y).lineBetween(at(10, 6).x, at(10, 6).y, at(20, LANDER_R).x, at(20, LANDER_R).y);
-      g.fillStyle(0x140f2e, 1).fillCircle(x, y, LANDER_R + 3);
-      g.fillStyle(hex(l.color), 1).fillCircle(x, y, LANDER_R);
-      g.fillStyle(0xbfe9ff, 1).fillCircle(at(0, -4).x, at(0, -4).y, 7);
-      if (l.status === 'landed') g.lineStyle(3, 0xffd166, 0.6 + 0.4 * Math.sin(time / 150)).strokeCircle(x, y, LANDER_R + 10);
+      g.lineStyle(5, INK, 1).lineBetween(at(-10, 6).x, at(-10, 6).y, at(-20, LANDER_R).x, at(-20, LANDER_R).y).lineBetween(at(10, 6).x, at(10, 6).y, at(20, LANDER_R).x, at(20, LANDER_R).y);
+      ball(g, x, y, LANDER_R, hex(l.color));
+      ball(g, at(0, -3).x, at(0, -3).y, 6.5, 0xbfe9ff);
+      if (l.status === 'landed') g.lineStyle(3, GOLD, 0.6 + 0.4 * Math.sin(time / 150)).strokeCircle(x, y, LANDER_R + 10);
     }
   }
 }
