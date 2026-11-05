@@ -28,6 +28,8 @@ export const CHECKPOINT_EVERY = 8;
 /** The ball falls this hard and bounces up this fast off a ring. */
 export const GRAVITY = 2400;
 export const BOUNCE_SPEED = 900;
+/** Fall through this many rings in a row without a bounce and the ball's on fire: it smashes through the next ring, red or not. */
+export const SMASH_AFTER = 3;
 /** After landing on red, the ball's back at the checkpoint this long later. */
 export const RESPAWN_MS = 1_200;
 /** The tower turns toward the steering this fast (radians a second); a quarter turn of the phone each way spins it all round. */
@@ -79,6 +81,8 @@ export interface HelixBoardState {
   angle: number;
   /** Landed on red and waiting to go back to the checkpoint. */
   respawning: boolean;
+  /** On fire: it'll smash through the next ring. */
+  fire: boolean;
 }
 
 export interface HelixPlayerState {

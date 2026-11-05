@@ -10,13 +10,16 @@ export const STRIKE_ZONE: GameInfo = {
   modes: [{ id: 'standard', name: 'Standard', description: 'Three frames; most pins wins.' }],
 };
 
-// A volleys game (see shared/volleys.ts): three frames of two balls (a strike skips the second).
+// A volleys game (see shared/volleys.ts): three frames of two balls, scored as bowling is: a strike
+// skips the second ball and adds the next two balls, a spare adds the next one, and a strike or
+// spare in the last frame earns the balls to pay for it.
 // The lane's seen from above, in metres: x across (0 in the middle), y up the lane from the foul
 // line. The TV draws it PX pixels a metre on its side: foul line on the left, pins on the right,
 // under a strip for the name and frames.
 
 export const FRAMES = 3;
-export const BALLS = FRAMES * 2;
+/** The most balls a round can take: two a frame, and one more in the last. */
+export const BALLS = FRAMES * 2 + 1;
 export const AIM_MS = 20_000;
 export const LANE_HALF = 0.53;
 /** The gutters run out to here either side. */
@@ -39,9 +42,6 @@ export const TOP = 54;
 export const LEFT = 30;
 export const BOARD_W = LEFT + LANE_LEN * PX + 20;
 export const BOARD_H = TOP + GUTTER_HALF * 2 * PX;
-/** Bonus pins: a strike, and a spare. */
-export const STRIKE_BONUS = 10;
-export const SPARE_BONUS = 5;
 
 /** The ten pins' spots: rows of 1, 2, 3, 4 from the head pin back. */
 export const PIN_SPOTS: { x: number; y: number }[] = [0, 1, 2, 3].flatMap((row) =>
@@ -63,8 +63,8 @@ export interface BowlAim {
   spin: number;
 }
 
-/** A frame's balls: pins knocked by each (null not bowled yet). */
-export type Frame = [number | null, number | null];
+/** A frame's balls: pins knocked by each (null not bowled yet). The last frame has room for three. */
+export type Frame = (number | null)[];
 
 export interface PinView {
   id: number;
@@ -82,7 +82,7 @@ export interface BowlBoardState {
   /** Which ball of which frame is next (or was just bowled, while it plays). */
   frame: number;
   ball: number;
-  /** Sitting this one out (a strike's second ball). */
+  /** Sitting this one out (a strike's second ball, or a last frame with nothing to pay for). */
   sitting: boolean;
   shot: Recording | null;
 }
@@ -102,10 +102,24 @@ export type BowlPlayerView = VolleyPlayerView<BowlPlayerState>;
 
 export type BowlInput = ({ type: 'aim' } | { type: 'fire' }) & BowlAim;
 
-/** A frame's pins plus bonus: a strike (all ten with the first ball), a spare (all ten with two). */
-export function frameScore(f: Frame) {
-  const [a, b] = f;
-  if (a === 10) return 10 + STRIKE_BONUS;
-  if (a !== null && b !== null && a + b === 10) return 10 + SPARE_BONUS;
-  return (a ?? 0) + (b ?? 0);
+/**
+ * Each frame's score, as bowling scores it: a strike is 10 plus the next two balls, a spare 10 plus
+ * the next one. The last frame is just its pins, since its bonus balls are in it. Balls not bowled
+ * yet count as nothing, so a strike's score grows as the balls after it land.
+ */
+export function frameScores(frames: Frame[]): number[] {
+  const rolls = frames.flatMap((f) => f.filter((p): p is number => p !== null));
+  let at = 0;
+  return frames.map((f, i) => {
+    const [a, b] = f;
+    if (a === null) return 0;
+    if (i === frames.length - 1) return f.reduce<number>((n, p) => n + (p ?? 0), 0);
+    if (a === 10) {
+      at += 1;
+      return 10 + (rolls[at] ?? 0) + (rolls[at + 1] ?? 0);
+    }
+    const pins = a + (b ?? 0);
+    at += b === null ? 1 : 2;
+    return pins === 10 ? 10 + (rolls[at] ?? 0) : pins;
+  });
 }

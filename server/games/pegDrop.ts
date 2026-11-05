@@ -97,6 +97,7 @@ class PegDrop implements MiniGame {
         this.shooterId = id;
         this.angle = 0;
         this.shot = null;
+        this.pickPurple();
         return this.setPhase('aim', AIM_MS, () => this.fire());
       }
     }
@@ -150,6 +151,13 @@ class PegDrop implements MiniGame {
       else if (this.totalBoards === 1) this.ctx.finish();
       else this.setPhase('gameEnd', ROUND_SCORES_MS, () => this.ctx.finish());
     });
+  }
+
+  /** A new purple peg for each shot, from the blue ones still up. */
+  private pickPurple() {
+    for (const p of this.pegs) p.purple = false;
+    const blue = this.pegs.filter((p) => !p.gold && !p.gone);
+    if (blue.length) blue[Math.floor(Math.random() * blue.length)].purple = true;
   }
 
   private goldLeft() {

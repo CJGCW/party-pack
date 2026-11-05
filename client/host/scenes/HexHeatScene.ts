@@ -1,19 +1,19 @@
 import Phaser from 'phaser';
 import type { ArenaHostView } from '../../../shared/arena';
-import { PLAYER_R, TILE_COLORS, WORLD, layoutById, type HeatWorld } from '../../../shared/games/hexHeat';
+import { LAYOUT, PLAYER_R, TILE_COLORS, WORLD, type HeatWorld } from '../../../shared/games/hexHeat';
 import { ArenaScene } from '../arenaScene';
 import { hex } from '../theme';
 
 const FILLS = TILE_COLORS.map(hex);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-/** The TV during Hexagon Heat: the floor, the colour called (with a bar running down), and the rest of the floor dropping away. */
+/** The TV during Hot Hexes: the floor, the light showing the colour called, and the rest of the floor dropping away. */
 export class HexHeatScene extends ArenaScene<HeatWorld> {
   static readonly KEY = 'hex-heat';
-  protected readonly title = 'HEXAGON HEAT';
+  protected readonly title = 'HOT HEXES';
   protected readonly scoring = 'survival';
   protected readonly worldW = WORLD;
-  protected readonly worldH = WORLD + 90;
+  protected readonly worldH = WORLD + 130;
 
   constructor() {
     super(HexHeatScene.KEY);
@@ -24,25 +24,29 @@ export class HexHeatScene extends ArenaScene<HeatWorld> {
   }
 
   protected drawWorld(g: Phaser.GameObjects.Graphics, prev: HeatWorld, curr: HeatWorld, t: number, time: number) {
-    const layout = layoutById(curr.layoutId);
-    const top = 90;
-    // The colour called, and how long's left to get on it.
+    const top = 130;
+    // The light above the floor shows the colour called, and it's dark between calls. The bars on
+    // either side run in towards it as time runs out.
+    const lit = curr.stage !== 'back';
     const called = FILLS[curr.called];
     const left = curr.stage === 'call' ? Math.max(0, curr.stageMs - (performance.now() - (this.curr?.at ?? 0))) / curr.stageLength : 0;
-    g.fillStyle(0x241d55, 1).fillRoundedRect(20, 16, WORLD - 40, 58, 29);
-    if (curr.stage !== 'back') g.fillStyle(called, 1).fillRoundedRect(20, 16, Math.max(58, (WORLD - 40) * (curr.stage === 'call' ? left : 1)), 58, 29);
+    const [lightX, lightY, lightR] = [WORLD / 2, 64, 54];
+    const reach = (WORLD / 2 - lightR - 40) * left;
+    g.fillStyle(0x241d55, 1).fillRoundedRect(20, 56, WORLD - 40, 16, 8);
+    if (reach > 0) g.fillStyle(0xffffff, 0.75).fillRect(lightX - lightR - reach, 56, reach * 2 + lightR * 2, 16);
+    if (lit) g.fillStyle(called, 0.25).fillCircle(lightX, lightY, lightR + 12 + 3 * Math.sin(time / 120));
+    g.fillStyle(0x140f2e, 1).fillCircle(lightX, lightY, lightR + 5);
+    g.fillStyle(lit ? called : 0x241d55, 1).fillCircle(lightX, lightY, lightR);
+    if (lit) g.fillStyle(0xffffff, 0.45).fillCircle(lightX - lightR * 0.3, lightY - lightR * 0.3, lightR * 0.28);
 
-    layout.tiles.forEach((tile, i) => {
+    LAYOUT.tiles.forEach((tile, i) => {
       const dropped = curr.stage === 'drop' && curr.colors[i] !== curr.called;
       const pts = tile.points.map(([x, y]) => new Phaser.Math.Vector2(x, y + top));
       if (dropped) {
         g.fillStyle(0x000000, 1).fillPoints(pts, true);
         return;
       }
-      // Tiles of the colour called glow while there's time to get there.
-      const glow = curr.stage === 'call' && curr.colors[i] === curr.called ? 0.25 + 0.2 * Math.sin(time / 90) : 0;
       g.fillStyle(FILLS[curr.colors[i]], 1).fillPoints(pts, true);
-      if (glow) g.fillStyle(0xffffff, glow).fillPoints(pts, true);
       g.lineStyle(4, 0x140f2e, 0.6).strokePoints(pts, true);
     });
 

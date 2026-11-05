@@ -120,8 +120,8 @@ function move(m: Mover, step: number, choose: (x: number, y: number) => Dir | nu
   }
 }
 
-/** Where ghost `kind` is after: the player, ahead of them, a corner, or the player unless close. */
-function targetFor(m: Muncher, g: Ghost, ms: number) {
+/** Where ghost `kind` is after: the player, ahead of them, the player unless close, or the far side of the player from the first ghost. */
+export function targetFor(m: Muncher, g: Ghost, ms: number) {
   const scatter = ms % 25_000 < 5_000;
   const corner = CORNERS[g.kind % 4];
   if (scatter && g.kind < 4) return corner;
@@ -130,11 +130,15 @@ function targetFor(m: Muncher, g: Ghost, ms: number) {
     case 0:
       return m;
     case 1:
-      return { x: m.x + dx * 3, y: m.y + dy * 3 };
+      return { x: m.x + dx * 4, y: m.y + dy * 4 };
     case 2:
       return Math.hypot(g.x - m.x, g.y - m.y) > 5 ? m : corner;
-    default:
-      return { x: m.x - dx * 2, y: m.y - dy * 2 };
+    default: {
+      // Two ahead of the player, doubled from the first ghost: the closer it is, the tighter the pincer.
+      const lead = m.ghosts.find((o) => o.kind === 0) ?? m;
+      const [ax, ay] = [m.x + dx * 2, m.y + dy * 2];
+      return { x: 2 * ax - lead.x, y: 2 * ay - lead.y };
+    }
   }
 }
 

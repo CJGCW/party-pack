@@ -116,10 +116,16 @@ export class StrikeZoneScene extends VolleyScene<BowlBoardState> {
     }
     // Frames so far.
     const texts = this.frameTexts.get(slot.playerId) ?? [];
-    s.frames.forEach(([a, b], i) => {
-      const first = a === null ? '' : a === 10 ? 'X' : a === 0 ? '-' : String(a);
-      const second = b === null ? '' : a !== null && a + b === 10 ? '/' : b === 0 ? '-' : String(b);
-      texts[i]?.setText(`${first} ${second}`.trim());
+    s.frames.forEach((f, i) => {
+      // Each ball's mark; a ball making ten with the one before is a spare.
+      let run = 0;
+      const marks = f.map((p) => {
+        if (p === null) return '';
+        const spare = run > 0 && run + p === 10;
+        run = spare || p === 10 ? 0 : run + p;
+        return spare ? '/' : p === 10 ? 'X' : p === 0 ? '-' : String(p);
+      });
+      texts[i]?.setText(marks.join(' ').trim());
     });
     if (s.sitting && this.view!.phase === 'aim') {
       g.fillStyle(0x0a0720, 0.5).fillRect(0, TOP, toBoard(0, 1.4).x, BOARD_H - TOP);

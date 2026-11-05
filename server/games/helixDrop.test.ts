@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { CHECKPOINT_EVERY, RESPAWN_MS, RING_GAP, ROUND_MS, SEGMENTS, TICK_HZ, ringAt, sliceUnderBall } from '../../shared/games/helixDrop';
+import { CHECKPOINT_EVERY, RESPAWN_MS, RING_GAP, ROUND_MS, SEGMENTS, SMASH_AFTER, TICK_HZ, ringAt, sliceUnderBall } from '../../shared/games/helixDrop';
 import { dropOn, newTower, type Tower } from './helixDrop';
 
 /** The tower angle that puts slice `k` under the ball. */
@@ -24,6 +24,32 @@ function plan(t: Tower, ms: number) {
 }
 
 describe('Helix Drop', () => {
+  it('falling through three rings without a bounce sets the ball on fire, and it smashes the next ring, red or not', () => {
+    const t = newTower(5);
+    for (let n = 1; n < 40; n++) {
+      if (n % CHECKPOINT_EVERY === 0) continue;
+      const below = ringAt(5, n);
+      const red = below.findIndex((s) => s === 'danger');
+      if (red < 0) continue;
+      Object.assign(t, { depth: n * RING_GAP - 5, vy: 1000, streak: SMASH_AFTER, angle: -((red + 0.5) / SEGMENTS) * Math.PI * 2, target: -((red + 0.5) / SEGMENTS) * Math.PI * 2, respawnAt: null });
+      dropOn(t, 0.05, 0);
+      assert.equal(t.respawnAt, null, 'through the red');
+      assert.equal(t.streak, 0);
+      assert.equal(t.deepest, n + 1);
+      return;
+    }
+    assert.fail('no red found');
+  });
+
+  it('a bounce puts the fire out', () => {
+    const t = newTower(5);
+    const solid = ringAt(5, 1).findIndex((s) => s === 'solid');
+    Object.assign(t, { depth: RING_GAP - 5, vy: 1000, streak: 2, angle: -((solid + 0.5) / SEGMENTS) * Math.PI * 2, target: -((solid + 0.5) / SEGMENTS) * Math.PI * 2 });
+    dropOn(t, 0.05, 0);
+    assert.equal(t.streak, 0);
+    assert.ok(t.vy < 0);
+  });
+
   it('every ring has a gap with no red right beside it; checkpoints have no red', () => {
     for (let n = 0; n < 80; n++) {
       const ring = ringAt(4, n);

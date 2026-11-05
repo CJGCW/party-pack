@@ -6,6 +6,7 @@ import {
   BALL_TIMES,
   BRICK_RINGS,
   BRICKS_PER_RING,
+  CATCH_HOLD_MS,
   CENTER,
   CORE_R,
   KEEP_GUARD,
@@ -42,6 +43,11 @@ export interface Keep {
   /** Ring by ring, brick by brick. */
   bricks: boolean[][];
   alive: boolean;
+  /** Holding CATCH down. */
+  catching: boolean;
+  /** The ball on the shield, and when it goes anyway. */
+  held: Ball | null;
+  heldUntil: number;
 }
 
 export interface Ball {
@@ -50,6 +56,10 @@ export interface Ball {
   y: number;
   vx: number;
   vy: number;
+  /** Sitting on a shield. */
+  held?: boolean;
+  /** Fired off a shield: the first brick it meets takes the ones behind it too. */
+  hot?: boolean;
 }
 
 export interface Arena {
@@ -57,6 +67,8 @@ export interface Arena {
   keeps: Keep[];
   balls: Ball[];
   launched: number;
+  /** Fallen keeps' balls, for their ids. */
+  extras: number;
 }
 
 /** An angle brought into (-π, π]. */
@@ -76,15 +88,37 @@ export function newArena(seed: number, playerIds: string[]): Arena {
       target: 0,
       bricks: BRICK_RINGS.map(() => new Array<boolean>(BRICKS_PER_RING).fill(true)),
       alive: true,
+      catching: false,
+      held: null,
+      heldUntil: 0,
     })),
     balls: [],
     launched: 0,
+    extras: 0,
   };
 }
 
 /** Points a keep's shield `steer` of the way round (-1 to 1). */
 export function aim(k: Keep, steer: number) {
   k.target = Math.max(-1, Math.min(1, steer)) * SHIELD_SWING;
+}
+
+/** Sets a held ball on the middle of the shield. */
+function seat(k: Keep, b: Ball) {
+  const a = k.facing + k.shield;
+  [b.x, b.y] = [k.x + Math.cos(a) * (SHIELD_R + BALL_R + 6), k.y + Math.sin(a) * (SHIELD_R + BALL_R + 6)];
+}
+
+/** Fires the held ball the way the shield's pointing. */
+function fire(k: Keep) {
+  const b = k.held!;
+  const a = k.facing + k.shield;
+  seat(k, b);
+  [b.vx, b.vy] = [Math.cos(a), Math.sin(a)];
+  b.held = false;
+  b.hot = true;
+  k.held = null;
+  k.catching = false;
 }
 
 /** Bounces a ball off a surface with normal (nx, ny). */
@@ -94,8 +128,8 @@ function bounce(b: Ball, nx: number, ny: number) {
   b.vy -= 2 * into * ny;
 }
 
-/** Runs one small step of a ball against a keep. Returns true if it knocked the keep out. */
-function hitKeep(b: Ball, k: Keep): boolean {
+/** Runs one small step of a ball against a keep, `ms` into the round. Returns true if it knocked the keep out. */
+function hitKeep(b: Ball, k: Keep, ms: number): boolean {
   const dx = b.x - k.x;
   const dy = b.y - k.y;
   const dist = Math.hypot(dx, dy) || 1;
@@ -125,6 +159,8 @@ function hitKeep(b: Ball, k: Keep): boolean {
       // Only if it's heading into the brick (not already bouncing away from it).
       if (dist > (inner + outer) / 2 ? outward >= 0 : outward <= 0) continue;
       k.bricks[r][index] = false;
+      if (b.hot) for (const ring of k.bricks) ring[index] = false;
+      b.hot = false;
       bounce(b, nx, ny);
       return false;
     }
@@ -133,6 +169,14 @@ function hitKeep(b: Ball, k: Keep): boolean {
   if (outward < 0 && dist > SHIELD_R - 4 && dist < SHIELD_R + BALL_R + 6) {
     const off = norm(local - k.shield);
     if (Math.abs(off) < SHIELD_HALF + BALL_R / SHIELD_R) {
+      if (k.catching && !k.held) {
+        k.held = b;
+        k.heldUntil = ms + CATCH_HOLD_MS;
+        b.held = true;
+        seat(k, b);
+        return false;
+      }
+      b.hot = false;
       const speed = Math.hypot(b.vx, b.vy);
       bounce(b, nx, ny);
       const english = Math.max(-1, Math.min(1, off / SHIELD_HALF)) * 0.6 * speed;
@@ -150,6 +194,10 @@ export function play(a: Arena, dt: number, ms: number): string[] {
   for (const k of a.keeps) {
     const step = SHIELD_RATE * dt;
     k.shield += Math.max(-step, Math.min(step, k.target - k.shield));
+    if (k.held) {
+      if (!k.alive || !k.catching || ms >= k.heldUntil) fire(k);
+      else seat(k, k.held);
+    }
   }
   // New balls, from the middle in a random direction.
   while (a.launched < BALL_TIMES.length && ms >= BALL_TIMES[a.launched]) {
@@ -159,7 +207,7 @@ export function play(a: Arena, dt: number, ms: number): string[] {
   const speed = speedAt(ms);
   const h = dt / SUBSTEPS;
   for (const b of a.balls) {
-    for (let s = 0; s < SUBSTEPS; s++) {
+    for (let s = 0; s < SUBSTEPS && !b.held; s++) {
       const v = Math.hypot(b.vx, b.vy) || 1;
       [b.vx, b.vy] = [(b.vx / v) * speed, (b.vy / v) * speed];
       b.x += b.vx * h;
@@ -174,8 +222,13 @@ export function play(a: Arena, dt: number, ms: number): string[] {
         [b.vx, b.vy] = [b.vx * Math.cos(wobble) - b.vy * Math.sin(wobble), b.vx * Math.sin(wobble) + b.vy * Math.cos(wobble)];
         [b.x, b.y] = [CENTER + (cx / fromCenter) * (ARENA_R - BALL_R), CENTER + (cy / fromCenter) * (ARENA_R - BALL_R)];
       }
-      for (const k of a.keeps) if (hitKeep(b, k)) out.push(k.playerId);
+      for (const k of a.keeps) if (hitKeep(b, k, ms)) out.push(k.playerId);
     }
+  }
+  // A fallen keep sends one more ball into play.
+  for (const _ of out) {
+    const angle = a.random() * Math.PI * 2;
+    a.balls.push({ id: BALL_TIMES.length + ++a.extras, x: CENTER, y: CENTER, vx: Math.cos(angle), vy: Math.sin(angle) });
   }
   return out;
 }
@@ -199,6 +252,7 @@ class KeepGuard extends ArenaGame<Arena, GuardWorld, GuardPlayerState> {
     const input = raw as GuardInput;
     const k = a.keeps.find((o) => o.playerId === playerId);
     if (k && input.type === 'steer' && Number.isFinite(input.angle)) aim(k, input.angle / STEER_FULL);
+    if (k && input.type === 'catch') k.catching = !!input.held;
     return false;
   }
 
@@ -217,13 +271,13 @@ class KeepGuard extends ArenaGame<Arena, GuardWorld, GuardPlayerState> {
         bricks: k.bricks.map((ring) => ring.map((b) => (b ? '1' : '0')).join('')).join(''),
         alive: k.alive,
       })),
-      balls: a.balls.map((b) => ({ id: b.id, x: Math.round(b.x), y: Math.round(b.y) })),
+      balls: a.balls.map((b) => ({ id: b.id, x: Math.round(b.x), y: Math.round(b.y), hot: !!(b.hot || b.held) })),
     };
   }
 
   protected playerState(a: Arena, playerId: string): GuardPlayerState {
     const k = a.keeps.find((o) => o.playerId === playerId);
-    return { bricks: k?.alive ? bricksLeft(k) : 0, balls: a.balls.length };
+    return { bricks: k?.alive ? bricksLeft(k) : 0, balls: a.balls.length, holding: !!k?.held };
   }
 }
 

@@ -1,5 +1,7 @@
 import { survivalPoints } from '../../shared/boards';
 import {
+  CANNON_HP,
+  CANNON_MS,
   CASTLE_SIEGE,
   COLS,
   CYCLES,
@@ -10,6 +12,7 @@ import {
   RING,
   ROWS,
   SHELL_MS,
+  cannonsEarned,
   castleOf,
   landOf,
   piecesFor,
@@ -28,6 +31,13 @@ interface Shell {
   landsAt: number;
 }
 
+export interface Cannon {
+  x: number;
+  y: number;
+  hp: number;
+  reloadAt: number;
+}
+
 interface Lord {
   index: number;
   out: boolean;
@@ -35,7 +45,9 @@ interface Lord {
   /** Which piece of the round's sequence is next, and how it's turned. */
   next: number;
   turns: number;
-  reloadAt: number;
+  cannons: Cannon[];
+  /** Earned and not placed yet. */
+  toPlace: number;
 }
 
 /** -1 for no wall, else the owner's index. */
@@ -63,9 +75,9 @@ const isCastle = (i: number, n: number, x: number, y: number) => {
 
 /**
  * Is player `i`'s castle walled in? Fills in from the edge of their land through everything that
- * isn't wall: if that reaches the castle, it isn't. Returns how much land's walled in (0 if not).
+ * isn't wall: if that reaches the castle, it isn't. Returns the cells walled in (none if not).
  */
-export function enclosure(walls: Walls, i: number, n: number): number {
+export function enclosedCells(walls: Walls, i: number, n: number): Set<number> {
   const land = landOf(i, n);
   const inLand = (x: number, y: number) => x >= land.x && x < land.x + land.w && y >= land.y && y < land.y + land.h;
   const seen = new Set<number>();
@@ -76,14 +88,38 @@ export function enclosure(walls: Walls, i: number, n: number): number {
     const [x, y] = todo.pop()!;
     const k = y * COLS + x;
     if (!inLand(x, y) || seen.has(k) || walls[y][x] >= 0) continue;
-    if (isCastle(i, n, x, y)) return 0;
+    if (isCastle(i, n, x, y)) return new Set();
     seen.add(k);
     todo.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
   }
-  let walled = 0;
-  for (let y = land.y; y < land.y + land.h; y++) for (let x = land.x; x < land.x + land.w; x++) if (walls[y][x] < 0 && !seen.has(y * COLS + x)) walled++;
+  const walled = new Set<number>();
+  for (let y = land.y; y < land.y + land.h; y++) for (let x = land.x; x < land.x + land.w; x++) if (walls[y][x] < 0 && !seen.has(y * COLS + x)) walled.add(y * COLS + x);
   return walled;
 }
+
+/** How much land's walled in (0 if the castle isn't). */
+export const enclosure = (walls: Walls, i: number, n: number) => enclosedCells(walls, i, n).size;
+
+/** The four cells of a cannon at (x, y). */
+const cannonCells = (x: number, y: number) => [
+  [x, y],
+  [x + 1, y],
+  [x, y + 1],
+  [x + 1, y + 1],
+];
+
+/** Can player `i` put a cannon at (x, y)? Only on open ground inside their walls. */
+export function cannonFits(walls: Walls, i: number, n: number, cannons: Cannon[], x: number, y: number) {
+  const inside = enclosedCells(walls, i, n);
+  const used = new Set(cannons.flatMap((c) => cannonCells(c.x, c.y).map(([cx, cy]) => cy * COLS + cx)));
+  return cannonCells(x, y).every(([cx, cy]) => {
+    const k = cy * COLS + cx;
+    return cx >= 0 && cx < COLS && inside.has(k) && !used.has(k) && !isCastle(i, n, cx, cy);
+  });
+}
+
+/** A cannon only fires from inside its owner's walls. */
+const inWalls = (c: Cannon, inside: Set<number>) => cannonCells(c.x, c.y).every(([x, y]) => inside.has(y * COLS + x));
 
 /** A shell lands: it knocks out the wall it hits and next to it (a plus). */
 export function blast(walls: Walls, x: number, y: number) {
@@ -99,17 +135,17 @@ export function blast(walls: Walls, x: number, y: number) {
 }
 
 /** Places a piece for player `i` with its first cell at (x, y), if it all fits in their land on open ground. */
-export function placePiece(walls: Walls, i: number, n: number, piece: number, turns: number, x: number, y: number) {
+export function placePiece(walls: Walls, i: number, n: number, piece: number, turns: number, x: number, y: number, cannons: Cannon[] = []) {
   const land = landOf(i, n);
   const cells = turned(PIECES[piece], turns).map(([dx, dy]) => [x + dx, y + dy]);
-  const fits = cells.every(([cx, cy]) => cx >= land.x && cx < land.x + land.w && cy >= land.y && cy < land.y + land.h && walls[cy][cx] < 0 && !isCastle(i, n, cx, cy));
+  const fits = cells.every(([cx, cy]) => cx >= land.x && cx < land.x + land.w && cy >= land.y && cy < land.y + land.h && walls[cy][cx] < 0 && !isCastle(i, n, cx, cy) && !cannons.some((c) => cx >= c.x && cx <= c.x + 1 && cy >= c.y && cy <= c.y + 1));
   if (!fits) return false;
   for (const [cx, cy] of cells) walls[cy][cx] = i;
   return true;
 }
 
 export class CastleSiege implements MiniGame {
-  private phase: SiegePhase = 'fire';
+  private phase: SiegePhase = 'cannons';
   private puzzleIndex = 0;
   private cycle = 0;
   private walls: Walls = [];
@@ -147,27 +183,59 @@ export class CastleSiege implements MiniGame {
   private startPuzzle(index: number) {
     this.puzzleIndex = index;
     const players = this.ctx.players().slice(0, 4);
-    this.lords = new Map(players.map((p, i) => [p.id, { index: i, out: false, outAt: null, next: 0, turns: 0, reloadAt: 0 }]));
+    this.lords = new Map(players.map((p, i) => [p.id, { index: i, out: false, outAt: null, next: 0, turns: 0, cannons: [], toPlace: 0 }]));
     this.walls = startWalls(this.count);
     this.pieces = piecesFor(Math.floor(Math.random() * 2 ** 31));
     this.points.clear();
     this.roundStartedAt = Date.now();
     this.cycle = 0;
-    this.startFire();
+    this.startCannons();
   }
 
   private live() {
     return [...this.lords.values()].filter((l) => !l.out);
   }
 
+  private startCannons() {
+    for (const l of this.live()) l.toPlace += cannonsEarned(enclosure(this.walls, l.index, this.count));
+    this.setPhase('cannons', CANNON_MS, () => this.startFire());
+  }
+
+  /** Whatever's not been placed goes in by itself, as near the castle as it'll fit. */
+  private placeTheRest(l: Lord) {
+    const c = castleOf(l.index, this.count);
+    const spots = [...enclosedCells(this.walls, l.index, this.count)]
+      .map((k) => ({ x: k % COLS, y: Math.floor(k / COLS) }))
+      .sort((p, q) => Math.hypot(p.x - c.x, p.y - c.y) - Math.hypot(q.x - c.x, q.y - c.y));
+    for (const { x, y } of spots) {
+      if (!l.toPlace) break;
+      if (!cannonFits(this.walls, l.index, this.count, l.cannons, x, y)) continue;
+      l.cannons.push({ x, y, hp: CANNON_HP, reloadAt: 0 });
+      l.toPlace--;
+    }
+    // No room left: they aren't kept for later.
+    l.toPlace = 0;
+  }
+
   private startFire() {
+    for (const l of this.live()) this.placeTheRest(l);
     this.shells = [];
     this.setPhase('fire', FIRE_MS, () => this.startRepair());
   }
 
+  /** A shell lands: walls round it go, and a cannon it lands on takes a hit. */
+  private land(s: Shell) {
+    blast(this.walls, s.x, s.y);
+    for (const l of this.lords.values()) {
+      const hit = l.cannons.find((c) => s.x >= c.x && s.x <= c.x + 1 && s.y >= c.y && s.y <= c.y + 1);
+      if (hit) hit.hp--;
+      l.cannons = l.cannons.filter((c) => c.hp > 0);
+    }
+  }
+
   private startRepair() {
     // Shells still in the air land first.
-    for (const s of this.shells) blast(this.walls, s.x, s.y);
+    for (const s of this.shells) this.land(s);
     this.shells = [];
     this.setPhase('repair', REPAIR_MS, () => this.endRepair());
   }
@@ -181,7 +249,7 @@ export class CastleSiege implements MiniGame {
     }
     this.cycle++;
     if (this.live().length <= 1 || this.cycle >= CYCLES) return this.endPuzzle();
-    this.startFire();
+    this.startCannons();
   }
 
   onInput(playerId: string, raw: unknown) {
@@ -189,23 +257,30 @@ export class CastleSiege implements MiniGame {
     const lord = this.lords.get(playerId);
     if (!lord || lord.out || !input) return;
     const now = Date.now();
-    if (input.type === 'fire' && this.phase === 'fire' && now >= lord.reloadAt && Number.isInteger(input.x) && Number.isInteger(input.y)) {
+    if (input.type === 'cannon' && this.phase === 'cannons' && lord.toPlace > 0 && Number.isInteger(input.x) && Number.isInteger(input.y)) {
+      if (!cannonFits(this.walls, lord.index, this.count, lord.cannons, input.x, input.y)) return;
+      lord.cannons.push({ x: input.x, y: input.y, hp: CANNON_HP, reloadAt: 0 });
+      lord.toPlace--;
+      this.syncAll();
+    } else if (input.type === 'fire' && this.phase === 'fire' && Number.isInteger(input.x) && Number.isInteger(input.y)) {
+      const inside = enclosedCells(this.walls, lord.index, this.count);
+      const cannon = lord.cannons.find((c) => now >= c.reloadAt && inWalls(c, inside));
+      if (!cannon) return;
       // Only at rivals' land, and only at a rival still in.
       const target = [...this.lords.values()].find((o) => {
         const land = landOf(o.index, this.count);
         return input.x >= land.x && input.x < land.x + land.w && input.y >= land.y && input.y < land.y + land.h;
       });
       if (!target || target === lord || target.out) return;
-      lord.reloadAt = now + RELOAD_MS;
-      const c = castleOf(lord.index, this.count);
-      this.shells.push({ from: { x: c.x + 1, y: c.y + 1 }, x: input.x, y: input.y, landsAt: now + SHELL_MS });
+      cannon.reloadAt = now + RELOAD_MS;
+      this.shells.push({ from: { x: cannon.x + 1, y: cannon.y + 1 }, x: input.x, y: input.y, landsAt: now + SHELL_MS });
       this.scheduleShells();
       this.syncAll();
     } else if (input.type === 'turn' && this.phase === 'repair') {
       lord.turns = (lord.turns + 1) % 4;
       this.syncPlayer(playerId);
     } else if (input.type === 'place' && this.phase === 'repair' && Number.isInteger(input.x) && Number.isInteger(input.y)) {
-      if (!placePiece(this.walls, lord.index, this.count, this.pieces[lord.next % this.pieces.length], lord.turns, input.x, input.y)) return;
+      if (!placePiece(this.walls, lord.index, this.count, this.pieces[lord.next % this.pieces.length], lord.turns, input.x, input.y, lord.cannons)) return;
       lord.next++;
       this.syncAll();
     }
@@ -219,7 +294,7 @@ export class CastleSiege implements MiniGame {
       this.shellTimer = null;
       const now = Date.now();
       const landed = this.shells.filter((s) => s.landsAt <= now);
-      for (const s of landed) blast(this.walls, s.x, s.y);
+      for (const s of landed) this.land(s);
       this.shells = this.shells.filter((s) => s.landsAt > now);
       if (this.shells.length) this.scheduleShells();
       this.syncAll();
@@ -252,6 +327,7 @@ export class CastleSiege implements MiniGame {
       cycle: this.cycle + 1,
       walls: this.walls.map((row) => row.map((v) => (v < 0 ? '.' : String(v))).join('')).join(''),
       shells: this.shells.flatMap((s) => [s.from.x, s.from.y, s.x, s.y, Math.max(0, s.landsAt - now)]),
+      cannons: [...this.lords.values()].flatMap((l) => l.cannons.flatMap((c) => [l.index, c.x, c.y, c.hp])),
       players: this.ctx
         .players()
         .filter((p) => this.lords.has(p.id))
@@ -260,7 +336,7 @@ export class CastleSiege implements MiniGame {
           return { id: p.id, name: p.name, color: p.color, index: l.index, out: l.out, enclosed: l.out ? 0 : enclosure(this.walls, l.index, this.count), points: this.points.get(p.id) ?? 0, gamePoints: this.gamePoints.get(p.id) ?? 0 };
         }),
       msLeft: Math.max(0, this.phaseEndsAt - now),
-      ...(forId ? { you: forId, piece: lord ? this.pieces[lord.next % this.pieces.length] : undefined, turns: lord?.turns, reloadMs: lord ? Math.max(0, lord.reloadAt - now) : undefined } : {}),
+      ...(forId ? { you: forId, piece: lord ? this.pieces[lord.next % this.pieces.length] : undefined, turns: lord?.turns, reloadMs: lord?.cannons.length ? Math.max(0, Math.min(...lord.cannons.map((c) => c.reloadAt)) - now) : undefined, toPlace: lord?.toPlace } : {}),
     };
   }
 

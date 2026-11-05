@@ -81,9 +81,28 @@ export function newSweeper(seed: number, mines = MINES): Sweeper {
   return s;
 }
 
+/**
+ * A tap on a number with that many flags (or found mines) round it digs every other square round
+ * it. A wrong flag means digging up a mine, just as if you'd tapped it.
+ */
+function chord(s: Sweeper, cell: number, ms: number): 'done' | boolean {
+  const around = neighbours(cell);
+  const marked = around.filter((c) => s.flagged[c] || s.boomed[c]).length;
+  if (!s.field.counts[cell] || marked !== s.field.counts[cell]) return false;
+  let result: 'done' | boolean = false;
+  for (const c of around) {
+    if (s.uncovered[c] || s.flagged[c] || s.boomed[c]) continue;
+    result = reveal(s, c, ms) || result;
+    if (s.field.mines[c]) break;
+  }
+  return result;
+}
+
 /** A tap to uncover, `ms` into the round. Returns 'done' when every safe square's uncovered, true if anything changed. */
 export function reveal(s: Sweeper, cell: number, ms: number): 'done' | boolean {
-  if (ms < s.lockedUntil || s.uncovered[cell] || s.flagged[cell] || s.boomed[cell]) return false;
+  if (ms < s.lockedUntil) return false;
+  if (s.uncovered[cell]) return chord(s, cell, ms);
+  if (s.flagged[cell] || s.boomed[cell]) return false;
   if (s.field.mines[cell]) {
     s.boomed[cell] = true;
     s.booms++;

@@ -13,7 +13,8 @@ import {
   RELEASE_Y,
   STRIKE_ZONE,
   ballSpeed,
-  frameScore,
+  FRAMES,
+  frameScores,
   toBoard,
   type BowlAim,
   type BowlBoardState,
@@ -56,8 +57,8 @@ export interface Lane {
   shot: Recording | null;
 }
 
-const frameOf = (l: Lane) => Math.floor(Math.max(0, l.volley) / 2);
-const ballOf = (l: Lane) => Math.max(0, l.volley) % 2;
+const frameOf = (l: Lane) => Math.min(FRAMES - 1, Math.floor(Math.max(0, l.volley) / 2));
+const ballOf = (l: Lane) => Math.max(0, l.volley) - frameOf(l) * 2;
 
 export function newLane(): Lane {
   const world = new World({ gravity: { x: 0, y: 0 } });
@@ -65,7 +66,7 @@ export function newLane(): Lane {
   const walls = world.createBody();
   walls.createFixture(new Edge({ x: -GUTTER_HALF, y: -1 }, { x: -GUTTER_HALF, y: LANE_LEN + 1 }), { restitution: 0.3 });
   walls.createFixture(new Edge({ x: GUTTER_HALF, y: -1 }, { x: GUTTER_HALF, y: LANE_LEN + 1 }), { restitution: 0.3 });
-  return { world, pins: [], frames: Array.from({ length: BALLS / 2 }, () => [null, null] as Frame), volley: -1, shot: null };
+  return { world, pins: [], frames: Array.from({ length: FRAMES }, (_, i): Frame => (i === FRAMES - 1 ? [null, null, null] : [null, null])), volley: -1, shot: null };
 }
 
 /** Sets all ten pins up on their spots. */
@@ -87,16 +88,29 @@ function sweep(l: Lane) {
   }
 }
 
-/** Next ball: a new frame sets the pins back up; a frame's second ball has the fallen ones swept away. */
+/** Whether all ten go up before this ball: a new frame, or in the last frame after a strike or spare. */
+function freshPins(l: Lane) {
+  const ball = ballOf(l);
+  if (ball === 0) return true;
+  if (frameOf(l) !== FRAMES - 1) return false;
+  const [a, b] = l.frames[frameOf(l)];
+  return ball === 1 ? a === 10 : b === 10 || (a !== 10 && (a ?? 0) + (b ?? 0) === 10);
+}
+
+/** Next ball: fresh pins if it's their turn, else the fallen ones are swept away. */
 export function nextBall(l: Lane) {
   l.volley++;
   l.shot = null;
-  if (ballOf(l) === 0) setPins(l);
+  if (freshPins(l)) setPins(l);
   else sweep(l);
 }
 
-/** The second ball of a frame after a strike isn't bowled. */
-export const sitsOut = (l: Lane) => ballOf(l) === 1 && l.frames[frameOf(l)][0] === 10;
+/** A frame's second ball isn't bowled after a strike; the last frame's third only pays for a strike or spare. */
+export function sitsOut(l: Lane) {
+  const [a, b] = l.frames[frameOf(l)];
+  if (frameOf(l) !== FRAMES - 1) return ballOf(l) === 1 && a === 10;
+  return ballOf(l) === 2 && a !== 10 && (a ?? 0) + (b ?? 0) !== 10;
+}
 
 function markDown(l: Lane) {
   for (const p of l.pins) {
@@ -171,7 +185,7 @@ export function bowl(l: Lane, aim: BowlAim): number {
   return knocked;
 }
 
-export const totalPins = (l: Lane) => l.frames.reduce((n, f) => n + frameScore(f), 0);
+export const totalPins = (l: Lane) => frameScores(l.frames).reduce((n, f) => n + f, 0);
 
 class StrikeZone extends VolleyGame<Lane, BowlBoardState, BowlPlayerState, BowlAim> {
   /** Each lane's pins as they stood before this ball (the TV plays the ball from there). */
@@ -236,7 +250,7 @@ class StrikeZone extends VolleyGame<Lane, BowlBoardState, BowlPlayerState, BowlA
       pins: before ?? this.pinViews(l),
       aim,
       // While a ball plays, its frame shows as it was before it.
-      frames: before ? l.frames.map((f, i) => (i === frameOf(l) ? ([ballOf(l) === 0 ? null : f[0], null] as Frame) : f)) : l.frames,
+      frames: before ? l.frames.map((f, i) => (i === frameOf(l) ? f.map((p, ball) => (ball < ballOf(l) ? p : null)) : f)) : l.frames,
       frame: frameOf(l),
       ball: ballOf(l),
       sitting: sitsOut(l),

@@ -12,6 +12,7 @@ import {
   LAUNCHER,
   LAUNCH_SPEED,
   PEG_R,
+  PURPLE_POINTS,
   catcherX,
   multiplierFor,
   type Peg,
@@ -101,7 +102,7 @@ export function simulateShot(pegs: Peg[], angle: number, number: number, catcher
         lit.add(i);
         if (pegs[i].gold) goldCleared++;
         const multiplier = multiplierFor(goldCleared, goldTotal);
-        let points = (pegs[i].gold ? GOLD_POINTS : BLUE_POINTS) * multiplier;
+        let points = (pegs[i].gold ? GOLD_POINTS : pegs[i].purple ? PURPLE_POINTS : BLUE_POINTS) * multiplier;
         if (pegs[i].gold && goldCleared === goldTotal) {
           points += CLEAR_BONUS * multiplier;
           shot.cleared = true;

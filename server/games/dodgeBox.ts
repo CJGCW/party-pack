@@ -27,6 +27,8 @@ export interface Dodger {
   /** Where you go back to (the middle of the start or the last checkpoint). */
   respawn: { x: number; y: number };
   coins: Set<number>;
+  /** Coins safe at the last checkpoint: dying loses the rest. */
+  banked: Set<number>;
   deaths: number;
 }
 
@@ -35,7 +37,7 @@ const middle = ([x, y, w, h]: Rect) => ({ x: x + w / 2, y: y + h / 2 });
 export function newDodger(level: number): Dodger {
   const at = level % DODGE_LEVELS.length;
   const start = middle(DODGE_LEVELS[at].start);
-  return { level: at, ...start, stick: { x: 0, y: 0 }, respawn: start, coins: new Set(), deaths: 0 };
+  return { level: at, ...start, stick: { x: 0, y: 0 }, respawn: start, coins: new Set(), banked: new Set(), deaths: 0 };
 }
 
 /** Does the box at (x, y) overlap a wall (or leave the board)? */
@@ -58,7 +60,10 @@ export function stepDodger(d: Dodger, dt: number, ms: number): boolean {
   }
   for (const [i, [cx, cy]] of level.coins.entries()) if (!d.coins.has(i) && Math.hypot(cx - d.x, cy - d.y) < COIN_R + BOX_HALF) d.coins.add(i);
   const cp = level.checkpoints.find((r) => inRect(r, d.x, d.y));
-  if (cp) d.respawn = middle(cp);
+  if (cp) {
+    d.respawn = middle(cp);
+    d.banked = new Set(d.coins);
+  }
   // A dot touching the box's middle (the forgiving part): back you go.
   if (level.dots.some((p) => {
     const dot = dotAt(p, ms);
@@ -69,6 +74,7 @@ export function stepDodger(d: Dodger, dt: number, ms: number): boolean {
     d.deaths++;
     d.x = d.respawn.x;
     d.y = d.respawn.y;
+    d.coins = new Set(d.banked);
     return false;
   }
   return d.coins.size === level.coins.length && inRect(level.goal, d.x, d.y);

@@ -278,6 +278,7 @@ export class PegDropScene extends Phaser.Scene {
         this.pegLayer.add(glow);
       }
       const img = this.add.image(p.x, p.y, p.gold ? 'pd-gold' : 'pd-blue').setDisplaySize(PEG_SIZE, PEG_SIZE).setVisible(!p.gone);
+      if (p.purple) img.setTint(0xd070ff);
       this.pegLayer.add(img);
       return { img, glow, gold: p.gold };
     });

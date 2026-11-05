@@ -3,28 +3,35 @@ import type { GameInfo } from '../protocol';
 export const CASTLE_SIEGE: GameInfo = {
   id: 'castle-siege',
   name: 'Castle Siege',
-  description: 'Every castle starts walled in. Fire: tap your rivals’ land to shell their walls. Repair: fit block pieces into the gaps in your own wall. A castle that isn’t walled in all round when repairs end is out. Last castle standing wins. Best with two.',
+  description: 'Every castle starts walled in. Cannons: place what you’ve earned inside your walls; more land walled in earns more. Fire: tap your rivals’ land, and your loaded cannons shell it. Repair: fit block pieces into the gaps in your own wall. A castle that isn’t walled in all round when repairs end is out. Last castle standing wins. Best with two.',
   minPlayers: 2,
   maxPlayers: 4,
   modes: [{ id: 'standard', name: 'Standard', description: 'Last castle standing wins.' }],
 };
 
 // The map's a grid (COLS × ROWS cells): two players get a half each, three or four a quarter.
-// Rounds go fire, repair, fire, repair… A castle's walled in if there's no way from the edge of
+// Rounds go cannons, fire, repair, cannons… A castle's walled in if there's no way from the edge of
 // its land to the castle except through wall (worked out by filling in from the edge).
 
 export const COLS = 40;
 export const ROWS = 24;
 export const CELL = 24;
+export const CANNON_MS = 8_000;
 export const FIRE_MS = 18_000;
 export const REPAIR_MS = 22_000;
 export const CYCLES = 4;
-/** A shell lands this long after it's fired, and you can fire again after RELOAD_MS. */
+/** A shell lands this long after it's fired, and a cannon can fire again after RELOAD_MS. */
 export const SHELL_MS = 800;
-export const RELOAD_MS = 1_100;
+export const RELOAD_MS = 2_400;
 export const RING = 4;
+/** Each cannon phase earns one cannon, plus one for every this many cells walled in. */
+export const LAND_PER_CANNON = 40;
+/** A cannon takes this many direct hits. It's 2 × 2 cells, like a castle. */
+export const CANNON_HP = 3;
 
-export type SiegePhase = 'fire' | 'repair' | 'result' | 'gameEnd';
+export const cannonsEarned = (enclosed: number) => 1 + Math.floor(enclosed / LAND_PER_CANNON);
+
+export type SiegePhase = 'cannons' | 'fire' | 'repair' | 'result' | 'gameEnd';
 
 /** Player `i` of `n`'s land: left, top, width, height (cells). */
 export function landOf(i: number, n: number) {
@@ -109,6 +116,8 @@ export interface SiegeView {
   walls: string;
   /** Shells in flight: from (x, y) to (x, y), when they land (ms left). */
   shells: number[];
+  /** Cannons: owner's index, x, y, hits left, flat. */
+  cannons: number[];
   players: SiegePlayer[];
   msLeft: number;
   you?: string;
@@ -117,6 +126,8 @@ export interface SiegeView {
   turns?: number;
   /** On a phone in the fire: can fire again in this long. */
   reloadMs?: number;
+  /** On a phone in the cannon phase: cannons still to place. */
+  toPlace?: number;
 }
 
-export type SiegeInput = { type: 'fire'; x: number; y: number } | { type: 'place'; x: number; y: number } | { type: 'turn' };
+export type SiegeInput = { type: 'fire'; x: number; y: number } | { type: 'place'; x: number; y: number } | { type: 'cannon'; x: number; y: number } | { type: 'turn' };

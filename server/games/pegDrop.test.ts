@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
-import { BLUE_POINTS, CLEAR_CELEBRATION_MS, GOLD_POINTS, LAUNCHER, MAX_AIM, ballsPerPlayer, playbackSeconds, shotTimeAt, type Peg, type PegHostView, type PegPlayerView } from '../../shared/games/pegDrop';
+import { BLUE_POINTS, CLEAR_CELEBRATION_MS, GOLD_POINTS, LAUNCHER, MAX_AIM, PURPLE_POINTS, ballsPerPlayer, multiplierFor, playbackSeconds, shotTimeAt, type Peg, type PegHostView, type PegPlayerView } from '../../shared/games/pegDrop';
 import type { PlayerInfo } from '../../shared/protocol';
 import type { GameContext, MiniGame } from './MiniGame';
 import { pegDrop } from './pegDrop';
@@ -51,6 +51,15 @@ function shoot(g: ReturnType<typeof play>, angle = 0.3) {
 const peg = (x: number, y: number, gold = false): Peg => ({ x, y, gold, gone: false });
 
 describe('Peg Drop', () => {
+  it('the multiplier steps up as gold pegs clear, to ×10', () => {
+    assert.deepEqual([9, 10, 15, 19, 22].map((n) => multiplierFor(n, 25)), [1, 2, 3, 5, 10]);
+  });
+
+  it('a purple peg scores 500', () => {
+    const shot = simulateShot([{ x: LAUNCHER.x, y: 400, gold: false, purple: true, gone: false }], 0, 0);
+    assert.equal(shot.hits[0].points, PURPLE_POINTS);
+  });
+
   it('every layout makes a board with gold pegs and room between pegs', () => {
     for (const name of Object.keys(PATTERNS)) {
       const pegs = makePegs(name);

@@ -76,7 +76,7 @@ export class HelixDropScene extends BoardsScene<HelixBoardState> {
 
     // The ball, sitting on the front of the ring below it (red and flashing after landing on red).
     const ballY = BALL_SCREEN_Y + R * TILT - BALL_R;
-    const color = curr.respawning && Math.floor(time / 120) % 2 ? 0xff5d73 : hex(slot.board.color);
+    const color = curr.respawning && Math.floor(time / 120) % 2 ? 0xff5d73 : curr.fire ? 0xffa62b : hex(slot.board.color);
     g.fillStyle(0x000000, 0.3).fillEllipse(CX + 4, ballY + BALL_R + 6, BALL_R * 2, BALL_R * 0.6);
     g.fillStyle(0x140f2e, 1).fillCircle(CX, ballY, BALL_R + 4);
     g.fillStyle(color, 1).fillCircle(CX, ballY, BALL_R);

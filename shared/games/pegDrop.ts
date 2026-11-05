@@ -60,13 +60,15 @@ export function flightAt(angle: number, t: number) {
 
 export const BLUE_POINTS = 10;
 export const GOLD_POINTS = 100;
+/** Each shot, one blue peg turns purple, and is worth this. */
+export const PURPLE_POINTS = 500;
 /** Hitting the last gold peg ends the board, with this bonus (before the multiplier). */
 export const CLEAR_BONUS = 1000;
 
 /** Every peg's points are multiplied as the board's gold pegs get cleared. */
 export function multiplierFor(goldCleared: number, goldTotal: number) {
   const share = goldTotal ? goldCleared / goldTotal : 0;
-  return share >= 0.85 ? 5 : share >= 0.65 ? 3 : share >= 0.4 ? 2 : 1;
+  return share >= 0.88 ? 10 : share >= 0.76 ? 5 : share >= 0.6 ? 3 : share >= 0.4 ? 2 : 1;
 }
 
 /**
@@ -85,6 +87,8 @@ export interface Peg {
   x: number;
   y: number;
   gold: boolean;
+  /** This shot's purple peg. */
+  purple?: boolean;
   /** Cleared by an earlier shot. */
   gone: boolean;
 }

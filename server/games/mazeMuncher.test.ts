@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { COLS, DIRS, DOT_POINTS, MAZE, PELLET_POINTS, ROWS, TICK_HZ, isWall, type Dir } from '../../shared/games/mazeMuncher';
-import { newMuncher, stepMuncher } from './mazeMuncher';
+import { newMuncher, stepMuncher, targetFor } from './mazeMuncher';
 
 const DT = 1 / TICK_HZ;
 
@@ -47,6 +47,18 @@ describe('Maze Muncher', () => {
     const before = m.points;
     stepMuncher(m, DT, 400);
     assert.ok(m.points >= before + 200, 'ate the ghost');
+  });
+
+  it('each ghost hunts its own way: the third pincers you with the first', () => {
+    const m = newMuncher(1);
+    Object.assign(m, { x: 10, y: 10, dir: 'right' });
+    const ghost = (kind: number, x: number, y: number) => ({ x, y, dir: 'up' as Dir, kind, scared: false, releaseAt: 0 });
+    m.ghosts = [ghost(0, 4, 10), ghost(1, 1, 1), ghost(2, 1, 1), ghost(3, 1, 1)];
+    const chasing = 10_000; // Not a scatter spell.
+    assert.deepEqual([targetFor(m, m.ghosts[0], chasing).x, targetFor(m, m.ghosts[0], chasing).y], [10, 10]);
+    assert.equal(targetFor(m, m.ghosts[1], chasing).x, 14, 'four ahead');
+    // Two ahead of the player is (12, 10); the first ghost is 8 behind that, so 8 beyond it.
+    assert.deepEqual([targetFor(m, m.ghosts[3], chasing).x, targetFor(m, m.ghosts[3], chasing).y], [20, 10]);
   });
 
   it('caught by a ghost: a life, and back to the start', () => {

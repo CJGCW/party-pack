@@ -13,7 +13,7 @@ import { makeLookalikes } from './lookalikes';
 import { makePicky, replyTo } from './pickyEater';
 import { makeRooms } from './roomSort';
 import { fits, makeSeating } from './seatingChart';
-import { canStep, makeStones } from './steppingStones';
+import { fitsPattern, makeStones, type StonesPuzzle } from './steppingStones';
 import { makeSwitch, run, solve } from './switchback';
 import { makeDoors } from './twoDoors';
 
@@ -332,7 +332,7 @@ describe('Switchback', () => {
         const z = makeSwitch(level);
         assert.ok(solve(z));
         const flipped = z.gates.map(() => false);
-        for (const who of z.answer) assert.ok(z.exits[run(z, flipped, z.critters[who]).exit]);
+        for (const { who, start } of z.route) assert.ok(z.exits[run(z, flipped, z.critters[who], start).exit]);
       });
     }
   });
@@ -348,56 +348,146 @@ describe('Switchback', () => {
   it('solving in the right order gets them all home', () => {
     const g = play(switchback, '4');
     const z = g.puzzle<ReturnType<typeof makeSwitch>>();
-    z.answer.forEach((critter) => g.game.onInput('p0', { type: 'send', critter }));
+    z.route.forEach(({ who, start }) => g.game.onInput('p0', { type: 'send', critter: who, start }));
     assert.equal(g.host().phase, 'reveal');
     assert.ok(g.host().players[0].points >= 850);
+  });
+
+  it('from Hard up you pick the way in, and it matters', () => {
+    const z = makeSwitch(3);
+    assert.equal(z.gates[0].kind, 'start');
+    const flipped = z.gates.map(() => false);
+    const left = run(z, [...flipped], z.critters[0], 0);
+    const right = run(z, [...flipped], z.critters[0], 1);
+    assert.equal(left.gates[1], 1);
+    assert.equal(right.gates[1], 2);
   });
 });
 
 describe('Stepping Stones', () => {
-  it('every planted route can be walked', () => {
+  it('the planted route crosses left to right, one stone at a time, and fits the pattern', () => {
     for (const level of LEVELS) {
       repeat(30, () => {
         const z = makeStones(level);
-        assert.equal(z.routes.length, STONES_LEVELS[level - 1].walkers);
-        assert.equal(new Set(z.routes.flat()).size, z.routes.flat().length, 'routes must not share stones');
-        for (const route of z.routes) {
-          const walked: number[][] = [];
-          for (const cell of route) {
-            const tile = z.tiles[cell]!;
-            assert.ok(tile);
-            assert.ok(canStep(z, walked, tile), `level ${level}`);
-            walked.push(tile);
-          }
-        }
+        assert.equal(z.pattern.length, STONES_LEVELS[level - 1].beats);
+        assert.equal(z.route[0] % z.cols, 0);
+        assert.equal(z.route[z.route.length - 1] % z.cols, z.cols - 1);
+        z.route.forEach((cell, step) => {
+          assert.ok(fitsPattern(z.pattern, step, z.solved[cell]!), `level ${level}`);
+          if (step) assert.ok((cell % z.cols) >= (z.route[step - 1] % z.cols));
+        });
       });
     }
   });
 
-  it('walking a route gets across; a crumbled stone cannot be used again', () => {
+  it('from Hard up, a stone on the route is out of place, and the wand puts it back', () => {
+    repeat(30, () => {
+      const g = play<StonesState>(steppingStones, '3');
+      const z = g.puzzle<StonesPuzzle>();
+      const moved = z.tiles.map((t, c) => (t === z.solved[c] ? -1 : c)).filter((c) => c >= 0);
+      assert.equal(moved.length, 2);
+      const [p, q] = moved;
+      assert.equal(z.tiles[p], z.solved[q]);
+      g.game.onInput('p0', { type: 'swap', a: p, b: q });
+      assert.equal(g.view().state.swapsLeft, 0);
+      assert.deepEqual(g.view().state.tiles, z.solved);
+      z.route.forEach((cell) => g.game.onInput('p0', { type: 'step', cell }));
+      assert.equal(g.view().triesLeft, STONES_LEVELS[2].tries);
+      assert.equal(g.host().phase, 'reveal');
+    });
+  });
+
+  it("the wand only swaps neighbours, while it's got swaps left, and leaves other players' boards alone", () => {
+    const g = play<StonesState>(steppingStones, '3');
+    const z = g.puzzle<StonesPuzzle>();
+    const before = [...z.tiles];
+    const pair = z.tiles.map((_, c) => c).find((c) => z.tiles[c] && z.tiles[c + 1] && (c + 1) % z.cols !== 0 && z.tiles[c + 3] && (c + 3) % z.cols > c % z.cols)!;
+    g.game.onInput('p0', { type: 'swap', a: pair, b: pair + 3 });
+    assert.equal(g.view().state.swapsLeft, 1, 'too far apart');
+    g.game.onInput('p0', { type: 'swap', a: pair, b: pair + 1 });
+    assert.equal(g.view().state.swapsLeft, 0);
+    g.game.onInput('p0', { type: 'swap', a: pair, b: pair + 1 });
+    assert.equal(g.view().state.swapsLeft, 0);
+    assert.deepEqual(z.tiles, before, 'the shared puzzle is untouched');
+  });
+
+  it('walking the route solves it, with no hearts lost', () => {
     const g = play<StonesState>(steppingStones, '2');
-    const z = g.puzzle<{ routes: number[][] }>();
-    z.routes[0].forEach((cell) => g.game.onInput('p0', { type: 'step', cell }));
-    assert.equal(g.view().got, 1);
-    assert.deepEqual(g.view().state.path, []);
-    g.game.onInput('p0', { type: 'step', cell: z.routes[0][0] });
-    assert.deepEqual(g.view().state.path, []);
-    z.routes[1].forEach((cell) => g.game.onInput('p0', { type: 'step', cell }));
+    const z = g.puzzle<StonesPuzzle>();
+    z.route.forEach((cell) => g.game.onInput('p0', { type: 'step', cell }));
+    assert.equal(g.view().triesLeft, STONES_LEVELS[1].tries);
     assert.equal(g.host().phase, 'reveal');
   });
 
-  it('back is free; starting over costs a try, but never the last', () => {
+  /** A left-column stone that can't hold as the first step. */
+  function badStart(z: StonesPuzzle) {
+    const cell = Array.from({ length: z.rows }, (_, r) => r * z.cols).find((c) => !z.route.includes(c))!;
+    const beat = z.pattern[0];
+    const tile = [0, 0, 0];
+    tile[beat.trait] = (beat.value + 1) % 4;
+    z.tiles[cell] = tile;
+    return cell;
+  }
+
+  it('a wrong stone costs a heart, once', () => {
     const g = play<StonesState>(steppingStones);
-    const z = g.puzzle<{ routes: number[][] }>();
-    const first = z.routes[0][0];
-    g.game.onInput('p0', { type: 'step', cell: first });
+    const z = g.puzzle<StonesPuzzle>();
+    const tries = STONES_LEVELS[0].tries;
+    const cell = badStart(z);
+    g.game.onInput('p0', { type: 'step', cell });
+    assert.equal(g.view().triesLeft, tries - 1);
+    assert.deepEqual(g.view().state.wrong, [cell]);
+    g.game.onInput('p0', { type: 'step', cell });
+    assert.equal(g.view().triesLeft, tries - 1);
+    assert.deepEqual(g.view().state.path, []);
+  });
+
+  it('a stone in the wrong place costs nothing, and back is free', () => {
+    const g = play<StonesState>(steppingStones);
+    const z = g.puzzle<StonesPuzzle>();
+    const tries = STONES_LEVELS[0].tries;
+    g.game.onInput('p0', { type: 'step', cell: z.route[0] + 1 });
+    assert.equal(g.view().triesLeft, tries);
+    g.game.onInput('p0', { type: 'step', cell: z.route[0] });
+    assert.equal(g.view().got, 1);
     g.game.onInput('p0', { type: 'back' });
-    assert.equal(g.view().triesLeft, 3);
-    for (let i = 0; i < 5; i++) {
-      g.game.onInput('p0', { type: 'step', cell: first });
-      g.game.onInput('p0', { type: 'restart' });
+    assert.equal(g.view().got, 0);
+    assert.equal(g.view().triesLeft, tries);
+  });
+
+  it('a wrong stone only counts for that step, so the way stays open', () => {
+    const g = play<StonesState>(steppingStones);
+    const z = g.puzzle<StonesPuzzle>();
+    g.game.onInput('p0', { type: 'step', cell: badStart(z) });
+    g.game.onInput('p0', { type: 'step', cell: z.route[0] });
+    assert.deepEqual(g.view().state.wrong, []);
+    z.route.slice(1).forEach((cell) => g.game.onInput('p0', { type: 'step', cell }));
+    assert.equal(g.host().phase, 'reveal');
+  });
+
+  it('running out of hearts ends the puzzle', () => {
+    const g = play<StonesState>(steppingStones);
+    const z = g.puzzle<StonesPuzzle>();
+    const beat = z.pattern[0];
+    const left = Array.from({ length: z.rows }, (_, r) => r * z.cols).filter((c) => !z.route.includes(c));
+    for (const c of left) {
+      const tile = [0, 0, 0];
+      tile[beat.trait] = (beat.value + 1) % 4;
+      z.tiles[c] = tile;
+      g.game.onInput('p0', { type: 'step', cell: c });
     }
-    assert.equal(g.view().triesLeft, 1);
+    assert.equal(g.view().triesLeft, STONES_LEVELS[0].tries - left.length);
     assert.equal(g.view().done, false);
+    // The rest go on stones next to the first one, which can't hold as the second step.
+    g.game.onInput('p0', { type: 'step', cell: z.route[0] });
+    const next = z.pattern[1 % z.pattern.length];
+    const beside = [z.route[0] + 1, z.route[0] + z.cols, z.route[0] - z.cols].filter((c) => c >= 0 && c < z.tiles.length && !z.route.includes(c));
+    for (const c of beside.slice(0, g.view().triesLeft)) {
+      const tile = [0, 0, 0];
+      tile[next.trait] = (next.value + 1) % 4;
+      z.tiles[c] = tile;
+      g.game.onInput('p0', { type: 'step', cell: c });
+    }
+    assert.equal(g.view().triesLeft, Math.max(0, STONES_LEVELS[0].tries - left.length - beside.length));
   });
 });

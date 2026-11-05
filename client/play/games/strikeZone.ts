@@ -1,4 +1,4 @@
-import { BALL_R, LANE_HALF, MAX_ANGLE, frameScore, type BowlInput, type BowlPlayerView } from '../../../shared/games/strikeZone';
+import { BALL_R, LANE_HALF, MAX_ANGLE, frameScores, type BowlInput, type BowlPlayerView } from '../../../shared/games/strikeZone';
 import { ordinal } from '../boards';
 import { h } from '../dom';
 import type { Controller } from '../main';
@@ -162,7 +162,7 @@ export function createStrikeZone(root: HTMLElement, send: (input: unknown) => vo
     let title = '';
     const lines: string[] = [];
     if (!v.hasBoard) title = "You'll get a lane next round.";
-    else if (v.phase === 'aim') title = s?.sitting ? 'Strike! Sit this ball out.' : `Bowled! ${v.lockedCount} of ${v.playing} ready`;
+    else if (v.phase === 'aim') title = s?.sitting ? 'Sit this ball out.' : `Bowled! ${v.lockedCount} of ${v.playing} ready`;
     else if (v.phase === 'fly') title = 'Watch the TV!';
     else if (v.phase === 'result') {
       title = v.place === 1 ? 'Top of the round!' : 'Round over';
@@ -176,7 +176,7 @@ export function createStrikeZone(root: HTMLElement, send: (input: unknown) => vo
     infoTitle.textContent = title;
     infoLines.replaceChildren(...lines.map((l) => h('div', {}, l)));
     statsEl.textContent =
-      s && v.phase !== 'gameEnd' && v.phase !== 'fly' ? s.frames.map((f, i) => `F${i + 1}: ${f[0] === null ? '–' : frameScore(f)}`).join(' · ') + ` · ${s.standing} standing` : '';
+      s && v.phase !== 'gameEnd' && v.phase !== 'fly' ? frameScores(s.frames).map((score, i) => `F${i + 1}: ${s.frames[i][0] === null ? '–' : score}`).join(' · ') + ` · ${s.standing} standing` : '';
     draw();
   }
 

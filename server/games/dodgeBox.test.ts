@@ -22,7 +22,13 @@ function run(d: Dodger): number | null {
   const level = DODGE_LEVELS[d.level];
   for (let ms = TICK_MS; ms <= ROUND_MS; ms += TICK_MS) {
     const next = level.coins.find((_, i) => !d.coins.has(i));
-    const [tx, ty] = next ?? [level.goal[0] + level.goal[2] / 2, level.goal[1] + level.goal[3] / 2];
+    let [tx, ty] = next ?? [level.goal[0] + level.goal[2] / 2, level.goal[1] + level.goal[3] / 2];
+    // The Gauntlet: keep to the clear lanes between the dots, and step out for a coin level with it.
+    if (level.name === 'The Gauntlet') {
+      if (d.x < 470 && Math.abs(d.x - tx) > 8) ty = 195;
+      else if (d.x >= 470 && d.x <= 530) ty = 250;
+      else if (next && d.x > 530 && Math.abs(d.y - ty) > 8) tx = 650;
+    }
     let best: { x: number; y: number } = { x: 0, y: 0 };
     let bestScore = -Infinity;
     for (let a = -1; a < 8; a++) {
@@ -47,6 +53,22 @@ describe('Dodge Box', () => {
       const ms = run(d);
       assert.ok(ms !== null && ms < ROUND_MS / 2, `${DODGE_LEVELS[level].name}: ${ms} (${d.coins.size} coins, ${d.deaths} deaths)`);
     }
+  });
+
+  it('dying loses the coins picked up since the last checkpoint, and no others', () => {
+    const at = DODGE_LEVELS.findIndex((l) => l.checkpoints.length > 0);
+    const level = DODGE_LEVELS[at];
+    const d = newDodger(at);
+    const [cx, cy, cw, ch] = level.checkpoints[0];
+    const dotOn = (ms: number) => dotAt(level.dots[0], ms);
+    d.coins.add(0);
+    Object.assign(d, { x: cx + cw / 2, y: cy + ch / 2 });
+    stepDodger(d, DT, 0);
+    d.coins.add(1);
+    Object.assign(d, dotOn(0));
+    stepDodger(d, DT, 0);
+    assert.equal(d.deaths, 1);
+    assert.deepEqual([...d.coins], [0]);
   });
 
   it('a dot sends you back to the start; the goal needs every coin', () => {

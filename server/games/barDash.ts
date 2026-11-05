@@ -4,10 +4,13 @@ import {
   BAR_START,
   BARS,
   DASH_MS,
+  DRINK_MS,
   DRINK_SPEED,
   GLASS_SPEED,
   LIVES,
+  PUSH_BACK,
   ROUND_MS,
+  SLIDE_SPEED,
   TICK_HZ,
   arrivalsFor,
   type Arrival,
@@ -23,6 +26,12 @@ interface Mover {
   speed: number;
 }
 
+/** A customer: walking on, or served (sliding back to `slideTo`, then drinking until `drinkUntil`). */
+interface Customer extends Mover {
+  slideTo?: number;
+  drinkUntil?: number;
+}
+
 export interface Bar {
   arrivals: Arrival[];
   next: number;
@@ -31,7 +40,7 @@ export interface Bar {
   readyAt: number;
   lives: number;
   served: number;
-  customers: Mover[];
+  customers: Customer[];
   drinks: Mover[];
   glasses: Mover[];
   oops: number;
@@ -59,16 +68,30 @@ export function stepBar(b: Bar, dt: number, ms: number): boolean {
     const a = b.arrivals[b.next++];
     b.customers.push({ bar: a.bar, x: BAR_START, speed: a.speed });
   }
-  for (const c of b.customers) c.x += c.speed * dt;
+  for (const c of b.customers) {
+    if (c.slideTo !== undefined) {
+      c.x = Math.max(c.slideTo, c.x - SLIDE_SPEED * dt);
+      if (c.x > c.slideTo) continue;
+      c.slideTo = undefined;
+      c.drinkUntil = ms + DRINK_MS;
+    } else if (c.drinkUntil !== undefined) {
+      if (ms < c.drinkUntil) continue;
+      c.drinkUntil = undefined;
+      b.glasses.push({ bar: c.bar, x: c.x, speed: GLASS_SPEED });
+    } else c.x += c.speed * dt;
+  }
+  // Pushed out of the door: gone, and they took the glass with them.
+  b.customers = b.customers.filter((c) => c.x > BAR_START);
   for (const d of b.drinks) d.x -= d.speed * dt;
   for (const g of b.glasses) g.x += g.speed * dt;
-  // A drink reaching the first customer on its bar serves them: they're off, and their glass comes back.
+  // A drink reaching the first thirsty customer on its bar serves them, and it slides them back.
+  // Anyone already sliding or drinking lets it go past.
   b.drinks = b.drinks.filter((d) => {
-    const front = b.customers.filter((c) => c.bar === d.bar && c.x >= d.x - 4).sort((p, q) => q.x - p.x)[0];
+    const thirsty = (c: Customer) => c.slideTo === undefined && c.drinkUntil === undefined;
+    const front = b.customers.filter((c) => c.bar === d.bar && thirsty(c) && c.x >= d.x - 4).sort((p, q) => q.x - p.x)[0];
     if (front) {
-      b.customers = b.customers.filter((c) => c !== front);
+      front.slideTo = front.x - PUSH_BACK;
       b.served++;
-      b.glasses.push({ bar: d.bar, x: front.x, speed: GLASS_SPEED });
       return false;
     }
     if (d.x < BAR_START - 10) {

@@ -2,7 +2,7 @@ import type { HeatStage } from '../../../shared/games/hexHeat';
 import type { Controller } from '../main';
 import { createTiltPad } from '../tiltPad';
 
-const NAMES = ['RED', 'YELLOW', 'GREEN', 'BLUE'];
+const NAMES = ['RED', 'YELLOW', 'GREEN', 'BLUE', 'PURPLE', 'ORANGE', 'WHITE'];
 
 /** Tip the phone to roll onto the colour called (see ../tiltPad). */
 export function createHexHeat(root: HTMLElement, send: (input: unknown) => void): Controller {

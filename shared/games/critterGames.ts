@@ -150,13 +150,13 @@ export interface LensState {
 }
 
 // ---------- Switchback: order matters ----------
-/** A junction: a test sends them left if they match, a switch flips each time someone passes. */
-export type Gate = { kind: 'test'; trait: number; value: number } | { kind: 'switch' };
-export const SWITCH_LEVELS: (LevelSpec & { depth: number; critters: number; switches: number })[] = [
-  { name: 'Easy', description: 'Four Wumbles, one switch.', ms: min(1, 30), tries: 3, depth: 2, critters: 4, switches: 1 },
-  { name: 'Medium', description: 'Five Wumbles, two switches.', ms: min(2), tries: 3, depth: 2, critters: 5, switches: 2 },
-  { name: 'Hard', description: 'A longer track and three switches.', ms: min(2, 30), tries: 3, depth: 3, critters: 5, switches: 3 },
-  { name: 'Very hard', description: 'Six Wumbles and four switches.', ms: min(3), tries: 3, depth: 3, critters: 6, switches: 4 },
+/** A junction: a test sends them left if they match, a switch flips each time someone passes, and at a start you pick the way. */
+export type Gate = { kind: 'test'; trait: number; value: number } | { kind: 'switch' } | { kind: 'start' };
+export const SWITCH_LEVELS: (LevelSpec & { depth: number; critters: number; switches: number; starts: number })[] = [
+  { name: 'Easy', description: 'Four Wumbles, one switch.', ms: min(1, 30), tries: 3, depth: 2, critters: 4, switches: 1, starts: 1 },
+  { name: 'Medium', description: 'Five Wumbles, two switches.', ms: min(2), tries: 3, depth: 2, critters: 5, switches: 2, starts: 1 },
+  { name: 'Hard', description: 'A longer track, three switches, and two ways in.', ms: min(2, 30), tries: 3, depth: 3, critters: 5, switches: 3, starts: 2 },
+  { name: 'Very hard', description: 'Six Wumbles, four switches, and two ways in.', ms: min(3), tries: 3, depth: 3, critters: 6, switches: 4, starts: 2 },
 ];
 export const SWITCHBACK = critterInfo('switchback', 'Switchback', 'Each Wumble takes the track its traits send it down, and every switch flips as they pass. Pick the order that gets them all home.', SWITCH_LEVELS);
 export interface SwitchState {
@@ -174,22 +174,24 @@ export interface SwitchState {
 }
 
 // ---------- Stepping Stones: a path across ----------
-export const STONES_LEVELS: (LevelSpec & { rows: number; cols: number; walkers: number; rocks: number; stick: boolean })[] = [
-  { name: 'Easy', description: 'One Wumble: each stone must match the last.', ms: min(1, 30), tries: 3, rows: 6, cols: 5, walkers: 1, rocks: 0, stick: false },
-  { name: 'Medium', description: 'Two Wumbles, and stones crumble behind them.', ms: min(2), tries: 3, rows: 6, cols: 5, walkers: 2, rocks: 0, stick: false },
-  { name: 'Hard', description: 'A whole crossing must stick to one match, with rocks in the way.', ms: min(2, 30), tries: 3, rows: 6, cols: 5, walkers: 1, rocks: 4, stick: true },
-  { name: 'Very hard', description: 'Two Wumbles sticking to one match each, with rocks in the way.', ms: min(3, 30), tries: 3, rows: 7, cols: 5, walkers: 2, rocks: 5, stick: true },
+export const STONES_LEVELS: (LevelSpec & { rows: number; cols: number; beats: number; mixed: boolean; rocks: number; swaps: number })[] = [
+  { name: 'Easy', description: 'Every stone has one thing in common.', ms: min(1, 30), tries: 5, rows: 5, cols: 6, beats: 1, mixed: false, rocks: 0, swaps: 0 },
+  { name: 'Medium', description: 'A pattern of two.', ms: min(2), tries: 6, rows: 5, cols: 6, beats: 2, mixed: false, rocks: 0, swaps: 0 },
+  { name: 'Hard', description: 'A pattern of three, with rocks in the way, and a stone out of place: your wand can swap two neighbours.', ms: min(2, 30), tries: 7, rows: 5, cols: 6, beats: 3, mixed: false, rocks: 4, swaps: 1 },
+  { name: 'Very hard', description: 'A pattern of three that changes what it looks at, with rocks and two swaps of the wand.', ms: min(3, 30), tries: 8, rows: 6, cols: 7, beats: 3, mixed: true, rocks: 6, swaps: 2 },
 ];
-export const STEPPING_STONES = critterInfo('stepping-stones', 'Stepping Stones', "Cross from the bottom to the top. Each stone has to match the last one's shape, colour or mark.", STONES_LEVELS);
+export const STEPPING_STONES = critterInfo('stepping-stones', 'Stepping Stones', 'Cross from left to right. Only the stones that follow the hidden pattern will hold you.', STONES_LEVELS);
 export interface StonesState {
   rows: number;
   cols: number;
   tiles: (Traits | null)[];
-  /** Stones gone for good. */
-  crumbled: number[];
   /** The crossing so far. */
   path: number[];
-  stick: boolean;
-  /** At the reveal: routes that work. */
-  answer: number[][] | null;
+  /** Stones already tried at this step that didn't hold. */
+  wrong: number[];
+  /** Swaps of the wand left, and how many it had. */
+  swapsLeft: number;
+  swaps: number;
+  /** At the reveal: a way across that works. */
+  answer: number[] | null;
 }

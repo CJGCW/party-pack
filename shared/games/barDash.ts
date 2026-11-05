@@ -27,6 +27,11 @@ export const DRINK_SPEED = 400;
 export const GLASS_SPEED = 150;
 /** Dashing to another bar takes this long (you can't pour till you're there). */
 export const DASH_MS = 160;
+/** A served customer slides this far back toward the door, this fast; pushed out of it, they're gone. */
+export const PUSH_BACK = 170;
+export const SLIDE_SPEED = 320;
+/** One who stops short drinks for this long, sends the empty back, and comes on again. */
+export const DRINK_MS = 1_400;
 
 /** A customer: when they come in (ms into the round), which bar, and how fast they walk (units a second). */
 export interface Arrival {

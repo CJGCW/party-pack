@@ -4,6 +4,7 @@ import {
   GRAVITY,
   HELIX_DROP,
   RESPAWN_MS,
+  SMASH_AFTER,
   RING_GAP,
   ROUND_MS,
   SPIN_SPEED,
@@ -29,12 +30,14 @@ export interface Tower {
   vy: number;
   /** The deepest ring it's got past. */
   deepest: number;
+  /** Rings fallen through since the last bounce. */
+  streak: number;
   /** Landed on red: back to the checkpoint at this time (ms into the round). */
   respawnAt: number | null;
 }
 
 export function newTower(seed: number): Tower {
-  return { seed, angle: 0, target: 0, depth: -RING_GAP * 0.6, vy: 0, deepest: 0, respawnAt: null };
+  return { seed, angle: 0, target: 0, depth: -RING_GAP * 0.6, vy: 0, deepest: 0, streak: 0, respawnAt: null };
 }
 
 /** Turns the tower and moves the ball on by `dt` seconds, `roundMs` into the round. */
@@ -46,6 +49,7 @@ export function dropOn(t: Tower, dt: number, roundMs: number) {
     const checkpoint = Math.floor(t.deepest / CHECKPOINT_EVERY) * CHECKPOINT_EVERY;
     t.depth = checkpoint * RING_GAP - RING_GAP * 0.6;
     t.vy = 0;
+    t.streak = 0;
     t.respawnAt = null;
   }
   const before = t.depth;
@@ -58,9 +62,15 @@ export function dropOn(t: Tower, dt: number, roundMs: number) {
   const slice = ringAt(t.seed, ring)[sliceUnderBall(t.angle)];
   if (slice === 'gap') {
     t.deepest = Math.max(t.deepest, ring + 1);
+    t.streak++;
+  } else if (t.streak >= SMASH_AFTER) {
+    // On fire: straight through, and the fall's over.
+    t.deepest = Math.max(t.deepest, ring + 1);
+    t.streak = 0;
   } else if (slice === 'solid') {
     t.depth = ring * RING_GAP;
     t.vy = -BOUNCE_SPEED;
+    t.streak = 0;
   } else {
     t.depth = ring * RING_GAP;
     t.vy = 0;
@@ -93,7 +103,7 @@ class HelixDrop extends BoardsGame<Tower, HelixBoardState, HelixPlayerState> {
   }
 
   protected hostState(t: Tower): HelixBoardState {
-    return { depth: Math.round(t.depth), angle: Math.round(t.angle * 1000) / 1000, respawning: t.respawnAt !== null };
+    return { depth: Math.round(t.depth), angle: Math.round(t.angle * 1000) / 1000, respawning: t.respawnAt !== null, fire: t.streak >= SMASH_AFTER };
   }
 
   protected playerState(t: Tower): HelixPlayerState {

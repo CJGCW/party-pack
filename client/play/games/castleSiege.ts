@@ -5,8 +5,9 @@ import type { Controller } from '../main';
 const FINGER_CELLS = 3;
 
 /**
- * The map. In the fire, all of it: tap a rival's land to shell it. In the repair, your own land,
- * close up: drag the next piece into place and lift your finger to put it down (Turn turns it).
+ * The map. In the fire, all of it: tap a rival's land to shell it. In the cannon phase, your own
+ * land, close up: tap inside your walls to place a cannon. In the repair, your own land again:
+ * drag the next piece into place and lift your finger to put it down (Turn turns it).
  */
 export function createCastleSiege(root: HTMLElement, send: (input: unknown) => void): Controller {
   let view: SiegeView | null = null;
@@ -47,7 +48,10 @@ export function createCastleSiege(root: HTMLElement, send: (input: unknown) => v
     if (!v || me()?.out) return;
     e.preventDefault();
     const at = cellAt(e);
-    if (v.phase === 'fire') {
+    if (v.phase === 'cannons') {
+      navigator.vibrate?.(10);
+      send({ type: 'cannon', x: at.x, y: at.y } satisfies SiegeInput);
+    } else if (v.phase === 'fire') {
       if (performance.now() < reloadedAt) return;
       navigator.vibrate?.(20);
       send({ type: 'fire', x: at.x, y: at.y } satisfies SiegeInput);
@@ -74,7 +78,7 @@ export function createCastleSiege(root: HTMLElement, send: (input: unknown) => v
     if (!v) return;
     const n = v.players.length;
     const mine = me();
-    area = v.phase === 'repair' && mine ? landOf(mine.index, n) : { x: 0, y: 0, w: COLS, h: ROWS };
+    area = (v.phase === 'repair' || v.phase === 'cannons') && mine ? landOf(mine.index, n) : { x: 0, y: 0, w: COLS, h: ROWS };
     const box = boardEl.getBoundingClientRect();
     cell = Math.max(4, Math.floor(Math.min(box.width / area.w, box.height / area.h)));
     const dpr = window.devicePixelRatio || 1;
@@ -100,6 +104,15 @@ export function createCastleSiege(root: HTMLElement, send: (input: unknown) => v
         ctx.fillRect((x - area.x) * cell + 1, (y - area.y) * cell + 1, cell - 2, cell - 2);
       }
     }
+    for (let i = 0; i < v.cannons.length; i += 4) {
+      const [owner, x, y] = v.cannons.slice(i, i + 4);
+      ctx.fillStyle = '#111';
+      ctx.fillRect((x - area.x) * cell, (y - area.y) * cell, cell * 2, cell * 2);
+      ctx.fillStyle = v.players.find((p) => p.index === owner)?.color ?? '#fff';
+      ctx.beginPath();
+      ctx.arc((x + 1 - area.x) * cell, (y + 1 - area.y) * cell, cell * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
     // The next piece: under the drag, else waiting in the corner.
     if (v.phase === 'repair' && v.piece !== undefined) {
       const at = ghost ?? { x: area.x + 3, y: area.y + 3 };
@@ -114,13 +127,13 @@ export function createCastleSiege(root: HTMLElement, send: (input: unknown) => v
     const mine = me();
     headerEl.textContent = `Round ${v.puzzleNumber}/${v.totalPuzzles} · Siege ${Math.min(v.cycle, 4)}`;
     scoreEl.textContent = mine?.out ? 'OUT' : `${mine?.enclosed ?? 0} walled in`;
-    const playing = (v.phase === 'fire' || v.phase === 'repair') && !mine?.out;
+    const playing = (v.phase === 'cannons' || v.phase === 'fire' || v.phase === 'repair') && !mine?.out;
     playEl.hidden = !playing;
     infoEl.hidden = playing;
     turnBtn.hidden = v.phase !== 'repair';
     let title = '';
     const lines: string[] = [];
-    if (mine?.out && (v.phase === 'fire' || v.phase === 'repair')) title = 'Your castle fell! Watch the TV.';
+    if (mine?.out && (v.phase === 'cannons' || v.phase === 'fire' || v.phase === 'repair')) title = 'Your castle fell! Watch the TV.';
     else if (v.phase === 'result') {
       title = mine?.out ? 'Your castle fell' : 'Still standing!';
       lines.push(`+${(mine?.points ?? 0).toLocaleString()} points`);
@@ -136,10 +149,11 @@ export function createCastleSiege(root: HTMLElement, send: (input: unknown) => v
   function clock() {
     if (!view) return;
     const secs = Math.max(0, Math.ceil((phaseEndsAt - performance.now()) / 1000));
-    timerEl.textContent = view.phase === 'fire' || view.phase === 'repair' ? `${secs}s` : '';
+    timerEl.textContent = view.phase === 'cannons' || view.phase === 'fire' || view.phase === 'repair' ? `${secs}s` : '';
     timerEl.classList.toggle('low', secs <= 5);
     const mine = me();
-    msgEl.textContent = view.phase === 'fire' ? (performance.now() < reloadedAt ? 'Reloading…' : 'FIRE! Tap their walls.') : view.phase === 'repair' ? (mine && mine.enclosed > 0 ? 'Walled in! Strengthen it.' : 'Close the gaps in your wall!') : '';
+    const toPlace = view.toPlace ?? 0;
+    msgEl.textContent = view.phase === 'cannons' ? (toPlace ? `Tap inside your walls: ${toPlace} cannon${toPlace === 1 ? '' : 's'} to place` : 'Cannons ready!') : view.phase === 'fire' ? (performance.now() < reloadedAt ? 'Reloading…' : 'FIRE! Tap their walls.') : view.phase === 'repair' ? (mine && mine.enclosed > 0 ? 'Walled in! Strengthen it.' : 'Close the gaps in your wall!') : '';
   }
   const interval = setInterval(clock, 100);
 

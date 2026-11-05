@@ -107,7 +107,7 @@ export class KeepGuardScene extends ArenaScene<GuardWorld> {
       const y = near ? lerp(was.y, b.y, t) : b.y;
       g.fillStyle(0xffffff, 0.15 + 0.05 * Math.sin(time / 90)).fillCircle(x, y, BALL_R * 2);
       g.fillStyle(0x140f2e, 1).fillCircle(x, y, BALL_R + 3);
-      g.fillStyle(0xffffff, 1).fillCircle(x, y, BALL_R);
+      g.fillStyle(b.hot ? 0xffa62b : 0xffffff, 1).fillCircle(x, y, BALL_R);
     }
   }
 }

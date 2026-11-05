@@ -4,7 +4,7 @@ import type { GameInfo } from '../protocol';
 export const KEEP_GUARD: GameInfo = {
   id: 'keep-guard',
   name: 'Keep Guard',
-  description: 'Everyone has a keep on the edge of the arena, walled in by bricks, with a shield to swing round it. Turn your phone to move the shield and bat the balls away. A ball that reaches your keep knocks you out. More balls join as time goes on. Last keep standing wins.',
+  description: 'Everyone has a keep on the edge of the arena, walled in by bricks, with a shield to swing round it. Turn your phone to move the shield and bat the balls away, or hold CATCH to catch one and let go to fire it at a rival. A ball that reaches your keep knocks you out. More balls join as time goes on. Last keep standing wins.',
   minPlayers: 1,
   maxPlayers: 8,
   modes: [{ id: 'standard', name: 'Standard', description: 'Last keep standing wins.' }],
@@ -39,6 +39,8 @@ export const BALL_SPEEDUP = 5;
 export const MAX_BALL_SPEED = 720;
 /** When each ball comes in (ms into the round). */
 export const BALL_TIMES = [0, 15_000, 30_000, 45_000, 60_000];
+/** A caught ball stays on the shield this long at most, then it goes anyway. */
+export const CATCH_HOLD_MS = 3_000;
 /** Full steering is this far round (radians), as on Spiral Shot. */
 export const STEER_FULL = 1.1;
 
@@ -72,15 +74,17 @@ export interface KeepView {
 
 export interface GuardWorld {
   keeps: KeepView[];
-  balls: { id: number; x: number; y: number }[];
+  balls: { id: number; x: number; y: number; hot: boolean }[];
 }
 
 export interface GuardPlayerState {
   bricks: number;
   balls: number;
+  /** Got a ball on the shield. */
+  holding: boolean;
 }
 
 export type GuardHostView = ArenaHostView<GuardWorld>;
 export type GuardPlayerView = ArenaPlayerView<GuardPlayerState>;
 
-export type GuardInput = { type: 'steer'; angle: number };
+export type GuardInput = { type: 'steer'; angle: number } | { type: 'catch'; held: boolean };
