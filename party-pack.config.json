@@ -1,7 +1,29 @@
 {
-  "debugMode": false,
+  "debugMode": true,
   "woochaDebug": false,
-  "woochaware": false,
+  "woochaware": true,
   "blockbustersThemes": false,
-  "externalGames": []
+  "externalGames": [
+    "Nidhogg",
+    "Peggle",
+    "Thief Town",
+    "TowerFall Ascension",
+    "Double Dragon II: The Revenge - NES",
+    "Sonic Blast Man II - SNES",
+    "Gauntlet IV - GENS",
+    "Snow Bros. - NES",
+    "Bubble Bobble Part 2 - NES",
+    "Bust-A-Move SNES",
+    "Mario Bros. - NES",
+    "Trog! - NES",
+    "Mortal Kombat 3 - GENS",
+    "WWF Super WrestleMania - SNES",
+    "Mutant League Football- GENS",
+    "Super Tennis - SNES",
+    "BattleTech - GENS",
+    "Eliminator Boat Duel - NES",
+    "Rock n’ Roll Racing - SNES",
+    "Spy vs Spy - NES",
+    "Wavelength"
+  ]
 }

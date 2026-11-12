@@ -13,12 +13,12 @@ const PULL = 7;
 const BOUNCE = 0.5;
 /** A knock at least this fast is felt; knocks closer together than this are felt as one. */
 const KNOCK_SPEED = 0.3;
-const KNOCK_GAP_MS = 28;
+const KNOCK_GAP_MS = 45;
 
 /**
  * The balls roll about in a box inside the phone (tilt it, or drag on the box without motion
- * sensors), and every knock against the side buzzes (or clicks, on a phone that can't buzz). Then
- * guess how many.
+ * sensors), and every knock against the side buzzes and clicks: a phone can't say whether it really
+ * buzzed (it won't on silent), so the click always plays. Then guess how many.
  */
 export function createBallCount(root: HTMLElement, send: (input: unknown) => void): Controller {
   let view: CountPlayerView | null = null;
@@ -60,25 +60,36 @@ export function createBallCount(root: HTMLElement, send: (input: unknown) => voi
   });
   permissionBtn.addEventListener('click', () => void requestMotionPermission().then(render));
 
-  /** A knock: a buzz, or a click where buzzing isn't there. */
+  /** The sound, started (or woken: browsers hold it back until a tap). */
+  function sound() {
+    try {
+      audio ??= new AudioContext();
+      if (audio.state === 'suspended') void audio.resume();
+      return audio;
+    } catch {
+      return null;
+    }
+  }
+  feelEl.addEventListener('pointerdown', sound);
+  feelEl.addEventListener('pointerup', sound);
+
+  /** A knock: a buzz and a click, high enough for a phone's speaker. */
   function knock(strength: number) {
     const now = performance.now();
     if (now - lastKnock < KNOCK_GAP_MS) return;
     lastKnock = now;
-    if (navigator.vibrate?.(Math.round(8 + strength * 10))) return;
-    try {
-      audio ??= new AudioContext();
-      const osc = audio.createOscillator();
-      const gain = audio.createGain();
-      osc.frequency.value = 180 + Math.random() * 60;
-      gain.gain.setValueAtTime(Math.min(0.4, 0.1 + strength * 0.3), audio.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.04);
-      osc.connect(gain).connect(audio.destination);
-      osc.start();
-      osc.stop(audio.currentTime + 0.05);
-    } catch {
-      // No sound either: nothing to feel.
-    }
+    navigator.vibrate?.(Math.round(Math.min(30, 15 + strength * 10)));
+    const ctx = sound();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = 700 + Math.random() * 300;
+    gain.gain.setValueAtTime(Math.min(0.8, 0.35 + strength * 0.25), ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.06);
   }
 
   function step(dt: number) {
@@ -143,7 +154,7 @@ export function createBallCount(root: HTMLElement, send: (input: unknown) => voi
     feelEl.hidden = !on;
     infoEl.hidden = on;
     permissionBtn.hidden = !needsMotionPermission();
-    hintEl.textContent = sensorsLive() ? 'Tilt your phone about and feel the balls knock. How many are there?' : 'Drag about on the box and listen to the balls knock. How many are there?';
+    hintEl.textContent = sensorsLive() ? 'Tilt your phone about, then feel and hear the balls knock. How many are there?' : 'Drag about on the box and listen to the balls knock. How many are there?';
     showGuess();
     let title = '';
     const lines: string[] = [];

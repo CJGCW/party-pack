@@ -15,7 +15,7 @@
     "app:apk": "npm run app:build && tsx scripts/android.ts assembleDebug",
     "bot": "tsx scripts/bot.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test server/**/*.test.ts"
+    "test": "tsx --test server/**/*.test.ts client/**/*.test.ts"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

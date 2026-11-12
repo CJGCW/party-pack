@@ -9,7 +9,7 @@ describe('Other games (played away from the app)', () => {
   it('reads the list: commas or new lines, tidied, no blanks or repeats', () => {
     assert.deepEqual(parseExternalGames(' Catan ,uno\n\n  Ticket   to Ride, catan,, '), ['Catan', 'uno', 'Ticket to Ride']);
     assert.equal(parseExternalGames('x'.repeat(100))[0].length, MAX_EXTERNAL_NAME);
-    assert.equal(parseExternalGames(Array.from({ length: 30 }, (_, i) => `Game ${i}`).join(',')).length, MAX_EXTERNAL_GAMES);
+    assert.equal(parseExternalGames(Array.from({ length: MAX_EXTERNAL_GAMES + 10 }, (_, i) => `Game ${i}`).join(',')).length, MAX_EXTERNAL_GAMES);
     assert.equal(externalEntry('Catan').label, 'Catan');
   });
 

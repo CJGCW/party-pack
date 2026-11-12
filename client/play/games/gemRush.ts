@@ -10,7 +10,7 @@ const WIGGLE_MS = 220;
 const SWIPE = 0.35;
 
 /**
- * Your gems: swipe one towards a neighbour to swap them (or tap one, then a neighbour). The
+ * Your gems: swipe across from one to a neighbour to swap them (swiping only; a tap does nothing). The
  * server checks the move and sends back each step (clear, fall, refill), which plays through.
  */
 export function createGemRush(root: HTMLElement, send: (input: unknown) => void): Controller {
@@ -21,7 +21,6 @@ export function createGemRush(root: HTMLElement, send: (input: unknown) => void)
   /** What's on screen: the grid, and cells flashing (cleared) or swapped (wiggling). */
   let shown = '';
   let flashing: number[] = [];
-  let picked: number | null = null;
   let touch: { cell: number; x: number; y: number } | null = null;
   let timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -30,7 +29,7 @@ export function createGemRush(root: HTMLElement, send: (input: unknown) => void)
   const scoreEl = h('span');
   const pointsEl = h('div', { class: 'po-points' });
   const canvas = h('canvas', { class: 'po-canvas' }) as HTMLCanvasElement;
-  const boardEl = h('div', { class: 'po-board' }, canvas);
+  const boardEl = h('div', { class: 'po-board pp-board' }, canvas);
   const infoTitle = h('div', { class: 'pd-info-title' });
   const infoLines = h('div', { class: 'pd-info-lines' });
   const infoEl = h('div', { class: 'pd-info' }, infoTitle, infoLines);
@@ -45,10 +44,8 @@ export function createGemRush(root: HTMLElement, send: (input: unknown) => void)
     return col < 0 || col >= SIZE || row < 0 || row >= SIZE ? -1 : row * SIZE + col;
   };
   const canPlay = () => !!view?.state && view.phase === 'play' && isPlaying(view);
-  const neighbours = (a: number, b: number) => (Math.abs(a - b) === 1 && Math.floor(a / SIZE) === Math.floor(b / SIZE)) || Math.abs(a - b) === SIZE;
 
   function trySwap(a: number, b: number) {
-    picked = null;
     touch = null;
     navigator.vibrate?.(8);
     send({ type: 'swap', a, b } satisfies GemInput);
@@ -60,8 +57,11 @@ export function createGemRush(root: HTMLElement, send: (input: unknown) => void)
     e.preventDefault();
     const c = cellAt(e);
     if (c < 0) return;
-    if (picked !== null && neighbours(picked, c)) return trySwap(picked, c);
-    picked = c;
+    try {
+      canvas.setPointerCapture(e.pointerId);
+    } catch {
+      // Fine without: a touch stays with the canvas anyway.
+    }
     touch = { cell: c, x: e.clientX, y: e.clientY };
     draw();
   });
@@ -75,8 +75,13 @@ export function createGemRush(root: HTMLElement, send: (input: unknown) => void)
     const to = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? (col < SIZE - 1 ? from + 1 : -1) : col > 0 ? from - 1 : -1) : dy > 0 ? from + SIZE : from - SIZE;
     touch = null;
     if (to >= 0 && to < SIZE * SIZE) trySwap(from, to);
+    else draw();
   });
-  const endTouch = () => (touch = null);
+  // Lifted before it was a swipe: nothing happens.
+  const endTouch = () => {
+    touch = null;
+    draw();
+  };
   canvas.addEventListener('pointerup', endTouch);
   canvas.addEventListener('pointercancel', endTouch);
 
@@ -129,7 +134,7 @@ export function createGemRush(root: HTMLElement, send: (input: unknown) => void)
       const ch = shown[c];
       const x = (c % SIZE) * cell + cell / 2;
       const y = Math.floor(c / SIZE) * cell + cell / 2;
-      if (c === picked) {
+      if (c === touch?.cell) {
         ctx.fillStyle = 'rgba(255,255,255,0.18)';
         ctx.fillRect(x - cell / 2, y - cell / 2, cell, cell);
       }
@@ -184,7 +189,6 @@ export function createGemRush(root: HTMLElement, send: (input: unknown) => void)
       const next = raw as GemPlayerView;
       const s = next.state;
       if (s && (s.moveId !== moveId || !shown || next.seed !== view?.seed)) {
-        if (next.seed !== view?.seed) picked = null;
         moveId = s.moveId;
         if (next.seed === view?.seed) play(next);
         else shown = s.grid;

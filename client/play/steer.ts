@@ -105,9 +105,9 @@ export class Steer {
     this.tiltY.reset();
   }
 
-  /** Which way up points within the screen's plane: turning the phone like a wheel turns it. */
+  /** How far the phone's turned like a wheel, clockwise positive: turning it clockwise tips up toward the screen's left. */
   private wheelAngle(up: { x: number; y: number }) {
-    return Math.atan2(up.x, up.y);
+    return Math.atan2(-up.x, up.y);
   }
 
   private baseline() {

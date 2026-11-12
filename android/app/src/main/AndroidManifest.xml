@@ -47,4 +47,6 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Without this the phone screens' buzzes are silently dropped. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

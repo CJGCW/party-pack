@@ -17,7 +17,7 @@ export const EXTERNAL: GameInfo = {
 /** A winner scores this for each puzzle a round has: as much as an app game's best player can get in a round. */
 export const WIN_POINTS_PER_PUZZLE = 1_000;
 
-export const MAX_EXTERNAL_GAMES = 20;
+export const MAX_EXTERNAL_GAMES = 40;
 export const MAX_EXTERNAL_NAME = 40;
 
 /** The VIP's list, as typed: names separated by commas or new lines (blanks and repeats dropped). */
