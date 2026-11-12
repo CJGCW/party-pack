@@ -11,6 +11,7 @@ import type {
   StonesState,
   SwitchState,
 } from '../../../shared/games/critterGames';
+import { PUZZLE_SCENES } from '../backdrop';
 import { critterScreen, grid, pieceAt, pieceIcon, svgEl, tile, type CritterUi } from '../critterScreen';
 import { h } from '../dom';
 
@@ -53,7 +54,7 @@ export const createTwoDoors = critterScreen<DoorsState>((ui: CritterUi) => {
     );
     ui.stage.replaceChildren(grid(2, ...doors), grid(6, ...waiting));
   };
-});
+}, PUZZLE_SCENES['two-doors']);
 
 export const createPickyEater = critterScreen<PickyState>((ui: CritterUi) => {
   let picks: number[] = [];
@@ -88,7 +89,7 @@ export const createPickyEater = critterScreen<PickyState>((ui: CritterUi) => {
       h('div', { class: 'cr-log' }, ...orders),
     );
   };
-});
+}, PUZZLE_SCENES['picky-eater']);
 
 export const createSeatingChart = critterScreen<SeatingState>((ui: CritterUi) => {
   let picked: number | null = null;
@@ -129,7 +130,7 @@ export const createSeatingChart = critterScreen<SeatingState>((ui: CritterUi) =>
     const pool = s.critters.flatMap((t, i) => (seats.includes(i) ? [] : [tile(wumble(t), { on: picked === i, click: live(v) ? () => ((picked = i), ui.redraw()) : undefined })]));
     ui.stage.replaceChildren(board, grid(5, ...pool));
   };
-});
+}, PUZZLE_SCENES['seating-chart']);
 
 export const createLookalikes = critterScreen<LookalikeState>((ui: CritterUi) => {
   let picked: number | null = null;
@@ -149,7 +150,7 @@ export const createLookalikes = critterScreen<LookalikeState>((ui: CritterUi) =>
     });
     ui.stage.replaceChildren(h('div', { class: 'sp-label' }, 'Cousins so far'), examples, h('div', { class: 'cr-rule' }), grid(5, ...critters), grid(5, ...bots), grid(3, ...done));
   };
-});
+}, PUZZLE_SCENES['lookalikes']);
 
 export const createRoomSort = critterScreen<RoomState>((ui: CritterUi) => {
   ui.hint = 'Tap the room this guest belongs in.';
@@ -176,11 +177,13 @@ export const createRoomSort = critterScreen<RoomState>((ui: CritterUi) => {
     const guest = v.revealing || !s.guest ? null : h('div', { class: 'cr-customer' }, pieceIcon(wumble(s.guest)));
     ui.stage.replaceChildren(...(guest ? [guest] : []), board);
   };
-});
+}, PUZZLE_SCENES['room-sort']);
 
 export const createLineUp = critterScreen<LineUpState>((ui: CritterUi) => {
-  let picked: number | null = null;
-  ui.hint = 'Tap two Wumbles to swap them, then check. First in line is top left.';
+  /** The place a finger went down on, and the place it's over now. */
+  let pressed: number | null = null;
+  let over: number | null = null;
+  ui.hint = 'Swipe a Wumble onto another to swap them, then check. First in line is top left.';
   return (v) => {
     const s = v.state;
     const line = s.answer ?? s.line;
@@ -197,27 +200,47 @@ export const createLineUp = critterScreen<LineUpState>((ui: CritterUi) => {
         }),
       ),
     );
+    // Swiping only: a tap does nothing. (The empty click keeps the tiles live; a disabled button can miss touches.)
     const places = line.map((who, place) =>
-      tile(wumble(s.critters[who]), {
-        on: picked === place,
-        good: !!s.answer || s.marks[place],
-        badge: String(place + 1),
-        click: live(v)
-          ? () => {
-              if (picked === null) picked = place;
-              else if (picked === place) picked = null;
-              else {
-                ui.send({ type: 'swap', a: picked, b: place });
-                picked = null;
-              }
-              ui.redraw();
-            }
-          : undefined,
-      }),
+      tile(wumble(s.critters[who]), { good: !!s.answer || s.marks[place], badge: String(place + 1), click: live(v) ? () => {} : undefined }),
     );
-    ui.stage.replaceChildren(...clue, grid(4, ...places), button('Check the line', () => ui.send({ type: 'check' }), !live(v)));
+    const board = grid(4, ...places);
+    board.classList.add('cr-swipe');
+    const placeAt = (x: number, y: number) => {
+      const el = document.elementFromPoint(x, y)?.closest('.cr-tile');
+      return el ? places.indexOf(el as HTMLButtonElement) : -1;
+    };
+    const light = () => places.forEach((p, i) => p.classList.toggle('on', i === pressed || (pressed !== null && i === over)));
+    board.addEventListener('pointerdown', (e) => {
+      const from = placeAt(e.clientX, e.clientY);
+      if (from < 0 || !live(v)) return;
+      pressed = over = from;
+      light();
+    });
+    board.addEventListener('pointermove', (e) => {
+      if (pressed === null) return;
+      const at = placeAt(e.clientX, e.clientY);
+      if (at === over) return;
+      over = at;
+      light();
+    });
+    board.addEventListener('pointerup', (e) => {
+      const from = pressed;
+      const to = placeAt(e.clientX, e.clientY);
+      pressed = over = null;
+      if (from !== null && to >= 0 && to !== from) {
+        navigator.vibrate?.(8);
+        ui.send({ type: 'swap', a: from, b: to });
+      }
+      light();
+    });
+    board.addEventListener('pointercancel', () => {
+      pressed = over = null;
+      light();
+    });
+    ui.stage.replaceChildren(...clue, board, button('Check the line', () => ui.send({ type: 'check' }), !live(v)));
   };
-});
+}, PUZZLE_SCENES['line-up']);
 
 export const createLensLab = critterScreen<LensState>((ui: CritterUi) => {
   let picked: number | null = null;
@@ -240,7 +263,7 @@ export const createLensLab = critterScreen<LensState>((ui: CritterUi) => {
       h('div', { class: 'cr-log' }, ...tests),
     );
   };
-});
+}, PUZZLE_SCENES['lens-lab']);
 
 export const createSwitchback = critterScreen<SwitchState>((ui: CritterUi) => {
   let picked: number | null = null;
@@ -292,7 +315,7 @@ export const createSwitchback = critterScreen<SwitchState>((ui: CritterUi) => {
     const sends = s.gates[0]?.kind === 'start' ? [h('div', { class: 'cr-buttons' }, button('Send left', () => send(0), waiting), button('Send right', () => send(1), waiting))] : [button('Send them', () => send(0), waiting)];
     ui.stage.replaceChildren(board, ...(order ? [grid(6, ...order)] : [grid(6, ...pool), ...sends]));
   };
-});
+}, PUZZLE_SCENES['switchback']);
 
 export const createSteppingStones = critterScreen<StonesState>((ui: CritterUi) => {
   const CELL = 20;
@@ -334,4 +357,4 @@ export const createSteppingStones = critterScreen<StonesState>((ui: CritterUi) =
     const wandBtn = s.swaps ? [button(wand ? 'Put the wand away' : `Wand (${s.swapsLeft})`, () => ((wand = !wand), ui.redraw()), !live(v) || !s.swapsLeft, true)] : [];
     ui.stage.replaceChildren(board, h('div', { class: 'cr-buttons' }, button('Back', () => ui.send({ type: 'back' }), !live(v) || !s.path.length, true), ...wandBtn));
   };
-});
+}, PUZZLE_SCENES['stepping-stones']);

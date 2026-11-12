@@ -1,3 +1,6 @@
+import { artDefs, wumbleSvg } from '../../shared/critterArt';
+import type { SceneTheme } from '../../shared/sceneArt';
+import { showBackdrop } from './backdrop';
 import { piecePrims, type CritterPlayerView, type Piece, type Prim } from '../../shared/critters';
 import { h } from './dom';
 import type { Controller } from './main';
@@ -18,9 +21,26 @@ function primEl(p: Prim): SVGElement {
   return svgEl(p.open ? 'polyline' : 'polygon', { points, ...paint });
 }
 
+/** The Wumbles' shading, put on the page once for every picture to share. */
+let defsAdded = false;
+function addArtDefs() {
+  if (defsAdded) return;
+  defsAdded = true;
+  // Not display:none: gradients in a hidden SVG don't paint elsewhere in some browsers.
+  const holder = svgEl('svg', { width: 0, height: 0, 'aria-hidden': 'true', style: 'position:absolute;width:0;height:0;overflow:hidden' });
+  holder.innerHTML = `<defs>${artDefs()}</defs>`;
+  document.body.append(holder);
+}
+
 /** A piece centred on x, y, `size` across. */
 export function pieceAt(p: Piece, x: number, y: number, size: number, attrs: Record<string, string | number> = {}) {
-  const inner: SVGElement[] = p.k === 'e' ? [svgEl('text', { x: 0, y: 28, 'font-size': 76, 'text-anchor': 'middle' }, p.e ?? '')] : piecePrims(p).map(primEl);
+  let inner: SVGElement[];
+  if (p.k === 'w') {
+    addArtDefs();
+    const art = svgEl('g', { class: 'cw' });
+    art.innerHTML = wumbleSvg(p.t!, { clock: performance.now() / 1000 });
+    inner = [art];
+  } else inner = p.k === 'e' ? [svgEl('text', { x: 0, y: 28, 'font-size': 76, 'text-anchor': 'middle' }, p.e ?? '')] : piecePrims(p).map(primEl);
   if (p.on) inner.unshift(svgEl('circle', { r: 49, fill: 'none', stroke: '#ffd166', 'stroke-width': 5 }));
   return svgEl('g', { transform: `translate(${x} ${y}) scale(${size / 100})`, ...(p.dim ? { opacity: 0.3 } : {}), ...attrs }, ...inner);
 }
@@ -58,9 +78,11 @@ export interface CritterUi {
 /**
  * The screen every Wumble puzzle shares: the clock, drawn tries and progress, and what's just
  * happened. `make` is called once and returns what draws the puzzle in `ui.stage`, for each update.
+ * `scene` is the storybook backdrop behind it all.
  */
-export function critterScreen<S>(make: (ui: CritterUi) => (v: CritterPlayerView<S>) => void) {
+export function critterScreen<S>(make: (ui: CritterUi) => (v: CritterPlayerView<S>) => void, scene: SceneTheme = 'glade') {
   return (root: HTMLElement, send: (input: unknown) => void): Controller => {
+    const hideScene = showBackdrop(scene);
     let view: CritterPlayerView<S> | null = null;
     let phaseEndsAt = 0;
 
@@ -77,6 +99,18 @@ export function critterScreen<S>(make: (ui: CritterUi) => (v: CritterPlayerView<
     let draw = make(ui);
     /** Each puzzle starts fresh, with nothing still picked from the last one. */
     let drawnPuzzle = 0;
+    /** Progress last time, so a step forward cheers and a slip shakes heads. */
+    let lastGot = 0;
+    let lastTries = 0;
+    let moodTimer: ReturnType<typeof setTimeout> | undefined;
+
+    function mood(kind: 'cw-cheer' | 'cw-oops') {
+      clearTimeout(moodTimer);
+      stage.classList.remove('cw-cheer', 'cw-oops');
+      void stage.offsetWidth;
+      stage.classList.add(kind);
+      moodTimer = setTimeout(() => stage.classList.remove(kind), 700);
+    }
 
     function setStatus(text: string, kind: '' | 'good' | 'bad' = '') {
       statusEl.textContent = text;
@@ -94,8 +128,14 @@ export function critterScreen<S>(make: (ui: CritterUi) => (v: CritterPlayerView<
       if (v.puzzleNumber !== drawnPuzzle) {
         drawnPuzzle = v.puzzleNumber;
         draw = make(ui);
+        lastGot = v.got;
+        lastTries = v.triesLeft;
       }
       draw(v);
+      if (v.got > lastGot) mood('cw-cheer');
+      else if (v.triesLeft < lastTries) mood('cw-oops');
+      lastGot = v.got;
+      lastTries = v.triesLeft;
       if (v.phase === 'play') {
         if (v.finishMs !== null) setStatus(`Solved in ${(v.finishMs / 1000).toFixed(1)}s! Waiting for everyone else…`, 'good');
         else if (v.done) setStatus('Out of tries. Waiting for everyone else…');
@@ -123,6 +163,8 @@ export function critterScreen<S>(make: (ui: CritterUi) => (v: CritterPlayerView<
       },
       destroy() {
         clearInterval(interval);
+        clearTimeout(moodTimer);
+        hideScene();
         root.replaceChildren();
       },
     };

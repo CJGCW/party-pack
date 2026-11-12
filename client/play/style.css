@@ -1150,6 +1150,7 @@ body.gave-up #app { opacity: 0.4; pointer-events: none; filter: grayscale(0.5); 
 .cr-hearts span { font-size: 16px; line-height: 1; color: var(--empty); }
 .cr-hearts span.on { color: var(--danger); }
 .cr-grid { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 5px; }
+.cr-swipe { touch-action: none; user-select: none; -webkit-user-select: none; }
 .cr-tile { position: relative; padding: 2px; background: linear-gradient(180deg, var(--panel-light), var(--empty)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 3px 0 #0f0b28; border: 3px solid transparent; border-radius: 10px; min-height: 0; }
 .cr-tile:disabled { opacity: 1; }
 .cr-tile svg { display: block; width: 100%; }
@@ -1188,6 +1189,67 @@ body.gave-up #app { opacity: 0.4; pointer-events: none; filter: grayscale(0.5); 
 .cr-lenses { text-align: center; font-size: 28px; line-height: 1; letter-spacing: 6px; }
 .cr-tile.good .cr-badge { color: #4cd37a; }
 .cr-then { font-size: 22px; color: var(--muted); }
+/* Wumbles' storybook art (shared/critterArt.ts): idle bobbing, blinking and wobbling, and a hop or a head shake when something happens. Periods match PERIODS there. */
+.cr-tile { background: radial-gradient(ellipse 46% 16% at 50% 88%, #5d8a45 0 98%, transparent 100%), linear-gradient(180deg, #4a3f86, #355f6b); }
+.cr-tile svg, .cr-customer svg, .cr-board { overflow: visible; }
+.cr-tile { background-origin: border-box; background-repeat: no-repeat; }
+.cr-tile.on { background: radial-gradient(ellipse 46% 16% at 50% 88%, #74a857 0 98%, transparent 100%), linear-gradient(180deg, #6a5aa8, #3f7480); }
+.cr-tile.cr-topping { background: linear-gradient(180deg, var(--panel-light), var(--empty)); }
+.cw-bob, .cw-hat, .cw-eyes, .cw-spin, .cw-boing, .cw-hop { transform-box: fill-box; }
+.cw-bob { transform-origin: 50% 100%; animation: cw-bob 2.4s ease-in-out infinite; }
+.cw-hat { transform-origin: 50% 100%; animation: cw-wobble 3s ease-in-out infinite; }
+.cw-eyes { transform-origin: center; animation: cw-blink 4.5s infinite; }
+.cw-spin { transform-origin: center; animation: cw-spin 1.6s linear infinite; }
+.cw-boing { transform-origin: 50% 100%; animation: cw-boing 1.2s ease-in-out infinite; }
+.cw-hop { transform-origin: 50% 100%; }
+.cr-tile.on .cw-hop { animation: cw-excited 0.5s ease-in-out infinite; }
+.cw-cheer .cw-hop { animation: cw-hop 0.65s ease-out; }
+.cw-oops .cw-hop { animation: cw-shake 0.5s ease-in-out; }
+@keyframes cw-bob { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-2px) scale(1.04, 0.96); } }
+@keyframes cw-wobble { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@keyframes cw-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.08); } }
+@keyframes cw-spin { to { transform: rotate(360deg); } }
+@keyframes cw-boing { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.8); } }
+@keyframes cw-excited { 0%, 100% { transform: translateY(0) scale(1.06, 0.94); } 50% { transform: translateY(-9px) scale(0.96, 1.05); } }
+@keyframes cw-hop { 0% { transform: translateY(0) scale(1.18, 0.82); } 35% { transform: translateY(-20px) scale(0.9, 1.12); } 70% { transform: translateY(0) scale(1.14, 0.86); } 100% { transform: none; } }
+@keyframes cw-shake { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-9deg); } 40% { transform: rotate(8deg); } 60% { transform: rotate(-6deg); } 80% { transform: rotate(4deg); } }
+/* A hop moves each kind of feet its own way, timed to cw-hop (launch 0%, top 35%, land 70%); a picked Wumble does the same in its bounce. */
+.cw-foot { transform-box: fill-box; transform-origin: 50% 0; }
+.cw-cheer .cw-hat { animation: cw-hat-hop 0.65s ease-out; }
+.cw-cheer .cw-eyes { animation: cw-eyes-hop 0.65s ease-out; }
+.cw-cheer .cw-f0 .cw-foot { animation: cw-kick 0.65s ease-out; }
+.cw-cheer .cw-f1 .cw-spin { animation-duration: 0.25s; }
+.cw-cheer .cw-f2 .cw-boing { animation: cw-spring-hop 0.65s ease-out; }
+.cw-cheer .cw-f3 .cw-foot { animation: cw-flap 0.65s ease-in-out; }
+.cw-cheer .cw-f4 .cw-foot { animation: cw-splay 0.65s ease-out; }
+.cr-tile.on .cw-f0 .cw-foot { animation: cw-kick-loop 0.5s ease-in-out infinite; }
+.cr-tile.on .cw-f1 .cw-spin { animation-duration: 0.35s; }
+.cr-tile.on .cw-f2 .cw-boing { animation: cw-spring-loop 0.5s ease-in-out infinite; }
+.cr-tile.on .cw-f3 .cw-foot { animation: cw-flap-loop 0.25s ease-in-out infinite; }
+.cr-tile.on .cw-f4 .cw-foot { animation: cw-splay-loop 0.5s ease-in-out infinite; }
+.cw-oops .cw-hat { animation: cw-hat-oops 0.5s ease-in-out; }
+.cw-oops .cw-f0 .cw-foot, .cw-oops .cw-f4 .cw-foot { animation: cw-stamp 0.5s ease-in-out; }
+@keyframes cw-hat-hop { 0% { transform: translateY(2px); } 35% { transform: translateY(-7px) rotate(-10deg); } 55% { transform: translateY(-3px) rotate(7deg); } 75% { transform: translateY(1px) rotate(-3deg); } 100% { transform: none; } }
+@keyframes cw-hat-oops { 0%, 100% { transform: none; } 30% { transform: translateY(2px) rotate(12deg); } 65% { transform: translateY(1px) rotate(-10deg); } }
+@keyframes cw-eyes-hop { 0%, 70%, 100% { transform: none; } 35% { transform: scale(1.25); } }
+@keyframes cw-kick { 0%, 70%, 100% { transform: none; } 35% { transform: rotate(calc(var(--dir) * -28deg)); } }
+@keyframes cw-kick-loop { 0%, 100% { transform: none; } 50% { transform: rotate(calc(var(--dir) * -22deg)); } }
+@keyframes cw-spring-hop { 0% { transform: scaleY(0.55); } 35% { transform: scaleY(1.4); } 70% { transform: scaleY(0.5); } 85% { transform: scaleY(1.15); } 100% { transform: none; } }
+@keyframes cw-spring-loop { 0%, 100% { transform: scaleY(0.6); } 50% { transform: scaleY(1.35); } }
+@keyframes cw-flap { 0%, 70%, 100% { transform: none; } 12%, 36%, 60% { transform: rotate(calc(var(--dir) * 30deg)); } 24%, 48% { transform: rotate(calc(var(--dir) * -20deg)); } }
+@keyframes cw-flap-loop { 0%, 100% { transform: rotate(calc(var(--dir) * 25deg)); } 50% { transform: rotate(calc(var(--dir) * -18deg)); } }
+@keyframes cw-splay { 0%, 70%, 100% { transform: none; } 35% { transform: rotate(calc(var(--dir) * -16deg)); } 80% { transform: rotate(calc(var(--dir) * 5deg)); } }
+@keyframes cw-splay-loop { 0%, 100% { transform: none; } 50% { transform: rotate(calc(var(--dir) * -14deg)); } }
+@keyframes cw-stamp { 0%, 100% { transform: none; } 25%, 75% { transform: translateY(-4px) rotate(calc(var(--dir) * -10deg)); } 50% { transform: none; } }
+/* Springs squash from the ground up, so the body rides their tops (21.5 units tall: down by (1 - scale) x 21.5). */
+.cw-f2 + .cw-top { animation: cw-ride 1.2s ease-in-out infinite; }
+.cw-cheer .cw-f2 + .cw-top { animation: cw-ride-hop 0.65s ease-out; }
+.cr-tile.on .cw-f2 + .cw-top { animation: cw-ride-loop 0.5s ease-in-out infinite; }
+.cw-walk .cw-f2 + .cw-top { animation: cw-ride-loop 0.45s ease-in-out infinite; }
+@keyframes cw-ride { 0%, 100% { transform: none; } 50% { transform: translateY(4.3px); } }
+@keyframes cw-ride-hop { 0% { transform: translateY(9.7px); } 35% { transform: translateY(-8.6px); } 70% { transform: translateY(10.8px); } 85% { transform: translateY(-3.2px); } 100% { transform: none; } }
+@keyframes cw-ride-loop { 0%, 100% { transform: translateY(8.6px); } 50% { transform: translateY(-7.5px); } }
+@media (prefers-reduced-motion: reduce) { .cw-bob, .cw-hat, .cw-eyes, .cw-spin, .cw-boing, .cw-hop, .cw-foot, .cw-top { animation: none !important; } }
 
 
 /* ---------- The house style: chunky, lit from above, as on the TV ---------- */
@@ -1226,3 +1288,37 @@ canvas { border-radius: 8px; }
 @media (prefers-reduced-motion: reduce) {
   button, .wr-timer.low { transition: none; animation: none; }
 }
+
+/* The storybook scene behind a Wumble puzzle (backdrop.ts), and its fireflies. */
+body.cw-scene { background-size: cover; background-position: center bottom; background-attachment: fixed; }
+.cw-flies { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.cw-flies span { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #fff3a0; box-shadow: 0 0 6px 2px rgba(255, 243, 160, 0.6); animation: cw-twinkle 3s ease-in-out infinite, cw-drift 7s ease-in-out infinite alternate; }
+@keyframes cw-twinkle { 0%, 100% { opacity: 0.1; } 50% { opacity: 1; } }
+@keyframes cw-drift { from { transform: translate(0, 0); } to { transform: translate(18px, -14px); } }
+@media (prefers-reduced-motion: reduce) { .cw-flies span { animation: none; opacity: 0.6; } }
+
+/* Walking (walk.ts puts cw-walk on a Wumble while it moves, and --face: 1 going right, -1 left). Each kind of feet walks its own way. */
+.cw-walk .cw-bob { animation: cw-walk-bob 0.5s ease-in-out infinite; }
+.cw-walk .cw-f0 .cw-foot, .cw-walk .cw-f-1 .cw-foot { animation: cw-step 0.5s ease-in-out infinite; animation-delay: calc((var(--dir) + 1) * -0.125s); }
+.cw-walk .cw-bob:has(> .cw-f1) { animation: cw-roll 0.6s ease-in-out infinite; }
+.cw-walk .cw-f1 .cw-spin { animation-duration: 0.3s; }
+.cw-walk .cw-bob:has(> .cw-f2) { animation: cw-boing-walk 0.45s ease-in-out infinite; }
+.cw-walk .cw-f2 .cw-boing { animation: cw-spring-loop 0.45s ease-in-out infinite; }
+.cw-walk .cw-bob:has(> .cw-f3) { animation: cw-waddle 0.5s ease-in-out infinite; }
+.cw-walk .cw-f3 .cw-foot { animation: cw-slap 0.5s ease-in-out infinite; animation-delay: calc((var(--dir) + 1) * -0.125s); }
+.cw-walk .cw-bob:has(> .cw-f4) { animation: cw-stilt-sway 0.8s ease-in-out infinite; }
+.cw-walk .cw-f4 .cw-foot { animation: cw-stilt-step 0.8s ease-in-out infinite; animation-delay: calc((var(--dir) + 1) * -0.2s); }
+@keyframes cw-walk-bob { 0%, 50%, 100% { transform: translateY(0) rotate(calc(var(--face, 1) * 3deg)); } 25%, 75% { transform: translateY(-3px) rotate(calc(var(--face, 1) * 1deg)); } }
+@keyframes cw-step { 0%, 50%, 100% { transform: none; } 25% { transform: translateY(-5px) rotate(calc(var(--face, 1) * -14deg)); } }
+@keyframes cw-roll { 0%, 100% { transform: rotate(calc(var(--face, 1) * 7deg)); } 50% { transform: translateY(-1px) rotate(calc(var(--face, 1) * 5deg)); } }
+@keyframes cw-boing-walk { 0%, 100% { transform: translateY(0) scale(1.06, 0.94); } 50% { transform: translateY(-10px) scale(0.96, 1.05) rotate(calc(var(--face, 1) * 4deg)); } }
+@keyframes cw-waddle { 0%, 100% { transform: rotate(-8deg); } 25%, 75% { transform: translateY(-2px) rotate(0); } 50% { transform: rotate(8deg); } }
+@keyframes cw-slap { 0%, 50%, 100% { transform: none; } 25% { transform: translateY(-4px) rotate(calc(var(--dir) * 22deg)); } }
+@keyframes cw-stilt-sway { 0%, 100% { transform: rotate(-4deg); } 25%, 75% { transform: translateY(-4px) rotate(calc(var(--face, 1) * 2deg)); } 50% { transform: rotate(4deg); } }
+@keyframes cw-stilt-step { 0%, 50%, 100% { transform: none; } 25% { transform: translateY(-7px) rotate(calc(var(--face, 1) * -10deg)); } }
+@media (prefers-reduced-motion: reduce) { .cw-walk .cw-bob, .cw-walk .cw-foot { animation: none !important; } }
+/* The art gallery's walking parade (gallery.ts). */
+.cw-parade { position: relative; height: 290px; }
+.cw-walker { position: absolute; left: 0; width: 56px; }
+.cw-walker svg { display: block; width: 100%; overflow: visible; }
+.cw-scenes { grid-template-columns: 1fr 1fr 1fr; }

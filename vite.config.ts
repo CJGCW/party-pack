@@ -16,7 +16,8 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       input: {
         play: resolve(root, 'index.html'),
-        ...(mode === 'app' ? {} : { host: resolve(root, 'host.html') }),
+        // The Wumble art gallery (gallery.html) comes along so it opens however the server's started.
+        ...(mode === 'app' ? {} : { host: resolve(root, 'host.html'), gallery: resolve(root, 'gallery.html') }),
       },
     },
   },
